@@ -14,5 +14,6 @@ int main(int argc, char *argv[]) {
     cout<<myv<<endl;
     cout<<myw<<endl;
     cout<<myv+myw<<endl;
+    cout<<myv+myw<<endl;
     
 }

@@ -27,7 +27,7 @@ directory
 namespace Grid {
 
 ///////////////////////////////////////////////////
-// Scalar, Vector, Matrix objects.
+// Scalar, Vector, Perturbative series, Matrix objects.
 // These can be composed to form tensor products of internal indices.
 ///////////////////////////////////////////////////
 

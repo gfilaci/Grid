@@ -46,6 +46,13 @@ namespace Grid {
     // mat  x vec  = vec
     // vec  x scal = vec
     // scal x vec  = vec
+    // scal x pert = pert
+    // pert x scal = pert
+    // vec x pert  = pert
+    // pert x vec  = pert
+    // mat x pert  = pert
+    // pert x mat  = pert
+    // pert x pert = pert
     ///////////////////////////
 template<class rtype,class vtype,class mtype>
 strong_inline  void mac(iScalar<rtype> * __restrict__ ret,const iScalar<vtype> * __restrict__ lhs,const iScalar<mtype> * __restrict__ rhs)
@@ -101,6 +108,63 @@ strong_inline void mac(iVector<rrtype,N> * __restrict__ ret,const iVector<ltype,
     for(int c1=0;c1<N;c1++){
         mac(&ret->_internal[c1],&lhs->_internal[c1],&rhs->_internal);
     }
+    return;
+}
+template<class rrtype,class ltype,class rtype,int N>
+strong_inline void mac(iPert<rrtype,N> * __restrict__ ret,const iScalar<ltype> * __restrict__ lhs,const iPert<rtype,N> * __restrict__ rhs)
+{
+    for(int c1=0;c1<N;c1++){
+        mac(&ret->_internal[c1],&lhs->_internal,&rhs->_internal[c1]);
+    }
+    return;
+}
+template<class rrtype,class ltype,class rtype,int N>
+strong_inline void mac(iPert<rrtype,N> * __restrict__ ret,const iPert<ltype,N> * __restrict__ lhs,const iScalar<rtype> * __restrict__ rhs)
+{
+    for(int c1=0;c1<N;c1++){
+        mac(&ret->_internal[c1],&lhs->_internal[c1],&rhs->_internal);
+    }
+    return;
+}
+template<class rrtype,class ltype,class rtype,int N,int Nv>
+strong_inline void mac(iPert<rrtype,N> * __restrict__ ret,const iVector<ltype,Nv> * __restrict__ lhs,const iPert<rtype,N> * __restrict__ rhs)
+{
+    for(int c1=0;c1<N;c1++){
+        mac(&ret->_internal[c1],&lhs->_internal,&rhs->_internal[c1]);
+    }
+    return;
+}
+template<class rrtype,class ltype,class rtype,int N,int Nv>
+strong_inline void mac(iPert<rrtype,N> * __restrict__ ret,const iPert<ltype,N> * __restrict__ lhs,const iVector<rtype,Nv> * __restrict__ rhs)
+{
+    for(int c1=0;c1<N;c1++){
+        mac(&ret->_internal[c1],&lhs->_internal[c1],&rhs->_internal);
+    }
+    return;
+}
+template<class rrtype,class ltype,class rtype,int N,int Nv>
+strong_inline void mac(iPert<rrtype,N> * __restrict__ ret,const iMatrix<ltype,Nv> * __restrict__ lhs,const iPert<rtype,N> * __restrict__ rhs)
+{
+    for(int c1=0;c1<N;c1++){
+        mac(&ret->_internal[c1],&lhs->_internal,&rhs->_internal[c1]);
+    }
+    return;
+}
+template<class rrtype,class ltype,class rtype,int N,int Nv>
+strong_inline void mac(iPert<rrtype,N> * __restrict__ ret,const iPert<ltype,N> * __restrict__ lhs,const iMatrix<rtype,Nv> * __restrict__ rhs)
+{
+    for(int c1=0;c1<N;c1++){
+        mac(&ret->_internal[c1],&lhs->_internal[c1],&rhs->_internal);
+    }
+    return;
+}
+template<class rrtype,class ltype,class rtype,int N>
+strong_inline void mac(iPert<rrtype,N> * __restrict__ ret,const iPert<ltype,N> * __restrict__ lhs,const iPert<rtype,N> * __restrict__ rhs)
+{
+    for(int c1=0;c1<N;c1++){
+    for(int c2=0;c2<=c1;c2++){
+        mac(&ret->_internal[c1],&lhs->_internal[c2],&rhs->_internal[c1-c2]);
+    }}
     return;
 }
 }

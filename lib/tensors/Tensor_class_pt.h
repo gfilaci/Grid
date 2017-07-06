@@ -132,7 +132,7 @@ class iPert {
   strong_inline const vtype &operator()(int i) const { return _internal[i]; }
   friend std::ostream &operator<<(std::ostream &stream,
                                   const iPert<vtype, N> &o) {
-    stream << "V<" << N << ">{";
+    stream << "P<" << N << ">{";
     for (int i = 0; i < N; i++) {
       stream << o._internal[i];
       if (i < N - 1) stream << ",";

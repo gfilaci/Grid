@@ -35,9 +35,9 @@ using namespace std;
 
 static constexpr double tolerance = 1.0e-6;
 
-const int vsz = 2;
-const int msz = 2;
-const int psz = 2;
+const int vsz = 10;
+const int msz = 9;
+const int psz = 8;
 
 
 template <typename Expr>
@@ -75,13 +75,15 @@ int main(int argc, char *argv[]) {
     
     
     // declare and generate random objects
-    iVector<iPert<iMatrix<Complex,msz>,psz>,vsz> S,P,T,Tman;
+    iVector<iPert<iMatrix<Complex,msz>,psz>,vsz> S,T,Tman,P;
+    iScalar<iPert<iMatrix<Complex,msz>,psz>> Q;
     iScalar<iScalar<iScalar<Complex>>> sc;
     iScalar<iScalar<iVector<Complex,msz>>> vec,Tvec,Tvecman;
     iScalar<iScalar<iMatrix<Complex,msz>>> mat;
     
     random(sRNG, S);
     random(sRNG, P);
+    random(sRNG, Q);
     random(sRNG, sc);
     random(sRNG, vec);
     random(sRNG, mat);
@@ -92,135 +94,61 @@ int main(int argc, char *argv[]) {
     std::cout << GridLogMessage << "======== Test sum" << std::endl;
     
     zeroit(Tman);
-    T = S + P;
     loopv(i) loopp(j)
     Tman(i)(j) = S(i)(j) + P(i)(j);
-    print_test("sum (internal)",T,Tman);
+    T = S + P;
+    print_test("sum         (internal)  ",T,Tman);
     
-    zeroit(Tman);
-    T(0) = S(0) + P(0);
     loopp(j)
-    Tman(0)(j) = S(0)(j) + P(0)(j);
-    print_test("sum (overloaded)",T(0),Tman(0));
+    T(j) = S(j) + P(j);
+    print_test("sum         (overloaded)",T,Tman);
     
     
     std::cout << GridLogMessage << "======== Test multiplication table" << std::endl;
     
     zeroit(Tvecman);
-    Tvec = vec * mat;
     loopm(i) loopm(j)
     Tvecman._internal._internal(i) += vec._internal._internal(j) * mat._internal._internal(j,i);
-    print_test("vec x mat (internal)",Tvec,Tvecman);
-    
+    Tvec = vec * mat;
+    print_test("vec x mat   (internal)  ",Tvec,Tvecman);
     Tvec._internal._internal = vec._internal._internal * mat._internal._internal;
-    print_test("vec x mat (internal)",Tvec,Tvecman);
-    
-//    T = sc * S;
-//    loopv(i) loopp(j)
-//    Tman(i)(j) = sc._internal._internal * S(i)(j);
-//    
-//    zeroit(Tman);
-//    print_test("scal x pert (internal)",T,Tman);
-//    zeroit(Tman);
-//    print_test("scal x pert (overloaded)",T,Tman);
-//    zeroit(Tman);
-//    print_test("pert x scal (internal)",T,Tman);
-//    zeroit(Tman);
-//    print_test("pert x scal (overloaded)",T,Tman);
-//    zeroit(Tman);
-//    print_test("pert x pert (internal)",T,Tman);
-//    zeroit(Tman);
-//    print_test("pert x pert (overloaded)",T,Tman);
+    print_test("vec x mat   (overloaded)",Tvec,Tvecman);
     
     
-    
-//    iVector<iMatrix<Complex,3>,4> aa,bb;
-//    iScalar<iScalar<Complex> ss;
-//    bb = ss * aa;
-////    T = S * sc;
-//    loopv(i) loopp(j)
-//    Tman(i)(j) = S(i)(j) * sc._internal._internal;
-//    print_test("pert x scal",T,Tman);
-    
-//    T = vec * S;
-//    loopv(i) loopp(j)
-////    Tman(i)(j) = S(i)(j) * vec._internal._internal;
-//    print_test("pert x vec",T,Tman);
+    zeroit(Tman);
+    loopv(i) loopp(j)
+    Tman(i)(j) = sc._internal._internal * S(i)(j);
+    T = sc * S;
+    print_test("scal x pert (internal)  ",T,Tman);
+    loopv(i)
+    T(i) = sc._internal * S(i);
+    print_test("scal x pert (overloaded)",T,Tman);
     
     
-    iScalar<iVector<Complex,6>> ss;
-    iVector<iVector<Complex,6>,10> bb;
-    iVector<iMatrix<Complex,6>,10> aa;
-//    iScalar<iVector<Complex,6>> ss;
-//    iVector<iMatrix<Complex,6>,5> aa,bb;
-    bb = aa*ss;
+    zeroit(Tman);
+    loopv(i) loopp(j)
+    Tman(i)(j) = S(i)(j) * sc._internal._internal;
+    T = S * sc;
+    print_test("pert x scal (internal)  ",T,Tman);
+    loopv(i)
+    T(i) = S(i) * sc._internal;
+    print_test("pert x scal (overloaded)",T,Tman);
     
+    
+    zeroit(Tman);
+    loopv(i)
+    for (int c1=0; c1<psz; c1++) {
+        for (int c2=0; c2<=c1; c2++) {
+            Tman(i)(c1) += S(i)(c2) * (Q._internal)(c1-c2);
+        }
+    }
+    T = S * Q;
+    print_test("pert x pert (internal)  ",T,Tman);
+    loopv(i)
+    T(i) = S(i) * Q._internal;
+    print_test("pert x pert (overloaded)",T,Tman);
     
     
     Grid_finalize();
     return EXIT_SUCCESS;
 }
-
-
-
-
-
-
-
-
-//    iPert<double,2> v,w;
-//    v(0)=1.;
-//    v(1)=2.;
-//    
-//    w(0)=3.;
-//    w(1)=4.;
-//    cout<<v<<endl;
-//    cout<<w<<endl;
-//    cout<<v*w<<endl<<endl;
-//
-//
-//    Complex im(0,1);
-//    iPert<iMatrix<Complex,2>,3> S,P;
-//    
-//    S(0)(0,0) = 0;
-//    S(0)(0,1) = 1;
-//    S(0)(1,0) = -2;
-//    S(0)(1,1) = -im;
-//    
-//    S(1)(0,0) = -23. + im;
-//    S(1)(0,1) = 0;
-//    S(1)(1,0) = -8;
-//    S(1)(1,1) = 1;
-//
-//
-//    P(1) = conjugate(transpose(S(1)));
-//    
-//    S(2) = transpose(S(0)*S(1));
-//    
-//    P(0) = S(2)*S(2);
-//    
-//    P(2)(0,0) = S(0)(0,0) + 2.;
-//    P(2)(0,1) = S(0)(0,1);
-//    P(2)(1,0) = S(0)(1,0);
-//    P(2)(1,1) = S(0)(1,1) + 2.;
-//    
-//    cout<<S*P<<endl;
-
-
-
-
-/*
-compare in Mathematica with
-A = {{0, 1}, {-2, -I}};
-B = {{-23 + I, 0}, {-8, 1}};
-CC = Transpose[A.B];
-S0 = A;
-S1 = B;
-S2 = CC;
-P0 = CC.CC;
-P1 = ConjugateTranspose[B];
-P2 = A + 2*IdentityMatrix[2];
-S0.P0 // MatrixForm
-S0.P1 + S1.P0 // MatrixForm
-S0.P2 + S1.P1 + S2.P0 // MatrixForm
-*/

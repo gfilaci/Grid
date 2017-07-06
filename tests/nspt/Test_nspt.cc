@@ -35,9 +35,9 @@ using namespace std;
 
 static constexpr double tolerance = 1.0e-6;
 
-const int vsz = 10;
-const int msz = 9;
-const int psz = 8;
+const int vsz = 2;
+const int msz = 2;
+const int psz = 2;
 
 
 template <typename Expr>
@@ -75,10 +75,10 @@ int main(int argc, char *argv[]) {
     
     
     // declare and generate random objects
-    iVector<iVector<iMatrix<Complex,msz>,psz>,vsz> S,P,T,Tman;
+    iVector<iPert<iMatrix<Complex,msz>,psz>,vsz> S,P,T,Tman;
     iScalar<iScalar<iScalar<Complex>>> sc;
-    iScalar<iScalar<iVector<Complex,msz>>> vec;
-    iMatrix<Complex,msz> mat;
+    iScalar<iScalar<iVector<Complex,msz>>> vec,Tvec,Tvecman;
+    iScalar<iScalar<iMatrix<Complex,msz>>> mat;
     
     random(sRNG, S);
     random(sRNG, P);
@@ -87,21 +87,52 @@ int main(int argc, char *argv[]) {
     random(sRNG, mat);
     
     
-    // begin tests
-    std::cout << GridLogMessage << "======== Test summation" << std::endl;
-    std::cout << GridLogMessage << "Checking sum : ";
+    // BEGIN TESTS
+    
+    std::cout << GridLogMessage << "======== Test sum" << std::endl;
+    
+    zeroit(Tman);
     T = S + P;
     loopv(i) loopp(j)
     Tman(i)(j) = S(i)(j) + P(i)(j);
-    test(T,Tman);
-    std::cout << std::endl;
+    print_test("sum (internal)",T,Tman);
     
-    std::cout << GridLogMessage << "======== Test new multiplication table" << std::endl;
+    zeroit(Tman);
+    T(0) = S(0) + P(0);
+    loopp(j)
+    Tman(0)(j) = S(0)(j) + P(0)(j);
+    print_test("sum (overloaded)",T(0),Tman(0));
     
-    T = sc * S;
-    loopv(i) loopp(j)
-    Tman(i)(j) = sc._internal._internal * S(i)(j);
-    print_test("scal x pert",T,Tman);
+    
+    std::cout << GridLogMessage << "======== Test multiplication table" << std::endl;
+    
+    zeroit(Tvecman);
+    Tvec = vec * mat;
+    loopm(i) loopm(j)
+    Tvecman._internal._internal(i) += vec._internal._internal(j) * mat._internal._internal(j,i);
+    print_test("vec x mat (internal)",Tvec,Tvecman);
+    
+    Tvec._internal._internal = vec._internal._internal * mat._internal._internal;
+    print_test("vec x mat (internal)",Tvec,Tvecman);
+    
+//    T = sc * S;
+//    loopv(i) loopp(j)
+//    Tman(i)(j) = sc._internal._internal * S(i)(j);
+//    
+//    zeroit(Tman);
+//    print_test("scal x pert (internal)",T,Tman);
+//    zeroit(Tman);
+//    print_test("scal x pert (overloaded)",T,Tman);
+//    zeroit(Tman);
+//    print_test("pert x scal (internal)",T,Tman);
+//    zeroit(Tman);
+//    print_test("pert x scal (overloaded)",T,Tman);
+//    zeroit(Tman);
+//    print_test("pert x pert (internal)",T,Tman);
+//    zeroit(Tman);
+//    print_test("pert x pert (overloaded)",T,Tman);
+    
+    
     
 //    iVector<iMatrix<Complex,3>,4> aa,bb;
 //    iScalar<iScalar<Complex> ss;

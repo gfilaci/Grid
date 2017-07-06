@@ -35,6 +35,7 @@ Author: neo <cossu@post.kek.jp>
 #include <Grid/tensors/Tensor_class_pt.h>
 #include <Grid/tensors/Tensor_arith.h>
 #include <Grid/tensors/Tensor_inner.h>
+#include <Grid/tensors/Tensor_inner_pt.h>
 #include <Grid/tensors/Tensor_outer.h>
 #include <Grid/tensors/Tensor_transpose.h>
 #include <Grid/tensors/Tensor_trace.h>

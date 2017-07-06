@@ -29,9 +29,12 @@ Author: Peter Boyle <paboyle@ph.ed.ac.uk>
 #define GRID_MATH_ARITH_H
 
 #include "Tensor_arith_add.h"
+#include "Tensor_arith_add_pt.h"
 #include "Tensor_arith_sub.h"
 #include "Tensor_arith_mac.h"
+#include "Tensor_arith_mac_pt.h"
 #include "Tensor_arith_mul.h"
+#include "Tensor_arith_mul_pt.h"
 #include "Tensor_arith_scalar.h"
 
 #endif

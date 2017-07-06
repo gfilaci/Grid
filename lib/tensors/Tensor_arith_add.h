@@ -40,7 +40,6 @@ namespace Grid {
 // ADD is simple for now; cannot mix types and straightforward template
 // Scalar +/- Scalar
 // Vector +/- Vector
-// Pert series +/- Pert series
 // Matrix +/- Matrix
   template<class vtype,class ltype,class rtype> strong_inline void add(iScalar<vtype> * __restrict__ ret,
 								const iScalar<ltype> * __restrict__ lhs,
@@ -57,16 +56,6 @@ namespace Grid {
     }
     return;
   }
-  template<class vtype,class ltype,class rtype,int N> strong_inline void add(iPert<vtype,N> * __restrict__ ret,
-								      const iPert<ltype,N> * __restrict__ lhs,
-								      const iPert<rtype,N> * __restrict__ rhs)
-  {
-    for(int c=0;c<N;c++){
-      ret->_internal[c]=lhs->_internal[c]+rhs->_internal[c];
-    }
-    return;
-  }
-  
   template<class vtype,class ltype,class rtype, int N> strong_inline  void add(iMatrix<vtype,N> * __restrict__ ret,
 									const iMatrix<ltype,N> * __restrict__ lhs,
 									const iMatrix<rtype,N> * __restrict__ rhs)
@@ -105,7 +94,7 @@ namespace Grid {
   }
 
 
-  // + operator for scalar, vector, perturbative series, matrix
+  // + operator for scalar, vector, matrix
   template<class ltype,class rtype>
     //strong_inline auto operator + (iScalar<ltype>& lhs,iScalar<rtype>&& rhs) -> iScalar<decltype(lhs._internal + rhs._internal)>
     strong_inline auto operator + (const iScalar<ltype>& lhs,const iScalar<rtype>& rhs) -> iScalar<decltype(lhs._internal + rhs._internal)>
@@ -119,14 +108,6 @@ namespace Grid {
     strong_inline auto operator + (const iVector<ltype,N>& lhs,const iVector<rtype,N>& rhs) ->iVector<decltype(lhs._internal[0]+rhs._internal[0]),N>
     {
       typedef iVector<decltype(lhs._internal[0]+rhs._internal[0]),N> ret_t;
-    ret_t ret;
-    add(&ret,&lhs,&rhs);
-    return ret;
-    }
-  template<class ltype,class rtype,int N>
-    strong_inline auto operator + (const iPert<ltype,N>& lhs,const iPert<rtype,N>& rhs) ->iPert<decltype(lhs._internal[0]+rhs._internal[0]),N>
-    {
-      typedef iPert<decltype(lhs._internal[0]+rhs._internal[0]),N> ret_t;
     ret_t ret;
     add(&ret,&lhs,&rhs);
     return ret;

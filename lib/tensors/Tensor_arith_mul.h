@@ -154,29 +154,29 @@ strong_inline void mult(iPert<rtype,N> * __restrict__ ret,const iPert<mtype,N> *
     return;
 }
 
-// check overloading... //$//
-template<class rtype,class vtype,class mtype,int N> strong_inline
-iVector<rtype,N> operator * (const iMatrix<mtype,N>& lhs,const iVector<vtype,N>& rhs)
-{
-    iVector<rtype,N> ret;
-    mult(&ret,&lhs,&rhs);
-    return ret;
-}
-template<class rtype,class vtype,class mtype,int N> strong_inline
-iVector<rtype,N> operator * (const iScalar<mtype>& lhs,const iVector<vtype,N>& rhs)
-{
-    iVector<rtype,N> ret;
-    mult(&ret,&lhs,&rhs);
-    return ret;
-}
-
-template<class rtype,class vtype,class mtype,int N> strong_inline
-iVector<rtype,N> operator * (const iVector<mtype,N>& lhs,const iScalar<vtype>& rhs)
-{
-    iVector<rtype,N> ret;
-    mult(&ret,&lhs,&rhs);
-    return ret;
-}
+// useless overloading (?)
+//template<class rtype,class vtype,class mtype,int N> strong_inline
+//iVector<rtype,N> operator * (const iMatrix<mtype,N>& lhs,const iVector<vtype,N>& rhs)
+//{
+//    iVector<rtype,N> ret;
+//    mult(&ret,&lhs,&rhs);
+//    return ret;
+//}
+//template<class rtype,class vtype,class mtype,int N> strong_inline
+//iVector<rtype,N> operator * (const iScalar<mtype>& lhs,const iVector<vtype,N>& rhs)
+//{
+//    iVector<rtype,N> ret;
+//    mult(&ret,&lhs,&rhs);
+//    return ret;
+//}
+//
+//template<class rtype,class vtype,class mtype,int N> strong_inline
+//iVector<rtype,N> operator * (const iVector<mtype,N>& lhs,const iScalar<vtype>& rhs)
+//{
+//    iVector<rtype,N> ret;
+//    mult(&ret,&lhs,&rhs);
+//    return ret;
+//}
 
 //////////////////////////////////////////////////////////////////
 // Divide by scalar

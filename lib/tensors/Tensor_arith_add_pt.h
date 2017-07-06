@@ -2,7 +2,7 @@
 
     Grid physics library, www.github.com/paboyle/Grid 
 
-    Source file: ./lib/tensors/Tensor_arith_add.h
+    Source file: ./lib/tensors/Tensor_arith_add_pt.h
 
     Copyright (C) 2015
 

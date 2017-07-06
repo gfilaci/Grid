@@ -2,7 +2,7 @@
 
     Grid physics library, www.github.com/paboyle/Grid 
 
-    Source file: ./lib/tensors/Tensor_arith_mac.h
+    Source file: ./lib/tensors/Tensor_arith_mac_pt.h
 
     Copyright (C) 2015
 
@@ -41,10 +41,6 @@ namespace Grid {
     ///////////////////////////
     // scal x pert = pert
     // pert x scal = pert
-    // vec x pert  = pert
-    // pert x vec  = pert
-    // mat x pert  = pert
-    // pert x mat  = pert
     // pert x pert = pert
     ///////////////////////////
 template<class rrtype,class ltype,class rtype,int N>
@@ -57,38 +53,6 @@ strong_inline void mac(iPert<rrtype,N> * __restrict__ ret,const iScalar<ltype> *
 }
 template<class rrtype,class ltype,class rtype,int N>
 strong_inline void mac(iPert<rrtype,N> * __restrict__ ret,const iPert<ltype,N> * __restrict__ lhs,const iScalar<rtype> * __restrict__ rhs)
-{
-    for(int c1=0;c1<N;c1++){
-        mac(&ret->_internal[c1],&lhs->_internal[c1],&rhs->_internal);
-    }
-    return;
-}
-template<class rrtype,class ltype,class rtype,int N,int Nv>
-strong_inline void mac(iPert<rrtype,N> * __restrict__ ret,const iVector<ltype,Nv> * __restrict__ lhs,const iPert<rtype,N> * __restrict__ rhs)
-{
-    for(int c1=0;c1<N;c1++){
-        mac(&ret->_internal[c1],&lhs->_internal,&rhs->_internal[c1]);
-    }
-    return;
-}
-template<class rrtype,class ltype,class rtype,int N,int Nv>
-strong_inline void mac(iPert<rrtype,N> * __restrict__ ret,const iPert<ltype,N> * __restrict__ lhs,const iVector<rtype,Nv> * __restrict__ rhs)
-{
-    for(int c1=0;c1<N;c1++){
-        mac(&ret->_internal[c1],&lhs->_internal[c1],&rhs->_internal);
-    }
-    return;
-}
-template<class rrtype,class ltype,class rtype,int N,int Nv>
-strong_inline void mac(iPert<rrtype,N> * __restrict__ ret,const iMatrix<ltype,Nv> * __restrict__ lhs,const iPert<rtype,N> * __restrict__ rhs)
-{
-    for(int c1=0;c1<N;c1++){
-        mac(&ret->_internal[c1],&lhs->_internal,&rhs->_internal[c1]);
-    }
-    return;
-}
-template<class rrtype,class ltype,class rtype,int N,int Nv>
-strong_inline void mac(iPert<rrtype,N> * __restrict__ ret,const iPert<ltype,N> * __restrict__ lhs,const iMatrix<rtype,Nv> * __restrict__ rhs)
 {
     for(int c1=0;c1<N;c1++){
         mac(&ret->_internal[c1],&lhs->_internal[c1],&rhs->_internal);

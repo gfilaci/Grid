@@ -27,6 +27,10 @@ See the full license in the file "LICENSE" in the top level distribution directo
     /*  END LEGAL */
 #include <Grid/Grid.h>
 
+#define loopv(n) for (int n=0; n<vsz; n++)
+#define loopm(n) for (int n=0; n<msz; n++)
+#define loopp(n) for (int n=0; n<psz; n++)
+
 using namespace std;
 
 static constexpr double tolerance = 1.0e-6;
@@ -39,7 +43,7 @@ const int psz = 8;
 template <typename Expr>
 void test(const Expr &a, const Expr &b)
 {
-  if (norm2(a - b) < tolerance)
+  if (norm2(a + (-b)) < tolerance)
   {
     std::cout << "[OK] ";
   }
@@ -53,24 +57,73 @@ void test(const Expr &a, const Expr &b)
   }
 }
 
+template <typename Expr>
+void print_test(const string &text, const Expr &a, const Expr &b)
+{
+    std::cout << GridLogMessage << text << " : ";
+    test(a,b);
+    std::cout << std::endl;
+}
 
 int main(int argc, char *argv[]) {
     
     Grid_init(&argc,&argv);
     
+    // initialise random number generator
     GridSerialRNG sRNG;
     sRNG.SeedFixedIntegers(std::vector<int>({(int)time(0)}));
     
-    iVector<iPert<iMatrix<Complex,msz>,psz>,vsz> S,P,T;
+    
+    // declare and generate random objects
+    iVector<iVector<iMatrix<Complex,msz>,psz>,vsz> S,P,T,Tman;
+    iScalar<iScalar<iScalar<Complex>>> sc;
+    iScalar<iScalar<iVector<Complex,msz>>> vec;
+    iMatrix<Complex,msz> mat;
     
     random(sRNG, S);
     random(sRNG, P);
+    random(sRNG, sc);
+    random(sRNG, vec);
+    random(sRNG, mat);
     
-    std::cout << GridLogMessage << "======== Test basic operations" << std::endl;
+    
+    // begin tests
+    std::cout << GridLogMessage << "======== Test summation" << std::endl;
     std::cout << GridLogMessage << "Checking sum : ";
-//    test(g*v, testg*v);
-    std::cout << std::endl;
     T = S + P;
+    loopv(i) loopp(j)
+    Tman(i)(j) = S(i)(j) + P(i)(j);
+    test(T,Tman);
+    std::cout << std::endl;
+    
+    std::cout << GridLogMessage << "======== Test new multiplication table" << std::endl;
+    
+    T = sc * S;
+    loopv(i) loopp(j)
+    Tman(i)(j) = sc._internal._internal * S(i)(j);
+    print_test("scal x pert",T,Tman);
+    
+//    iVector<iMatrix<Complex,3>,4> aa,bb;
+//    iScalar<iScalar<Complex> ss;
+//    bb = ss * aa;
+////    T = S * sc;
+//    loopv(i) loopp(j)
+//    Tman(i)(j) = S(i)(j) * sc._internal._internal;
+//    print_test("pert x scal",T,Tman);
+    
+//    T = vec * S;
+//    loopv(i) loopp(j)
+////    Tman(i)(j) = S(i)(j) * vec._internal._internal;
+//    print_test("pert x vec",T,Tman);
+    
+    
+    iScalar<iVector<Complex,6>> ss;
+    iVector<iVector<Complex,6>,10> bb;
+    iVector<iMatrix<Complex,6>,10> aa;
+//    iScalar<iVector<Complex,6>> ss;
+//    iVector<iMatrix<Complex,6>,5> aa,bb;
+    bb = aa*ss;
+    
     
     
     Grid_finalize();

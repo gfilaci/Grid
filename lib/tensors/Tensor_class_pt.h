@@ -1,6 +1,6 @@
 /*************************************************************************************
 Grid physics library, www.github.com/paboyle/Grid
-Source file: ./lib/tensors/Tensor_class.h
+Source file: ./lib/tensors/Tensor_class_pt.h
 Copyright (C) 2015
 
 Author: Gianluca Filaci <g.filaci@ed.ac.uk>

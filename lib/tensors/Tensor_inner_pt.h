@@ -2,7 +2,7 @@
 
     Grid physics library, www.github.com/paboyle/Grid 
 
-    Source file: ./lib/tensors/Tensor_inner.h
+    Source file: ./lib/tensors/Tensor_inner_pt.h
 
     Copyright (C) 2015
 

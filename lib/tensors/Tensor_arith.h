@@ -36,6 +36,7 @@ Author: Peter Boyle <paboyle@ph.ed.ac.uk>
 #include "Tensor_arith_mul.h"
 #include "Tensor_arith_mul_pt.h"
 #include "Tensor_arith_scalar.h"
+#include "Tensor_arith_rightmul.h"
 
 #endif
 

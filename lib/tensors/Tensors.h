@@ -39,6 +39,7 @@ Author: neo <cossu@post.kek.jp>
 #include <Grid/tensors/Tensor_outer.h>
 #include <Grid/tensors/Tensor_transpose.h>
 #include <Grid/tensors/Tensor_trace.h>
+#include <Grid/tensors/Tensor_trace_pt.h>
 #include <Grid/tensors/Tensor_index.h>
 #include <Grid/tensors/Tensor_Ta.h>
 #include <Grid/tensors/Tensor_determinant.h>
@@ -46,6 +47,7 @@ Author: neo <cossu@post.kek.jp>
 //#include <Grid/tensors/Tensor_peek.h>
 //#include <Grid/tensors/Tensor_poke.h>
 #include <Grid/tensors/Tensor_reality.h>
+#include <Grid/tensors/Tensor_reality_pt.h>
 #include <Grid/tensors/Tensor_unary.h>
 #include <Grid/tensors/Tensor_extract_merge.h>
 #include <Grid/tensors/Tensor_logical.h>

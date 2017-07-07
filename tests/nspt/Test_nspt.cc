@@ -35,10 +35,10 @@ using namespace std;
 
 static constexpr double tolerance = 1.0e-12;
 
-const int vsz = 10;
-const int msz = 9;
-const int psz = 8;
-
+const int vsz = 1;
+const int msz = 1;
+const int psz = 1;
+const Complex im(0,1);
 
 template <typename Expr>
 void test(const Expr &a, const Expr &b)
@@ -101,6 +101,7 @@ int main(int argc, char *argv[]) {
     
     // declare and generate random objects
     iVector<iPert<iMatrix<Complex,msz>,psz>,vsz> S,P,T,Tman;
+    iVector<iPert<iMatrix<double,msz>,psz>,vsz> Treim,Treimman;
     iScalar<iPert<iMatrix<Complex,msz>,psz>> Q;
     iScalar<iScalar<iScalar<Complex>>> sc;
     iScalar<iScalar<iVector<Complex,msz>>> vec,Tvec,Tvecman;
@@ -118,7 +119,6 @@ int main(int argc, char *argv[]) {
     
     std::cout << GridLogMessage << "======== Test sum" << std::endl;
     
-    zeroit(Tman);
     loopv(i) loopp(j)
     Tman(i)(j) = S(i)(j) + P(i)(j);
     T = S + P;
@@ -132,7 +132,6 @@ int main(int argc, char *argv[]) {
     
     std::cout << GridLogMessage << "======== Test subtraction" << std::endl;
     
-    zeroit(Tman);
     loopv(i) loopp(j)
     Tman(i)(j) = S(i)(j) - P(i)(j);
     T = S - P;
@@ -153,7 +152,6 @@ int main(int argc, char *argv[]) {
     print_test("vec x mat   (overloaded)",Tvec,Tvecman);
     
     
-    zeroit(Tman);
     loopv(i) loopp(j)
     Tman(i)(j) = sc._internal._internal * S(i)(j);
     T = sc * S;
@@ -163,7 +161,6 @@ int main(int argc, char *argv[]) {
     print_test("scal x pert (overloaded)",T,Tman);
     
     
-    zeroit(Tman);
     loopv(i) loopp(j)
     Tman(i)(j) = S(i)(j) * sc._internal._internal;
     T = S * sc;
@@ -190,7 +187,7 @@ int main(int argc, char *argv[]) {
     
     std::cout << GridLogMessage << "======== Test division by scalar" << std::endl;
     
-    zeroit(Tman);
+    
     loopv(i) loopp(j)
     Tman(i)(j) = S(i)(j) / sc._internal._internal;
     T = S / sc;
@@ -232,11 +229,56 @@ int main(int argc, char *argv[]) {
     Tcomplex = Pcomplex * mycomplex;
     loopp(i)
     Zcomplexres(i) = Tcomplex(i) - Tcomplexman(i);
-    print_test("pert x Complex          ",Zcomplexres);
+    print_test("pert x complex          ",Zcomplexres);
     Tcomplex = mycomplex * Pcomplex;
     loopp(i)
     Zcomplexres(i) = Tcomplex(i) - Tcomplexman(i);
-    print_test("Complex x pert          ",Zcomplexres);
+    print_test("complex x pert          ",Zcomplexres);
+    
+    
+    
+    std::cout << GridLogMessage << "======== Test trace" << std::endl;
+    iVector<iPert<iScalar<Complex>,psz>,vsz> Ttrace, Ttraceman;
+    loopv(i) loopp(j)
+    Ttraceman(i)(j) = trace(P(i)(j));
+    Ttrace = trace(P);
+    print_test("trace                   ",Ttrace,Ttraceman);
+    
+    
+    
+    std::cout << GridLogMessage << "======== Test reality" << std::endl;
+    
+    Tman = im * P;
+    timesI(T,P);
+    print_test("times I  (2 arguments)  ",T,Tman);
+    T = timesI(T);
+    print_test("times I  (1 argument)   ",T,-P);
+    
+    Tman = -im * P;
+    timesMinusI(T,P);
+    print_test("times -I (2 arguments)  ",T,Tman);
+    T = timesMinusI(T);
+    print_test("times -I (1 argument)   ",T,-P);
+    
+    loopv(i)loopp(j)
+    Tman(i)(j) = conjugate(P(i)(j));
+    T = conjugate(P);
+    print_test("complex conjugation     ",T,Tman);
+    
+    loopv(i)loopp(j)
+    Tman(i)(j) = adj(P(i)(j));
+    T = adj(P);
+    print_test("adjoint                 ",T,Tman);
+    
+    loopv(i)loopp(j)
+    Treimman(i)(j) = real(P(i)(j));
+    Treim = real(P);
+    print_test("real part               ",Treim,Treimman);
+    
+    loopv(i)loopp(j)
+    Treimman(i)(j) = imag(P(i)(j));
+    Treim = imag(P);
+    print_test("imaginary part          ",Treim,Treimman);
     
     
     Grid_finalize();

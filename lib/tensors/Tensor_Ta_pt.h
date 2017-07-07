@@ -2,13 +2,13 @@
 
     Grid physics library, www.github.com/paboyle/Grid 
 
-    Source file: ./lib/Tensors.h
+    Source file: ./lib/tensors/Tensor_Ta_pt.h
 
     Copyright (C) 2015
 
-Author: Azusa Yamaguchi <ayamaguc@staffmail.ed.ac.uk>
 Author: Peter Boyle <paboyle@ph.ed.ac.uk>
 Author: neo <cossu@post.kek.jp>
+Author: Gianluca Filaci <g.filaci@ed.ac.uk>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,30 +27,37 @@ Author: neo <cossu@post.kek.jp>
     See the full license in the file "LICENSE" in the top level distribution directory
     *************************************************************************************/
     /*  END LEGAL */
-#ifndef GRID_MATH_H
-#define GRID_MATH_H
+#ifndef GRID_MATH_TA_PT_H
+#define GRID_MATH_TA_PT_H
 
-#include <Grid/tensors/Tensor_traits.h>
-#include <Grid/tensors/Tensor_class.h>
-#include <Grid/tensors/Tensor_class_pt.h>
-#include <Grid/tensors/Tensor_arith.h>
-#include <Grid/tensors/Tensor_inner.h>
-#include <Grid/tensors/Tensor_inner_pt.h>
-#include <Grid/tensors/Tensor_outer.h>
-#include <Grid/tensors/Tensor_transpose.h>
-#include <Grid/tensors/Tensor_trace.h>
-#include <Grid/tensors/Tensor_trace_pt.h>
-#include <Grid/tensors/Tensor_index.h>
-#include <Grid/tensors/Tensor_Ta.h>
-#include <Grid/tensors/Tensor_Ta_pt.h>
-#include <Grid/tensors/Tensor_determinant.h>
-#include <Grid/tensors/Tensor_exp.h>
-//#include <Grid/tensors/Tensor_peek.h>
-//#include <Grid/tensors/Tensor_poke.h>
-#include <Grid/tensors/Tensor_reality.h>
-#include <Grid/tensors/Tensor_reality_pt.h>
-#include <Grid/tensors/Tensor_unary.h>
-#include <Grid/tensors/Tensor_extract_merge.h>
-#include <Grid/tensors/Tensor_logical.h>
 
+namespace Grid {
+
+  /////////////////////////////////////////////// 
+  // Ta function for perturbative series
+  ///////////////////////////////////////////////
+
+  template<class vtype,int N> inline iPert<vtype,N> Ta(const iPert<vtype,N>&r)
+    {
+      iPert<vtype,N> ret;
+      for(int i=0;i<N;i++){
+        ret._internal[i] = Ta(r._internal[i]);
+      }
+      return ret;
+    }
+
+  /////////////////////////////////////////////// 
+  // ProjectOnGroup function for perturbative series
+  /////////////////////////////////////////////// 
+
+  template<class vtype,int N> inline iPert<vtype,N> ProjectOnGroup(const iPert<vtype,N>&r)
+    {
+      iPert<vtype,N> ret;
+      for(int i=0;i<N;i++){
+        ret._internal[i] = ProjectOnGroup(r._internal[i]);
+      }
+      return ret;
+    }
+
+}
 #endif

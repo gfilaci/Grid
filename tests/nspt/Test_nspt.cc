@@ -35,9 +35,9 @@ using namespace std;
 
 static constexpr double tolerance = 1.0e-12;
 
-const int vsz = 1;
-const int msz = 1;
-const int psz = 1;
+const int vsz = 2;
+const int msz = 6;
+const int psz = 4;
 const Complex im(0,1);
 
 template <typename Expr>
@@ -279,6 +279,22 @@ int main(int argc, char *argv[]) {
     Treimman(i)(j) = imag(P(i)(j));
     Treim = imag(P);
     print_test("imaginary part          ",Treim,Treimman);
+    
+    
+    
+    std::cout << GridLogMessage << "======== Test projections" << std::endl;
+    
+    loopv(i)loopp(j)
+    Tman(i)(j) = Ta(P(i)(j));
+    T = Ta(P);
+    print_test("projection on algebra   ",T,Tman);
+
+// check projection on group not with a random matrix...
+//    loopv(i)loopp(j)
+//    Tman(i)(j) = ProjectOnGroup(P(i)(j));
+//    T = ProjectOnGroup(P);
+//    print_test("projection on group     ",T,Tman);
+    
     
     
     Grid_finalize();

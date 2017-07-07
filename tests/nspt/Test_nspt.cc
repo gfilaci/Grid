@@ -33,7 +33,7 @@ See the full license in the file "LICENSE" in the top level distribution directo
 
 using namespace std;
 
-static constexpr double tolerance = 1.0e-6;
+static constexpr double tolerance = 1.0e-12;
 
 const int vsz = 10;
 const int msz = 9;
@@ -43,7 +43,7 @@ const int psz = 8;
 template <typename Expr>
 void test(const Expr &a, const Expr &b)
 {
-  if (norm2(a + (-b)) < tolerance)
+  if (norm2(a - b) < tolerance)
   {
     std::cout << "[OK] ";
   }
@@ -58,10 +58,34 @@ void test(const Expr &a, const Expr &b)
 }
 
 template <typename Expr>
+void test(const Expr &a)
+{
+  if (norm2(a) < tolerance)
+  {
+    std::cout << "[OK] ";
+  }
+  else
+  {
+    std::cout << "[fail]" << std::endl;
+    std::cout << GridLogError << "a= " << a << std::endl;
+    std::cout << GridLogError << "does not vanish" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+template <typename Expr>
 void print_test(const string &text, const Expr &a, const Expr &b)
 {
     std::cout << GridLogMessage << text << " : ";
     test(a,b);
+    std::cout << std::endl;
+}
+
+template <typename Expr>
+void print_test(const string &text, const Expr &a)
+{
+    std::cout << GridLogMessage << text << " : ";
+    test(a);
     std::cout << std::endl;
 }
 
@@ -104,7 +128,19 @@ int main(int argc, char *argv[]) {
     T(j) = S(j) + P(j);
     print_test("sum         (overloaded)",T,Tman);
     
+    
+    
     std::cout << GridLogMessage << "======== Test subtraction" << std::endl;
+    
+    zeroit(Tman);
+    loopv(i) loopp(j)
+    Tman(i)(j) = S(i)(j) - P(i)(j);
+    T = S - P;
+    print_test("sub         (internal)  ",T,Tman);
+    
+    loopp(j)
+    T(j) = S(j) - P(j);
+    print_test("sub         (overloaded)",T,Tman);
     
     std::cout << GridLogMessage << "======== Test multiplication table" << std::endl;
     
@@ -167,7 +203,23 @@ int main(int argc, char *argv[]) {
     
     std::cout << GridLogMessage << "======== Test multiplication by fundamental type" << std::endl;
     // pert x int,double,cplx e viceversa
-    // ma prima fare sottrazione e cambiare la norma2 in test
+    iPert<double,psz> Pdouble,Tdouble,Tdoubleman;
+    iPert<iScalar<double>,psz> Zres;
+    random(sRNG,Pdouble);
+    double mydouble;
+    random(sRNG,mydouble);
+    
+    loopp(i)
+    Tdoubleman(i) = Pdouble(i) * mydouble;
+    Tdouble = Pdouble * mydouble;
+    loopp(i)
+    Zres(i) = Tdouble(i) - Tdoubleman(i);
+    print_test("pert x double           ",Zres);
+    Tdouble = mydouble * Pdouble;
+    loopp(i)
+    Zres(i) = Tdouble(i) - Tdoubleman(i);
+    print_test("double x pert           ",Zres);
+    
     
     Grid_finalize();
     return EXIT_SUCCESS;

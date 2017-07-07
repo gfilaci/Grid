@@ -202,9 +202,9 @@ int main(int argc, char *argv[]) {
     
     
     std::cout << GridLogMessage << "======== Test multiplication by fundamental type" << std::endl;
-    // pert x int,double,cplx e viceversa
+    
     iPert<double,psz> Pdouble,Tdouble,Tdoubleman;
-    iPert<iScalar<double>,psz> Zres;
+    iPert<iScalar<double>,psz> Zdoubleres;
     random(sRNG,Pdouble);
     double mydouble;
     random(sRNG,mydouble);
@@ -213,12 +213,30 @@ int main(int argc, char *argv[]) {
     Tdoubleman(i) = Pdouble(i) * mydouble;
     Tdouble = Pdouble * mydouble;
     loopp(i)
-    Zres(i) = Tdouble(i) - Tdoubleman(i);
-    print_test("pert x double           ",Zres);
+    Zdoubleres(i) = Tdouble(i) - Tdoubleman(i);
+    print_test("pert x double           ",Zdoubleres);
     Tdouble = mydouble * Pdouble;
     loopp(i)
-    Zres(i) = Tdouble(i) - Tdoubleman(i);
-    print_test("double x pert           ",Zres);
+    Zdoubleres(i) = Tdouble(i) - Tdoubleman(i);
+    print_test("double x pert           ",Zdoubleres);
+    
+    
+    iPert<ComplexD,psz> Pcomplex,Tcomplex,Tcomplexman;
+    iPert<iScalar<ComplexD>,psz> Zcomplexres;
+    random(sRNG,Pcomplex);
+    ComplexD mycomplex;
+    random(sRNG,mycomplex);
+    
+    loopp(i)
+    Tcomplexman(i) = Pcomplex(i) * mycomplex;
+    Tcomplex = Pcomplex * mycomplex;
+    loopp(i)
+    Zcomplexres(i) = Tcomplex(i) - Tcomplexman(i);
+    print_test("pert x Complex          ",Zcomplexres);
+    Tcomplex = mycomplex * Pcomplex;
+    loopp(i)
+    Zcomplexres(i) = Tcomplex(i) - Tcomplexman(i);
+    print_test("Complex x pert          ",Zcomplexres);
     
     
     Grid_finalize();

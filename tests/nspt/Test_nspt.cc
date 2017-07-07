@@ -74,8 +74,9 @@ int main(int argc, char *argv[]) {
     sRNG.SeedFixedIntegers(std::vector<int>({(int)time(0)}));
     
     
+    
     // declare and generate random objects
-    iVector<iPert<iMatrix<Complex,msz>,psz>,vsz> S,T,Tman,P;
+    iVector<iPert<iMatrix<Complex,msz>,psz>,vsz> S,P,T,Tman;
     iScalar<iPert<iMatrix<Complex,msz>,psz>> Q;
     iScalar<iScalar<iScalar<Complex>>> sc;
     iScalar<iScalar<iVector<Complex,msz>>> vec,Tvec,Tvecman;
@@ -103,6 +104,7 @@ int main(int argc, char *argv[]) {
     T(j) = S(j) + P(j);
     print_test("sum         (overloaded)",T,Tman);
     
+    std::cout << GridLogMessage << "======== Test subtraction" << std::endl;
     
     std::cout << GridLogMessage << "======== Test multiplication table" << std::endl;
     
@@ -148,6 +150,24 @@ int main(int argc, char *argv[]) {
     T(i) = S(i) * Q._internal;
     print_test("pert x pert (overloaded)",T,Tman);
     
+    
+    
+    std::cout << GridLogMessage << "======== Test division by scalar" << std::endl;
+    
+    zeroit(Tman);
+    loopv(i) loopp(j)
+    Tman(i)(j) = S(i)(j) / sc._internal._internal;
+    T = S / sc;
+    print_test("division    (internal)  ",T,Tman);
+    loopv(i)
+    T(i) = S(i) / sc._internal;
+    print_test("division    (overloaded)",T,Tman);
+    
+    
+    
+    std::cout << GridLogMessage << "======== Test multiplication by fundamental type" << std::endl;
+    // pert x int,double,cplx e viceversa
+    // ma prima fare sottrazione e cambiare la norma2 in test
     
     Grid_finalize();
     return EXIT_SUCCESS;

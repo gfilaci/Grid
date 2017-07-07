@@ -31,11 +31,13 @@ Author: Peter Boyle <paboyle@ph.ed.ac.uk>
 #include "Tensor_arith_add.h"
 #include "Tensor_arith_add_pt.h"
 #include "Tensor_arith_sub.h"
+#include "Tensor_arith_sub_pt.h"
 #include "Tensor_arith_mac.h"
 #include "Tensor_arith_mac_pt.h"
 #include "Tensor_arith_mul.h"
 #include "Tensor_arith_mul_pt.h"
 #include "Tensor_arith_scalar.h"
+#include "Tensor_arith_scalar_pt.h"
 #include "Tensor_arith_rightmul.h"
 
 #endif

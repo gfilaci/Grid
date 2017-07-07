@@ -6,6 +6,8 @@
 
     Copyright (C) 2015
 
+Author: Azusa Yamaguchi <ayamaguc@staffmail.ed.ac.uk>
+Author: Peter Boyle <paboyle@ph.ed.ac.uk>
 Author: Gianluca Filaci <g.filaci@ed.ac.uk>
 
     This program is free software; you can redistribute it and/or modify

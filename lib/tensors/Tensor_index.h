@@ -7,6 +7,7 @@
     Copyright (C) 2015
 
 Author: Peter Boyle <paboyle@ph.ed.ac.uk>
+Author: Gianluca Filaci <g.filaci@ed.ac.uk>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,18 +54,27 @@ class TensorIndexRecursion {
   ////////////////////////////////////////////////////
   template<class vtype>       static inline int indexRank(const iScalar<vtype> tmp)  { return TensorIndexRecursion<Level-1>::indexRank(tmp._internal);  }
   template<class vtype,int N> static inline int indexRank(const iVector<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::indexRank(tmp._internal[0]);  }
+  template<class vtype,int N> static inline int indexRank(const iPert<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::indexRank(tmp._internal[0]);  }
   template<class vtype,int N> static inline int indexRank(const iMatrix<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::indexRank(tmp._internal[0][0]);  }
 
   template<class vtype>       static inline int isScalar(const iScalar<vtype> tmp)  { return TensorIndexRecursion<Level-1>::isScalar(tmp._internal);  }
   template<class vtype,int N> static inline int isScalar(const iVector<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isScalar(tmp._internal[0]);  }
+  template<class vtype,int N> static inline int isScalar(const iPert<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isScalar(tmp._internal[0]);  }
   template<class vtype,int N> static inline int isScalar(const iMatrix<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isScalar(tmp._internal[0][0]);  }
 
   template<class vtype>       static inline int isVector(const iScalar<vtype> tmp)  { return TensorIndexRecursion<Level-1>::isVector(tmp._internal);  }
   template<class vtype,int N> static inline int isVector(const iVector<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isVector(tmp._internal[0]);  }
+  template<class vtype,int N> static inline int isVector(const iPert<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isVector(tmp._internal[0]);  }
   template<class vtype,int N> static inline int isVector(const iMatrix<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isVector(tmp._internal[0][0]);  }
 
+template<class vtype>       static inline int isPert(const iScalar<vtype> tmp)  { return TensorIndexRecursion<Level-1>::isPert(tmp._internal);  }
+  template<class vtype,int N> static inline int isPert(const iVector<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isPert(tmp._internal[0]);  }
+  template<class vtype,int N> static inline int isPert(const iPert<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isPert(tmp._internal[0]);  }
+  template<class vtype,int N> static inline int isPert(const iMatrix<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isPert(tmp._internal[0][0]);  }
+  
   template<class vtype>       static inline int isMatrix(const iScalar<vtype> tmp)  { return TensorIndexRecursion<Level-1>::isMatrix(tmp._internal);  }
   template<class vtype,int N> static inline int isMatrix(const iVector<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isMatrix(tmp._internal[0]);  }
+  template<class vtype,int N> static inline int isMatrix(const iPert<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isMatrix(tmp._internal[0]);  }
   template<class vtype,int N> static inline int isMatrix(const iMatrix<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isMatrix(tmp._internal[0][0]);  }
   ////////////////////////////////////////////////////
   // Trace
@@ -80,6 +90,15 @@ class TensorIndexRecursion {
   static auto traceIndex(const iVector<vtype,N> arg) ->  iVector<decltype(TensorIndexRecursion<Level-1>::traceIndex(arg._internal[0])),N> 
   {
     iVector<decltype(TensorIndexRecursion<Level-1>::traceIndex(arg._internal[0])),N> ret;
+    for(int i=0;i<N;i++){
+      ret._internal[i] = TensorIndexRecursion<Level-1>::traceIndex(arg._internal[i]);
+    }
+    return ret;
+  }
+  template<class vtype,int N>
+  static auto traceIndex(const iPert<vtype,N> arg) ->  iPert<decltype(TensorIndexRecursion<Level-1>::traceIndex(arg._internal[0])),N> 
+  {
+    iPert<decltype(TensorIndexRecursion<Level-1>::traceIndex(arg._internal[0])),N> ret;
     for(int i=0;i<N;i++){
       ret._internal[i] = TensorIndexRecursion<Level-1>::traceIndex(arg._internal[i]);
     }
@@ -123,9 +142,27 @@ class TensorIndexRecursion {
     return ret;
   }
   template<class vtype,int N>
+  static auto peekIndex(const iPert<vtype,N> arg,int ii) ->  iPert<decltype(TensorIndexRecursion<Level-1>::peekIndex(arg._internal[0],0)),N> 
+  {
+    iPert<decltype(TensorIndexRecursion<Level-1>::peekIndex(arg._internal[0],0)),N> ret;
+    for(int i=0;i<N;i++){
+      ret._internal[i] = TensorIndexRecursion<Level-1>::peekIndex(arg._internal[i],ii);
+    }
+    return ret;
+  }
+  template<class vtype,int N>
   static auto peekIndex(const iVector<vtype,N> arg,int ii,int jj) ->  iVector<decltype(TensorIndexRecursion<Level-1>::peekIndex(arg._internal[0],0,0)),N> 
   {
     iVector<decltype(TensorIndexRecursion<Level-1>::peekIndex(arg._internal[0],0,0)),N> ret;
+    for(int i=0;i<N;i++){
+      ret._internal[i] = TensorIndexRecursion<Level-1>::peekIndex(arg._internal[i],ii,jj);
+    }
+    return ret;
+  }
+  template<class vtype,int N>
+  static auto peekIndex(const iPert<vtype,N> arg,int ii,int jj) ->  iPert<decltype(TensorIndexRecursion<Level-1>::peekIndex(arg._internal[0],0,0)),N> 
+  {
+    iPert<decltype(TensorIndexRecursion<Level-1>::peekIndex(arg._internal[0],0,0)),N> ret;
     for(int i=0;i<N;i++){
       ret._internal[i] = TensorIndexRecursion<Level-1>::peekIndex(arg._internal[i],ii,jj);
     }
@@ -174,6 +211,13 @@ class TensorIndexRecursion {
 	TensorIndexRecursion<Level-1>::pokeIndex(ret._internal[ii],arg._internal[ii],i);
       }
     }
+    template<class vtype,int N> inline static 
+    void pokeIndex(iPert<vtype,N> &ret, const iPert<decltype(TensorIndexRecursion<Level-1>::peekIndex(ret._internal[0],0)),N> &arg, int i)
+    {
+      for(int ii=0;ii<N;ii++){
+	TensorIndexRecursion<Level-1>::pokeIndex(ret._internal[ii],arg._internal[ii],i);
+      }
+    }
   template<class vtype,int N> inline static 
     void pokeIndex(iVector<vtype,N> &ret, const iVector<decltype(TensorIndexRecursion<Level-1>::peekIndex(ret._internal[0],0)),N> &arg, int i,int j)
     {
@@ -181,7 +225,14 @@ class TensorIndexRecursion {
 	TensorIndexRecursion<Level-1>::pokeIndex(ret._internal[ii],arg._internal[ii],i,j);
       }
     }
-
+  template<class vtype,int N> inline static 
+    void pokeIndex(iPert<vtype,N> &ret, const iPert<decltype(TensorIndexRecursion<Level-1>::peekIndex(ret._internal[0],0)),N> &arg, int i,int j)
+    {
+      for(int ii=0;ii<N;ii++){
+	TensorIndexRecursion<Level-1>::pokeIndex(ret._internal[ii],arg._internal[ii],i,j);
+      }
+    }
+    
   template<class vtype,int N> inline static 
     void pokeIndex(iMatrix<vtype,N> &ret, const iMatrix<decltype(TensorIndexRecursion<Level-1>::peekIndex(ret._internal[0][0],0)),N> &arg, int i)
     {
@@ -219,6 +270,15 @@ class TensorIndexRecursion {
     return ret;
   }
   template<class vtype,int N>
+  static auto transposeIndex(const iPert<vtype,N> arg) ->  iPert<vtype,N> 
+  {
+    iPert<vtype,N> ret;
+    for(int i=0;i<N;i++){
+      ret._internal[i] = TensorIndexRecursion<Level-1>::transposeIndex(arg._internal[i]);
+    }
+    return ret;
+  }
+  template<class vtype,int N>
   static auto transposeIndex(const iMatrix<vtype,N> arg) ->  iMatrix<vtype,N> 
   {
     iMatrix<vtype,N> ret;
@@ -242,18 +302,27 @@ class TensorIndexRecursion<0> {
   ////////////////////////////////////////////////////
   template<class vtype>       static inline int indexRank(const iScalar<vtype> tmp)  { return 1; }
   template<class vtype,int N> static inline int indexRank(const iVector<vtype,N> tmp){ return N; }
+  template<class vtype,int N> static inline int indexRank(const iPert<vtype,N> tmp){ return N; }
   template<class vtype,int N> static inline int indexRank(const iMatrix<vtype,N> tmp){ return N; }
 
   template<class vtype>       static inline int isScalar(const iScalar<vtype> tmp)  { return true;}
   template<class vtype,int N> static inline int isScalar(const iVector<vtype,N> tmp){ return false;}
+  template<class vtype,int N> static inline int isScalar(const iPert<vtype,N> tmp){ return false;}
   template<class vtype,int N> static inline int isScalar(const iMatrix<vtype,N> tmp){ return false;}
 
   template<class vtype>       static inline int isVector(const iScalar<vtype> tmp)  { return false;}
   template<class vtype,int N> static inline int isVector(const iVector<vtype,N> tmp){ return true;}
+  template<class vtype,int N> static inline int isVector(const iPert<vtype,N> tmp){ return true;}
   template<class vtype,int N> static inline int isVector(const iMatrix<vtype,N> tmp){ return false;}
+
+  template<class vtype>       static inline int isPert(const iScalar<vtype> tmp)  { return false;}
+  template<class vtype,int N> static inline int isPert(const iVector<vtype,N> tmp){ return true;}
+  template<class vtype,int N> static inline int isPert(const iPert<vtype,N> tmp){ return true;}
+  template<class vtype,int N> static inline int isPert(const iMatrix<vtype,N> tmp){ return false;}
 
   template<class vtype>       static inline int isMatrix(const iScalar<vtype> tmp)  { return false;}
   template<class vtype,int N> static inline int isMatrix(const iVector<vtype,N> tmp){ return false;}
+  template<class vtype,int N> static inline int isMatrix(const iPert<vtype,N> tmp){ return false;}
   template<class vtype,int N> static inline int isMatrix(const iMatrix<vtype,N> tmp){ return true;}
 
   /////////////////////////////////////////
@@ -268,6 +337,16 @@ class TensorIndexRecursion<0> {
   }
   template<class vtype,int N>
   static auto traceIndex(const iVector<vtype,N> arg) ->  iScalar<RemoveCRV(arg._internal[0])>
+  {
+    iScalar<RemoveCRV(arg._internal[0])> ret;
+    ret._internal=zero;
+    for(int i=0;i<N;i++){
+      ret._internal = ret._internal+ arg._internal[i];
+    }
+    return ret;
+  }
+  template<class vtype,int N>
+  static auto traceIndex(const iPert<vtype,N> arg) ->  iScalar<RemoveCRV(arg._internal[0])>
   {
     iScalar<RemoveCRV(arg._internal[0])> ret;
     ret._internal=zero;
@@ -318,6 +397,13 @@ class TensorIndexRecursion<0> {
     return ret;
   }
   template<class vtype,int N>
+  static auto peekIndex(const iPert<vtype,N> arg,int ii) ->  iScalar<vtype>
+  {
+    iScalar<vtype> ret;
+    ret._internal = arg._internal[ii];
+    return ret;
+  }
+  template<class vtype,int N>
   static auto peekIndex(const iMatrix<vtype,N> arg,int ii,int jj) ->  iScalar<vtype>
   {
     iScalar<vtype> ret;
@@ -327,6 +413,12 @@ class TensorIndexRecursion<0> {
   // Vector poke, one index
   template<class vtype,int N> inline static 
     void pokeIndex(iVector<vtype,N> &ret, const iScalar<vtype> &arg,int i)
+    {
+      ret._internal[i] = arg._internal;
+    }
+  // Pert poke, one index
+  template<class vtype,int N> inline static 
+    void pokeIndex(iPert<vtype,N> &ret, const iScalar<vtype> &arg,int i)
     {
       ret._internal[i] = arg._internal;
     }

@@ -296,7 +296,19 @@ int main(int argc, char *argv[]) {
 //    print_test("projection on group     ",T,Tman);
     
     
-    
+    std::cout << GridLogMessage << "======== Test index" << std::endl;
+    cout<<"... work in progress ..."<<endl;
+    iMatrix<Complex,msz> boh;
+//    iVector<iMatrix<iScalar<Complex>,msz>,vsz> boh;    
+//    int aaaa = indexRank<1,Complex>();
+    transposeIndex<1,iMatrix>(boh);
+//    cout<<aaaaaa<<endl;
+
+
+
+
+
+
     Grid_finalize();
     return EXIT_SUCCESS;
 }

@@ -35,9 +35,10 @@ using namespace std;
 
 static constexpr double tolerance = 1.0e-12;
 
-const int vsz = 2;
-const int msz = 6;
-const int psz = 4;
+const int vsz = 1;
+const int msz = 2;
+const int psz = 1;
+
 const Complex im(0,1);
 
 template <typename Expr>
@@ -56,6 +57,23 @@ void test(const Expr &a, const Expr &b)
     exit(EXIT_FAILURE);
   }
 }
+
+void test(const int &a, const int &b)
+{
+  if (a == b)
+  {
+    std::cout << "[OK] ";
+  }
+  else
+  {
+    std::cout << "[fail]" << std::endl;
+    std::cout << GridLogError << "a= " << a << std::endl;
+    std::cout << GridLogError << "is different from " << std::endl;
+    std::cout << GridLogError << "b= " << b << std::endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
 
 template <typename Expr>
 void test(const Expr &a)
@@ -102,6 +120,7 @@ int main(int argc, char *argv[]) {
     // declare and generate random objects
     iVector<iPert<iMatrix<Complex,msz>,psz>,vsz> S,P,T,Tman;
     iVector<iPert<iMatrix<double,msz>,psz>,vsz> Treim,Treimman;
+    iVector<iScalar<iMatrix<Complex,msz>>,vsz> Ppeek,Ppeek2;
     iScalar<iPert<iMatrix<Complex,msz>,psz>> Q;
     iScalar<iScalar<iScalar<Complex>>> sc;
     iScalar<iScalar<iVector<Complex,msz>>> vec,Tvec,Tvecman;
@@ -122,11 +141,11 @@ int main(int argc, char *argv[]) {
     loopv(i) loopp(j)
     Tman(i)(j) = S(i)(j) + P(i)(j);
     T = S + P;
-    print_test("sum         (internal)  ",T,Tman);
+    print_test("sum         (internal)              ",T,Tman);
     
     loopp(j)
     T(j) = S(j) + P(j);
-    print_test("sum         (overloaded)",T,Tman);
+    print_test("sum         (overloaded)            ",T,Tman);
     
     
     
@@ -135,11 +154,11 @@ int main(int argc, char *argv[]) {
     loopv(i) loopp(j)
     Tman(i)(j) = S(i)(j) - P(i)(j);
     T = S - P;
-    print_test("sub         (internal)  ",T,Tman);
+    print_test("sub         (internal)              ",T,Tman);
     
     loopp(j)
     T(j) = S(j) - P(j);
-    print_test("sub         (overloaded)",T,Tman);
+    print_test("sub         (overloaded)            ",T,Tman);
     
     std::cout << GridLogMessage << "======== Test multiplication table" << std::endl;
     
@@ -147,27 +166,27 @@ int main(int argc, char *argv[]) {
     loopm(i) loopm(j)
     Tvecman._internal._internal(i) += vec._internal._internal(j) * mat._internal._internal(j,i);
     Tvec = vec * mat;
-    print_test("vec x mat   (internal)  ",Tvec,Tvecman);
+    print_test("vec x mat   (internal)              ",Tvec,Tvecman);
     Tvec._internal._internal = vec._internal._internal * mat._internal._internal;
-    print_test("vec x mat   (overloaded)",Tvec,Tvecman);
+    print_test("vec x mat   (overloaded)            ",Tvec,Tvecman);
     
     
     loopv(i) loopp(j)
     Tman(i)(j) = sc._internal._internal * S(i)(j);
     T = sc * S;
-    print_test("scal x pert (internal)  ",T,Tman);
+    print_test("scal x pert (internal)              ",T,Tman);
     loopv(i)
     T(i) = sc._internal * S(i);
-    print_test("scal x pert (overloaded)",T,Tman);
+    print_test("scal x pert (overloaded)            ",T,Tman);
     
     
     loopv(i) loopp(j)
     Tman(i)(j) = S(i)(j) * sc._internal._internal;
     T = S * sc;
-    print_test("pert x scal (internal)  ",T,Tman);
+    print_test("pert x scal (internal)              ",T,Tman);
     loopv(i)
     T(i) = S(i) * sc._internal;
-    print_test("pert x scal (overloaded)",T,Tman);
+    print_test("pert x scal (overloaded)            ",T,Tman);
     
     
     zeroit(Tman);
@@ -178,10 +197,10 @@ int main(int argc, char *argv[]) {
         }
     }
     T = S * Q;
-    print_test("pert x pert (internal)  ",T,Tman);
+    print_test("pert x pert (internal)              ",T,Tman);
     loopv(i)
     T(i) = S(i) * Q._internal;
-    print_test("pert x pert (overloaded)",T,Tman);
+    print_test("pert x pert (overloaded)            ",T,Tman);
     
     
     
@@ -191,10 +210,10 @@ int main(int argc, char *argv[]) {
     loopv(i) loopp(j)
     Tman(i)(j) = S(i)(j) / sc._internal._internal;
     T = S / sc;
-    print_test("division    (internal)  ",T,Tman);
+    print_test("division    (internal)              ",T,Tman);
     loopv(i)
     T(i) = S(i) / sc._internal;
-    print_test("division    (overloaded)",T,Tman);
+    print_test("division    (overloaded)            ",T,Tman);
     
     
     
@@ -211,11 +230,11 @@ int main(int argc, char *argv[]) {
     Tdouble = Pdouble * mydouble;
     loopp(i)
     Zdoubleres(i) = Tdouble(i) - Tdoubleman(i);
-    print_test("pert x double           ",Zdoubleres);
+    print_test("pert x double                       ",Zdoubleres);
     Tdouble = mydouble * Pdouble;
     loopp(i)
     Zdoubleres(i) = Tdouble(i) - Tdoubleman(i);
-    print_test("double x pert           ",Zdoubleres);
+    print_test("double x pert                       ",Zdoubleres);
     
     
     iPert<ComplexD,psz> Pcomplex,Tcomplex,Tcomplexman;
@@ -229,11 +248,11 @@ int main(int argc, char *argv[]) {
     Tcomplex = Pcomplex * mycomplex;
     loopp(i)
     Zcomplexres(i) = Tcomplex(i) - Tcomplexman(i);
-    print_test("pert x complex          ",Zcomplexres);
+    print_test("pert x complex                      ",Zcomplexres);
     Tcomplex = mycomplex * Pcomplex;
     loopp(i)
     Zcomplexres(i) = Tcomplex(i) - Tcomplexman(i);
-    print_test("complex x pert          ",Zcomplexres);
+    print_test("complex x pert                      ",Zcomplexres);
     
     
     
@@ -242,7 +261,7 @@ int main(int argc, char *argv[]) {
     loopv(i) loopp(j)
     Ttraceman(i)(j) = trace(P(i)(j));
     Ttrace = trace(P);
-    print_test("trace                   ",Ttrace,Ttraceman);
+    print_test("trace                               ",Ttrace,Ttraceman);
     
     
     
@@ -250,35 +269,35 @@ int main(int argc, char *argv[]) {
     
     Tman = im * P;
     timesI(T,P);
-    print_test("times I  (2 arguments)  ",T,Tman);
+    print_test("times I  (2 arguments)              ",T,Tman);
     T = timesI(T);
-    print_test("times I  (1 argument)   ",T,-P);
+    print_test("times I  (1 argument)               ",T,-P);
     
     Tman = -im * P;
     timesMinusI(T,P);
-    print_test("times -I (2 arguments)  ",T,Tman);
+    print_test("times -I (2 arguments)              ",T,Tman);
     T = timesMinusI(T);
-    print_test("times -I (1 argument)   ",T,-P);
+    print_test("times -I (1 argument)               ",T,-P);
     
     loopv(i)loopp(j)
     Tman(i)(j) = conjugate(P(i)(j));
     T = conjugate(P);
-    print_test("complex conjugation     ",T,Tman);
+    print_test("complex conjugation                 ",T,Tman);
     
     loopv(i)loopp(j)
     Tman(i)(j) = adj(P(i)(j));
     T = adj(P);
-    print_test("adjoint                 ",T,Tman);
+    print_test("adjoint                             ",T,Tman);
     
     loopv(i)loopp(j)
     Treimman(i)(j) = real(P(i)(j));
     Treim = real(P);
-    print_test("real part               ",Treim,Treimman);
+    print_test("real part                           ",Treim,Treimman);
     
     loopv(i)loopp(j)
     Treimman(i)(j) = imag(P(i)(j));
     Treim = imag(P);
-    print_test("imaginary part          ",Treim,Treimman);
+    print_test("imaginary part                      ",Treim,Treimman);
     
     
     
@@ -297,16 +316,30 @@ int main(int argc, char *argv[]) {
     
     
     std::cout << GridLogMessage << "======== Test index" << std::endl;
-    cout<<"... work in progress ..."<<endl;
-    iMatrix<Complex,msz> boh;
-//    iVector<iMatrix<iScalar<Complex>,msz>,vsz> boh;    
-//    int aaaa = indexRank<1,Complex>();
-    transposeIndex<1,iMatrix>(boh);
-//    cout<<aaaaaa<<endl;
-
-
-
-
+    
+    print_test("index rank                          ",indexRank<1,decltype(P)>(),psz);
+    print_test("iMatrix is iMatrix                  ",isMatrix<2,decltype(P)>(),1);
+    print_test("iPert is not iMatrix                ",isMatrix<1,decltype(P)>(),0);
+    print_test("iPert is iPert                      ",isPert<1,decltype(P)>(),1);
+    print_test("iScalar is not iPert                ",isPert<0,decltype(sc)>(),0);
+    print_test("trace index                         ",traceIndex<2>(P),trace(P));
+    // reminder:
+    // iVector<iPert<iMatrix<Complex,msz>,psz>,vsz> P;
+    // iVector<iScalar<iMatrix<Complex,msz>>,vsz> Ppeek;
+    // fill Ppeek with the 2nd perturbative order of P
+    loopv(i)
+    Ppeek(i)._internal = P(i)(2);
+    print_test("peek index                          ",peekIndex<1>(P,2),Ppeek);
+    // take Ppeek at level 1 and put it into the 0 component of T at level 1
+    pokeIndex<1>(T,Ppeek,0);
+    loopv(i)
+    Ppeek2(i)._internal = T(i)(0);
+    print_test("poke index                          ",Ppeek,Ppeek2);
+    loopv(i) loopp(j)
+    T(i)(j) = transpose(P(i)(j));
+    print_test("transpose index (not working?)      ",transposeIndex<2>(P),conjugate(adj((T))));
+    print_test("trace index                         ",traceIndex<2>(P),Ttraceman);
+    
 
 
     Grid_finalize();

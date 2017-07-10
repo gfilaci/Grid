@@ -67,7 +67,7 @@ class TensorIndexRecursion {
   template<class vtype,int N> static inline int isVector(const iPert<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isVector(tmp._internal[0]);  }
   template<class vtype,int N> static inline int isVector(const iMatrix<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isVector(tmp._internal[0][0]);  }
 
-template<class vtype>       static inline int isPert(const iScalar<vtype> tmp)  { return TensorIndexRecursion<Level-1>::isPert(tmp._internal);  }
+  template<class vtype>       static inline int isPert(const iScalar<vtype> tmp)  { return TensorIndexRecursion<Level-1>::isPert(tmp._internal);  }
   template<class vtype,int N> static inline int isPert(const iVector<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isPert(tmp._internal[0]);  }
   template<class vtype,int N> static inline int isPert(const iPert<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isPert(tmp._internal[0]);  }
   template<class vtype,int N> static inline int isPert(const iMatrix<vtype,N> tmp){ return TensorIndexRecursion<Level-1>::isPert(tmp._internal[0][0]);  }
@@ -312,11 +312,11 @@ class TensorIndexRecursion<0> {
 
   template<class vtype>       static inline int isVector(const iScalar<vtype> tmp)  { return false;}
   template<class vtype,int N> static inline int isVector(const iVector<vtype,N> tmp){ return true;}
-  template<class vtype,int N> static inline int isVector(const iPert<vtype,N> tmp){ return true;}
+  template<class vtype,int N> static inline int isVector(const iPert<vtype,N> tmp){ return false;}
   template<class vtype,int N> static inline int isVector(const iMatrix<vtype,N> tmp){ return false;}
 
   template<class vtype>       static inline int isPert(const iScalar<vtype> tmp)  { return false;}
-  template<class vtype,int N> static inline int isPert(const iVector<vtype,N> tmp){ return true;}
+  template<class vtype,int N> static inline int isPert(const iVector<vtype,N> tmp){ return false;}
   template<class vtype,int N> static inline int isPert(const iPert<vtype,N> tmp){ return true;}
   template<class vtype,int N> static inline int isPert(const iMatrix<vtype,N> tmp){ return false;}
 
@@ -449,6 +449,12 @@ template<int Level,class vtype> inline int isVector(void)
   vtype tmp;
   return TensorIndexRecursion<Level>::isVector(tmp);
 }
+template<int Level,class vtype> inline int isPert(void)
+{
+  vtype tmp;
+  return TensorIndexRecursion<Level>::isPert(tmp);
+}
+
 template<int Level,class vtype> inline int isMatrix(void)
 {
   vtype tmp;

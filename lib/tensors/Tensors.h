@@ -52,5 +52,6 @@ Author: neo <cossu@post.kek.jp>
 #include <Grid/tensors/Tensor_unary.h>
 #include <Grid/tensors/Tensor_extract_merge.h>
 #include <Grid/tensors/Tensor_logical.h>
+#include <Grid/tensors/Tensor_functions_pt.h>
 
 #endif

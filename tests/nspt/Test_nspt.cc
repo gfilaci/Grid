@@ -35,9 +35,9 @@ using namespace std;
 
 static constexpr double tolerance = 1.0e-12;
 
-const int vsz = 1;
-const int msz = 2;
-const int psz = 1;
+const int vsz = 10;
+const int msz = 9;
+const int psz = 8;
 
 const Complex im(0,1);
 
@@ -133,7 +133,6 @@ int main(int argc, char *argv[]) {
     random(sRNG, vec);
     random(sRNG, mat);
     
-    
     // BEGIN TESTS
     
     std::cout << GridLogMessage << "======== Test sum" << std::endl;
@@ -143,7 +142,7 @@ int main(int argc, char *argv[]) {
     T = S + P;
     print_test("sum         (internal)              ",T,Tman);
     
-    loopp(j)
+    loopv(j)
     T(j) = S(j) + P(j);
     print_test("sum         (overloaded)            ",T,Tman);
     
@@ -155,8 +154,7 @@ int main(int argc, char *argv[]) {
     Tman(i)(j) = S(i)(j) - P(i)(j);
     T = S - P;
     print_test("sub         (internal)              ",T,Tman);
-    
-    loopp(j)
+    loopv(j)
     T(j) = S(j) - P(j);
     print_test("sub         (overloaded)            ",T,Tman);
     
@@ -264,7 +262,6 @@ int main(int argc, char *argv[]) {
     print_test("trace                               ",Ttrace,Ttraceman);
     
     
-    
     std::cout << GridLogMessage << "======== Test reality" << std::endl;
     
     Tman = im * P;
@@ -314,7 +311,6 @@ int main(int argc, char *argv[]) {
 //    T = ProjectOnGroup(P);
 //    print_test("projection on group     ",T,Tman);
     
-    
     std::cout << GridLogMessage << "======== Test index" << std::endl;
     
     print_test("index rank                          ",indexRank<1,decltype(P)>(),psz);
@@ -340,8 +336,23 @@ int main(int argc, char *argv[]) {
     print_test("transpose index (not working?)      ",transposeIndex<2>(P),conjugate(adj((T))));
     print_test("trace index                         ",traceIndex<2>(P),Ttraceman);
     
-
-
+    
+    
+    std::cout << GridLogMessage << "======== Test perturbative functions" << std::endl;
+    iMatrix<Complex,msz> unit(1.0);
+    loopv(i){
+        zeroit(P(i)(0));
+        zeroit(Tman(i));
+        Tman(i)(0) = unit;
+        Tman(i) += P(i);
+        S(i) = P(i);
+        for(int k=2; k<psz; k++){
+            S(i) = (1./(double)k)*P(i)*S(i);
+            Tman(i) += S(i);
+        }
+    }
+    print_test("perturbative exponential            ",Exponentiate(P),Tman);
+    
     Grid_finalize();
     return EXIT_SUCCESS;
 }

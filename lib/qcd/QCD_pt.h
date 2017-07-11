@@ -41,6 +41,8 @@ namespace QCDpt {
     #define PertIndex      2
     #define ColourIndexPT  3
     
+    template<typename vtype> using iSinglet                       = iScalar<iScalar<iScalar<iScalar<vtype> > > >;
+    
     template<typename vtype> using iColourMatrix                  = iScalar<iScalar<iScalar<iMatrix<vtype, Nc> > > > ;
     template<typename vtype> using iLorentzColourMatrix           = iVector<iScalar<iScalar<iMatrix<vtype, Nc> > >, Nd > ;
     template<typename vtype> using iPertColourMatrix              = iScalar<iScalar<iPert<iMatrix<vtype, Nc>, Np> > > ;
@@ -56,351 +58,276 @@ namespace QCDpt {
     template<typename vtype> using iSpinPertColourMatrix          = iScalar<iVector<iPert<iMatrix<vtype, Nc>, Np>, Ns> >;
     
     
+    // singlets
+    
+    typedef iSinglet<Complex >                           TComplex;
+    typedef iSinglet<ComplexF>                           TComplexF;
+    typedef iSinglet<ComplexD>                           TComplexD;
+    
+    typedef iSinglet<vComplex >                          vTComplex ;
+    typedef iSinglet<vComplexF>                          vTComplexF;
+    typedef iSinglet<vComplexD>                          vTComplexD;
+    
+    typedef iSinglet<Real >                              TReal;
+    typedef iSinglet<RealF>                              TRealF;
+    typedef iSinglet<RealD>                              TRealD;
+    
+    typedef iSinglet<vReal >                             vTReal;
+    typedef iSinglet<vRealF>                             vTRealF;
+    typedef iSinglet<vRealD>                             vTRealD;
+    
+    typedef iSinglet<Integer >                           TInteger;
+    typedef iSinglet<vInteger>                           vTInteger;
+    
+    // gauge fields
     
     typedef iColourMatrix<Complex  >                     ColourMatrix;
     typedef iColourMatrix<ComplexF >                     ColourMatrixF;
     typedef iColourMatrix<ComplexD >                     ColourMatrixD;
     
+    typedef iColourMatrix<vComplex  >                    vColourMatrix;
+    typedef iColourMatrix<vComplexF >                    vColourMatrixF;
+    typedef iColourMatrix<vComplexD >                    vColourMatrixD;
+    
     typedef iLorentzColourMatrix<Complex  >              LorentzColourMatrix;
     typedef iLorentzColourMatrix<ComplexF >              LorentzColourMatrixF;
     typedef iLorentzColourMatrix<ComplexD >              LorentzColourMatrixD;
     
+    typedef iLorentzColourMatrix<vComplex  >             vLorentzColourMatrix;
+    typedef iLorentzColourMatrix<vComplexF >             vLorentzColourMatrixF;
+    typedef iLorentzColourMatrix<vComplexD >             vLorentzColourMatrixD;
+    
     typedef iPertColourMatrix<Complex  >                 PertColourMatrix;
     typedef iPertColourMatrix<ComplexF >                 PertColourMatrixF;
     typedef iPertColourMatrix<ComplexD >                 PertColourMatrixD;
+    
+    typedef iPertColourMatrix<vComplex  >                vPertColourMatrix;
+    typedef iPertColourMatrix<vComplexF >                vPertColourMatrixF;
+    typedef iPertColourMatrix<vComplexD >                vPertColourMatrixD;
     
     typedef iLorentzPertColourMatrix<Complex  >          LorentzPertColourMatrix;
     typedef iLorentzPertColourMatrix<ComplexF >          LorentzPertColourMatrixF;
     typedef iLorentzPertColourMatrix<ComplexD >          LorentzPertColourMatrixD;
     
+    typedef iLorentzPertColourMatrix<vComplex  >         vLorentzPertColourMatrix;
+    typedef iLorentzPertColourMatrix<vComplexF >         vLorentzPertColourMatrixF;
+    typedef iLorentzPertColourMatrix<vComplexD >         vLorentzPertColourMatrixD;
+    
+    // fermions without smell
     
     typedef iColourVector<Complex  >                     ColourVector;
     typedef iColourVector<ComplexF >                     ColourVectorF;
     typedef iColourVector<ComplexD >                     ColourVectorD;
     
+    typedef iColourVector<vComplex  >                    vColourVector;
+    typedef iColourVector<vComplexF >                    vColourVectorF;
+    typedef iColourVector<vComplexD >                    vColourVectorD;
+    
     typedef iSpinColourVector<Complex  >                 SpinColourVector;
     typedef iSpinColourVector<ComplexF >                 SpinColourVectorF;
     typedef iSpinColourVector<ComplexD >                 SpinColourVectorD;
+    
+    typedef iSpinColourVector<vComplex  >                vSpinColourVector;
+    typedef iSpinColourVector<vComplexF >                vSpinColourVectorF;
+    typedef iSpinColourVector<vComplexD >                vSpinColourVectorD;
     
     typedef iPertColourVector<Complex  >                 PertColourVector;
     typedef iPertColourVector<ComplexF >                 PertColourVectorF;
     typedef iPertColourVector<ComplexD >                 PertColourVectorD;
     
+    typedef iPertColourVector<vComplex  >                vPertColourVector;
+    typedef iPertColourVector<vComplexF >                vPertColourVectorF;
+    typedef iPertColourVector<vComplexD >                vPertColourVectorD;
+    
     typedef iSpinPertColourVector<Complex  >             SpinPertColourVector;
     typedef iSpinPertColourVector<ComplexF >             SpinPertColourVectorF;
     typedef iSpinPertColourVector<ComplexD >             SpinPertColourVectorD;
     
+    typedef iSpinPertColourVector<vComplex  >            vSpinPertColourVector;
+    typedef iSpinPertColourVector<vComplexF >            vSpinPertColourVectorF;
+    typedef iSpinPertColourVector<vComplexD >            vSpinPertColourVectorD;
+    
+    // fermions with smell
     
     typedef iSpinColourMatrix<Complex  >                 SpinColourMatrix;
     typedef iSpinColourMatrix<ComplexF >                 SpinColourMatrixF;
     typedef iSpinColourMatrix<ComplexD >                 SpinColourMatrixD;
     
+    typedef iSpinColourMatrix<vComplex  >                vSpinColourMatrix;
+    typedef iSpinColourMatrix<vComplexF >                vSpinColourMatrixF;
+    typedef iSpinColourMatrix<vComplexD >                vSpinColourMatrixD;
+    
     typedef iPertColourMatrix<Complex  >                 PertColourMatrix;
     typedef iPertColourMatrix<ComplexF >                 PertColourMatrixF;
     typedef iPertColourMatrix<ComplexD >                 PertColourMatrixD;
     
+    typedef iPertColourMatrix<vComplex  >                vPertColourMatrix;
+    typedef iPertColourMatrix<vComplexF >                vPertColourMatrixF;
+    typedef iPertColourMatrix<vComplexD >                vPertColourMatrixD;
+    
     typedef iSpinPertColourMatrix<Complex  >             SpinPertColourMatrix;
     typedef iSpinPertColourMatrix<ComplexF >             SpinPertColourMatrixF;
     typedef iSpinPertColourMatrix<ComplexD >             SpinPertColourMatrixD;
+    
+    typedef iSpinPertColourMatrix<vComplex  >            vSpinPertColourMatrix;
+    typedef iSpinPertColourMatrix<vComplexF >            vSpinPertColourMatrixF;
+    typedef iSpinPertColourMatrix<vComplexD >            vSpinPertColourMatrixD;
+    
+    
+    // lattice singlets
+    
+    typedef Lattice<vTComplex>                           LatticeComplex;
+    typedef Lattice<vTComplexF>                          LatticeComplexF;
+    typedef Lattice<vTComplexD>                          LatticeComplexD;
+    
+    typedef Lattice<vTReal>                              LatticeReal;
+    typedef Lattice<vTRealF>                             LatticeRealF;
+    typedef Lattice<vTRealD>                             LatticeRealD;
+    
+    typedef Lattice<vTInteger>                           LatticeInteger;
+    
+    // lattice gauge fields
+    
+    typedef Lattice<vColourMatrix>                       LatticeColourMatrix;
+    typedef Lattice<vColourMatrixF>                      LatticeColourMatrixF;
+    typedef Lattice<vColourMatrixD>                      LatticeColourMatrixD;
+    
+    typedef Lattice<vLorentzColourMatrix>                LatticeLorentzColourMatrix;
+    typedef Lattice<vLorentzColourMatrixF>               LatticeLorentzColourMatrixF;
+    typedef Lattice<vLorentzColourMatrixD>               LatticeLorentzColourMatrixD;
+    
+    typedef Lattice<vPertColourMatrix>                   LatticePertColourMatrix;
+    typedef Lattice<vPertColourMatrixF>                  LatticePertColourMatrixF;
+    typedef Lattice<vPertColourMatrixD>                  LatticePertColourMatrixD;
+    
+    typedef Lattice<vLorentzPertColourMatrix>            LatticeLorentzPertColourMatrix;
+    typedef Lattice<vLorentzPertColourMatrixF>           LatticeLorentzPertColourMatrixF;
+    typedef Lattice<vLorentzPertColourMatrixD>           LatticeLorentzPertColourMatrixD;
+    
+    // lattice fermions without smell
+    
+    typedef Lattice<vColourVector>                       LatticeColourVector;
+    typedef Lattice<vColourVectorF>                      LatticeColourVectorF;
+    typedef Lattice<vColourVectorD>                      LatticeColourVectorD;
+    
+    typedef Lattice<vSpinColourVector>                   LatticeSpinColourVector;
+    typedef Lattice<vSpinColourVectorF>                  LatticeSpinColourVectorF;
+    typedef Lattice<vSpinColourVectorD>                  LatticeSpinColourVectorD;
+    
+    typedef Lattice<vPertColourVector>                   LatticePertColourVector;
+    typedef Lattice<vPertColourVectorF>                  LatticePertColourVectorF;
+    typedef Lattice<vPertColourVectorD>                  LatticePertColourVectorD;
+    
+    typedef Lattice<vSpinPertColourVector>               LatticeSpinPertColourVector;
+    typedef Lattice<vSpinPertColourVectorF>              LatticeSpinPertColourVectorF;
+    typedef Lattice<vSpinPertColourVectorD>              LatticeSpinPertColourVectorD;
+    
+    // lattice fermions with smell
+    
+    typedef Lattice<vSpinColourMatrix>                   LatticeSpinColourMatrix;
+    typedef Lattice<vSpinColourMatrixF>                  LatticeSpinColourMatrixF;
+    typedef Lattice<vSpinColourMatrixD>                  LatticeSpinColourMatrixD;
+    
+    typedef Lattice<vPertColourMatrix>                   LatticePertColourMatrix;
+    typedef Lattice<vPertColourMatrixF>                  LatticePertColourMatrixF;
+    typedef Lattice<vPertColourMatrixD>                  LatticePertColourMatrixD;
+    
+    typedef Lattice<vSpinPertColourMatrix>               LatticeSpinPertColourMatrix;
+    typedef Lattice<vSpinPertColourMatrixF>              LatticeSpinPertColourMatrixF;
+    typedef Lattice<vSpinPertColourMatrixD>              LatticeSpinPertColourMatrixD;
+    
+    
+    
+    // Physical names
+    
+    typedef LatticeSpinPertColourMatrix                  LatticeFermion;
+    typedef LatticeSpinPertColourMatrixF                 LatticeFermionF;
+    typedef LatticeSpinPertColourMatrixD                 LatticeFermionD;
+    
+    typedef LatticeLorentzPertColourMatrix               LatticeGaugeField;
+    typedef LatticeLorentzPertColourMatrixF              LatticeGaugeFieldF;
+    typedef LatticeLorentzPertColourMatrixD              LatticeGaugeFieldD;
+    
+    //////////////////////////////////////////////////////////////////////////////
+    // Peek and Poke named after physics attributes
+    //////////////////////////////////////////////////////////////////////////////
+    
+    //colour
+    template<class vobj> auto peekColour(const vobj &rhs,int i) -> decltype(PeekIndex<ColourIndexPT>(rhs,0))
+    {
+      return PeekIndex<ColourIndexPT>(rhs,i);
+    }
+    template<class vobj> auto peekColour(const vobj &rhs,int i,int j) -> decltype(PeekIndex<ColourIndexPT>(rhs,0,0))
+    {
+      return PeekIndex<ColourIndexPT>(rhs,i,j);
+    }
+    template<class vobj> auto peekColour(const Lattice<vobj> &rhs,int i) -> decltype(PeekIndex<ColourIndexPT>(rhs,0))
+    {
+      return PeekIndex<ColourIndexPT>(rhs,i);
+    }
+    template<class vobj> auto peekColour(const Lattice<vobj> &rhs,int i,int j) -> decltype(PeekIndex<ColourIndexPT>(rhs,0,0))
+    {
+      return PeekIndex<ColourIndexPT>(rhs,i,j);
+    }
+    
 
+    //////////////////////////////////////////////
+    // Poke lattice
+    //////////////////////////////////////////////
+    template<class vobj> 
+      void pokeColour(Lattice<vobj> &lhs,
+              const Lattice<decltype(peekIndex<ColourIndexPT>(lhs._odata[0],0))> & rhs,
+              int i)
+    {
+      PokeIndex<ColourIndexPT>(lhs,rhs,i);
+    }
+    template<class vobj> 
+      void pokeColour(Lattice<vobj> &lhs,
+              const Lattice<decltype(peekIndex<ColourIndexPT>(lhs._odata[0],0,0))> & rhs,
+              int i,int j)
+    {
+      PokeIndex<ColourIndexPT>(lhs,rhs,i,j);
+    }
+    
+    //////////////////////////////////////////////
+    // Poke scalars
+    //////////////////////////////////////////////
+    
+    template<class vobj> void pokeColour(vobj &lhs,const decltype(peekIndex<ColourIndexPT>(lhs,0)) & rhs,int i)
+    {
+      pokeIndex<ColourIndexPT>(lhs,rhs,i);
+    }
+    template<class vobj> void pokeColour(vobj &lhs,const decltype(peekIndex<ColourIndexPT>(lhs,0,0)) & rhs,int i,int j)
+    {
+      pokeIndex<ColourIndexPT>(lhs,rhs,i,j);
+    }
+    
 
-//    // singlets
-//    typedef iSinglet<Complex >         TComplex;     // FIXME This is painful. Tensor singlet complex type.
-//    typedef iSinglet<ComplexF>         TComplexF;    // FIXME This is painful. Tensor singlet complex type.
-//    typedef iSinglet<ComplexD>         TComplexD;    // FIXME This is painful. Tensor singlet complex type.
-//
-//    typedef iSinglet<vComplex >        vTComplex ;   // what if we don't know the tensor structure
-//    typedef iSinglet<vComplexF>        vTComplexF;   // what if we don't know the tensor structure
-//    typedef iSinglet<vComplexD>        vTComplexD;   // what if we don't know the tensor structure
-//
-//    typedef iSinglet<Real >            TReal;        // Shouldn't need these; can I make it work without?
-//    typedef iSinglet<RealF>            TRealF;       // Shouldn't need these; can I make it work without?
-//    typedef iSinglet<RealD>            TRealD;       // Shouldn't need these; can I make it work without?
-//
-//    typedef iSinglet<vReal >           vTReal;      
-//    typedef iSinglet<vRealF>           vTRealF;      
-//    typedef iSinglet<vRealD>           vTRealD;      
-//
-//    typedef iSinglet<vInteger>         vTInteger;
-//    typedef iSinglet<Integer >         TInteger;
-//
-//
-//    // Lattices of these
-//    typedef Lattice<vColourMatrix>          LatticeColourMatrix;
-//    typedef Lattice<vColourMatrixF>         LatticeColourMatrixF;
-//    typedef Lattice<vColourMatrixD>         LatticeColourMatrixD;
-//
-//    typedef Lattice<vSpinMatrix>            LatticeSpinMatrix;
-//    typedef Lattice<vSpinMatrixF>           LatticeSpinMatrixF;
-//    typedef Lattice<vSpinMatrixD>           LatticeSpinMatrixD;
-//
-//    typedef Lattice<vSpinColourMatrix>      LatticeSpinColourMatrix;
-//    typedef Lattice<vSpinColourMatrixF>     LatticeSpinColourMatrixF;
-//    typedef Lattice<vSpinColourMatrixD>     LatticeSpinColourMatrixD;
-//
-//
-//    typedef Lattice<vLorentzColourMatrix>  LatticeLorentzColourMatrix;
-//    typedef Lattice<vLorentzColourMatrixF> LatticeLorentzColourMatrixF;
-//    typedef Lattice<vLorentzColourMatrixD> LatticeLorentzColourMatrixD;
-//
-//    // DoubleStored gauge field
-//    typedef Lattice<vDoubleStoredColourMatrix>  LatticeDoubleStoredColourMatrix;
-//    typedef Lattice<vDoubleStoredColourMatrixF> LatticeDoubleStoredColourMatrixF;
-//    typedef Lattice<vDoubleStoredColourMatrixD> LatticeDoubleStoredColourMatrixD;
-//
-//    typedef Lattice<vSpinVector>            LatticeSpinVector;
-//    typedef Lattice<vSpinVectorF>           LatticeSpinVectorF;
-//    typedef Lattice<vSpinVectorD>           LatticeSpinVectorD;
-//
-//    typedef Lattice<vColourVector>          LatticeColourVector;
-//    typedef Lattice<vColourVectorF>         LatticeColourVectorF;
-//    typedef Lattice<vColourVectorD>         LatticeColourVectorD;
-//
-//    typedef Lattice<vSpinColourVector>      LatticeSpinColourVector;
-//    typedef Lattice<vSpinColourVectorF>     LatticeSpinColourVectorF;
-//    typedef Lattice<vSpinColourVectorD>     LatticeSpinColourVectorD;
-//
-//    typedef Lattice<vHalfSpinVector>        LatticeHalfSpinVector;
-//    typedef Lattice<vHalfSpinVectorF>       LatticeHalfSpinVectorF;
-//    typedef Lattice<vHalfSpinVectorD>       LatticeHalfSpinVectorD;
-//
-//    typedef Lattice<vHalfSpinColourVector>  LatticeHalfSpinColourVector;
-//    typedef Lattice<vHalfSpinColourVectorF> LatticeHalfSpinColourVectorF;
-//    typedef Lattice<vHalfSpinColourVectorD> LatticeHalfSpinColourVectorD;
-//
-//    typedef Lattice<vTReal>            LatticeReal;
-//    typedef Lattice<vTRealF>           LatticeRealF;
-//    typedef Lattice<vTRealD>           LatticeRealD;
-//
-//    typedef Lattice<vTComplex>         LatticeComplex;
-//    typedef Lattice<vTComplexF>        LatticeComplexF;
-//    typedef Lattice<vTComplexD>        LatticeComplexD;
-//
-//    typedef Lattice<vTInteger>         LatticeInteger; // Predicates for "where"
-//
-//
-//    ///////////////////////////////////////////
-//    // Physical names for things
-//    ///////////////////////////////////////////
-//    typedef LatticeHalfSpinColourVector  LatticeHalfFermion;
-//    typedef LatticeHalfSpinColourVectorF LatticeHalfFermionF;
-//    typedef LatticeHalfSpinColourVectorF LatticeHalfFermionD;
-//
-//    typedef LatticeSpinColourVector      LatticeFermion;
-//    typedef LatticeSpinColourVectorF     LatticeFermionF;
-//    typedef LatticeSpinColourVectorD     LatticeFermionD;
-//
-//    typedef LatticeSpinColourMatrix                LatticePropagator;
-//    typedef LatticeSpinColourMatrixF               LatticePropagatorF;
-//    typedef LatticeSpinColourMatrixD               LatticePropagatorD;
-//
-//    typedef LatticeLorentzColourMatrix             LatticeGaugeField;
-//    typedef LatticeLorentzColourMatrixF            LatticeGaugeFieldF;
-//    typedef LatticeLorentzColourMatrixD            LatticeGaugeFieldD;
-//
-//    typedef LatticeDoubleStoredColourMatrix        LatticeDoubledGaugeField;
-//    typedef LatticeDoubleStoredColourMatrixF       LatticeDoubledGaugeFieldF;
-//    typedef LatticeDoubleStoredColourMatrixD       LatticeDoubledGaugeFieldD;
-//
-//    template<class GF> using LorentzScalar = Lattice<iScalar<typename GF::vector_object::element> >;
-//
-//    // Uhgg... typing this hurt  ;)
-//    // (my keyboard got burning hot when I typed this, must be the anti-Fermion)
-//    typedef Lattice<vColourVector>          LatticeStaggeredFermion;    
-//    typedef Lattice<vColourVectorF>         LatticeStaggeredFermionF;    
-//    typedef Lattice<vColourVectorD>         LatticeStaggeredFermionD;    
-//
-//    typedef Lattice<vColourMatrix>          LatticeStaggeredPropagator; 
-//    typedef Lattice<vColourMatrixF>         LatticeStaggeredPropagatorF; 
-//    typedef Lattice<vColourMatrixD>         LatticeStaggeredPropagatorD; 
-//
-//    //////////////////////////////////////////////////////////////////////////////
-//    // Peek and Poke named after physics attributes
-//    //////////////////////////////////////////////////////////////////////////////
-//
-//    //spin
-//    template<class vobj> auto peekSpin(const vobj &rhs,int i) -> decltype(PeekIndex<SpinIndex>(rhs,0))
-//    {
-//      return PeekIndex<SpinIndex>(rhs,i);
-//    }
-//    template<class vobj> auto peekSpin(const vobj &rhs,int i,int j) -> decltype(PeekIndex<SpinIndex>(rhs,0,0))
-//    {
-//      return PeekIndex<SpinIndex>(rhs,i,j);
-//    }
-//    template<class vobj> auto peekSpin(const Lattice<vobj> &rhs,int i) -> decltype(PeekIndex<SpinIndex>(rhs,0))
-//    {
-//      return PeekIndex<SpinIndex>(rhs,i);
-//    }
-//    template<class vobj> auto peekSpin(const Lattice<vobj> &rhs,int i,int j) -> decltype(PeekIndex<SpinIndex>(rhs,0,0))
-//    {
-//      return PeekIndex<SpinIndex>(rhs,i,j);
-//    }
-//    //colour
-//    template<class vobj> auto peekColour(const vobj &rhs,int i) -> decltype(PeekIndex<ColourIndex>(rhs,0))
-//    {
-//      return PeekIndex<ColourIndex>(rhs,i);
-//    }
-//    template<class vobj> auto peekColour(const vobj &rhs,int i,int j) -> decltype(PeekIndex<ColourIndex>(rhs,0,0))
-//    {
-//      return PeekIndex<ColourIndex>(rhs,i,j);
-//    }
-//    template<class vobj> auto peekColour(const Lattice<vobj> &rhs,int i) -> decltype(PeekIndex<ColourIndex>(rhs,0))
-//    {
-//      return PeekIndex<ColourIndex>(rhs,i);
-//    }
-//    template<class vobj> auto peekColour(const Lattice<vobj> &rhs,int i,int j) -> decltype(PeekIndex<ColourIndex>(rhs,0,0))
-//    {
-//      return PeekIndex<ColourIndex>(rhs,i,j);
-//    }
-//    //lorentz
-//    template<class vobj> auto peekLorentz(const vobj &rhs,int i) -> decltype(PeekIndex<LorentzIndex>(rhs,0))
-//    {
-//      return PeekIndex<LorentzIndex>(rhs,i);
-//    }
-//    template<class vobj> auto peekLorentz(const Lattice<vobj> &rhs,int i) -> decltype(PeekIndex<LorentzIndex>(rhs,0))
-//    {
-//      return PeekIndex<LorentzIndex>(rhs,i);
-//    }
-//
-//    //////////////////////////////////////////////
-//    // Poke lattice
-//    //////////////////////////////////////////////
-//    template<class vobj> 
-//      void pokeColour(Lattice<vobj> &lhs,
-//              const Lattice<decltype(peekIndex<ColourIndex>(lhs._odata[0],0))> & rhs,
-//              int i)
-//    {
-//      PokeIndex<ColourIndex>(lhs,rhs,i);
-//    }
-//    template<class vobj> 
-//      void pokeColour(Lattice<vobj> &lhs,
-//              const Lattice<decltype(peekIndex<ColourIndex>(lhs._odata[0],0,0))> & rhs,
-//              int i,int j)
-//    {
-//      PokeIndex<ColourIndex>(lhs,rhs,i,j);
-//    }
-//    template<class vobj> 
-//      void pokeSpin(Lattice<vobj> &lhs,
-//              const Lattice<decltype(peekIndex<SpinIndex>(lhs._odata[0],0))> & rhs,
-//              int i)
-//    {
-//      PokeIndex<SpinIndex>(lhs,rhs,i);
-//    }
-//    template<class vobj> 
-//      void pokeSpin(Lattice<vobj> &lhs,
-//              const Lattice<decltype(peekIndex<SpinIndex>(lhs._odata[0],0,0))> & rhs,
-//              int i,int j)
-//    {
-//      PokeIndex<SpinIndex>(lhs,rhs,i,j);
-//    }
-//    template<class vobj> 
-//      void pokeLorentz(Lattice<vobj> &lhs,
-//              const Lattice<decltype(peekIndex<LorentzIndex>(lhs._odata[0],0))> & rhs,
-//              int i)
-//    {
-//      PokeIndex<LorentzIndex>(lhs,rhs,i);
-//    }
-//
-//    //////////////////////////////////////////////
-//    // Poke scalars
-//    //////////////////////////////////////////////
-//    template<class vobj> void pokeSpin(vobj &lhs,const decltype(peekIndex<SpinIndex>(lhs,0)) & rhs,int i)
-//    {
-//      pokeIndex<SpinIndex>(lhs,rhs,i);
-//    }
-//    template<class vobj> void pokeSpin(vobj &lhs,const decltype(peekIndex<SpinIndex>(lhs,0,0)) & rhs,int i,int j)
-//    {
-//      pokeIndex<SpinIndex>(lhs,rhs,i,j);
-//    }
-//
-//    template<class vobj> void pokeColour(vobj &lhs,const decltype(peekIndex<ColourIndex>(lhs,0)) & rhs,int i)
-//    {
-//      pokeIndex<ColourIndex>(lhs,rhs,i);
-//    }
-//    template<class vobj> void pokeColour(vobj &lhs,const decltype(peekIndex<ColourIndex>(lhs,0,0)) & rhs,int i,int j)
-//    {
-//      pokeIndex<ColourIndex>(lhs,rhs,i,j);
-//    }
-//
-//    template<class vobj> void pokeLorentz(vobj &lhs,const decltype(peekIndex<LorentzIndex>(lhs,0)) & rhs,int i)
-//    {
-//      pokeIndex<LorentzIndex>(lhs,rhs,i);
-//    }
-//
-//    //////////////////////////////////////////////
-//    // Fermion <-> propagator assignements
-//    //////////////////////////////////////////////
-//    template <class Prop, class Ferm>
-//    void FermToProp(Prop &p, const Ferm &f, const int s, const int c)
-//    {
-//        for(int j = 0; j < Ns; ++j)
-//        {
-//            auto pjs = peekSpin(p, j, s);
-//            auto fj  = peekSpin(f, j);
-//            
-//            for(int i = 0; i < Nc; ++i)
-//            {
-//                pokeColour(pjs, peekColour(fj, i), i, c);
-//            }
-//            pokeSpin(p, pjs, j, s);
-//        }
-//    }
-//    
-//    template <class Prop, class Ferm>
-//    void PropToFerm(Ferm &f, const Prop &p, const int s, const int c)
-//    {
-//        for(int j = 0; j < Ns; ++j)
-//        {
-//            auto pjs = peekSpin(p, j, s);
-//            auto fj  = peekSpin(f, j);
-//            
-//            for(int i = 0; i < Nc; ++i)
-//            {
-//                pokeColour(fj, peekColour(pjs, i, c), i);
-//            }
-//            pokeSpin(f, fj, j);
-//        }
-//    }
-//    
-//    //////////////////////////////////////////////
-//    // transpose array and scalar
-//    //////////////////////////////////////////////
-//    template<int Index,class vobj> inline Lattice<vobj> transposeSpin(const Lattice<vobj> &lhs){
-//      return transposeIndex<SpinIndex>(lhs);
-//    }
-//    template<int Index,class vobj> inline Lattice<vobj> transposeColour(const Lattice<vobj> &lhs){
-//      return transposeIndex<ColourIndex>(lhs);
-//    }
-//    template<int Index,class vobj> inline vobj transposeSpin(const vobj &lhs){
-//      return transposeIndex<SpinIndex>(lhs);
-//    }
-//    template<int Index,class vobj> inline vobj transposeColour(const vobj &lhs){
-//      return transposeIndex<ColourIndex>(lhs);
-//    }
-//
-//    //////////////////////////////////////////
-//    // Trace lattice and non-lattice
-//    //////////////////////////////////////////
-//    template<int Index,class vobj>
-//    inline auto traceSpin(const Lattice<vobj> &lhs) -> Lattice<decltype(traceIndex<SpinIndex>(lhs._odata[0]))>
-//    {
-//      return traceIndex<SpinIndex>(lhs);
-//    }
-//    template<int Index,class vobj>
-//    inline auto traceColour(const Lattice<vobj> &lhs) -> Lattice<decltype(traceIndex<ColourIndex>(lhs._odata[0]))>
-//    {
-//      return traceIndex<ColourIndex>(lhs);
-//    }
-//    template<int Index,class vobj>
-//    inline auto traceSpin(const vobj &lhs) -> Lattice<decltype(traceIndex<SpinIndex>(lhs))>
-//    {
-//      return traceIndex<SpinIndex>(lhs);
-//    }
-//    template<int Index,class vobj>
-//    inline auto traceColour(const vobj &lhs) -> Lattice<decltype(traceIndex<ColourIndex>(lhs))>
-//    {
-//      return traceIndex<ColourIndex>(lhs);
-//    }
+    //////////////////////////////////////////////
+    // transpose array and scalar
+    //////////////////////////////////////////////
+    
+    template<int Index,class vobj> inline Lattice<vobj> transposeColour(const Lattice<vobj> &lhs){
+      return transposeIndex<ColourIndexPT>(lhs);
+    }
+    template<int Index,class vobj> inline vobj transposeColour(const vobj &lhs){
+      return transposeIndex<ColourIndexPT>(lhs);
+    }
+
+    //////////////////////////////////////////
+    // Trace lattice and non-lattice
+    //////////////////////////////////////////
+    
+    template<int Index,class vobj>
+    inline auto traceColour(const Lattice<vobj> &lhs) -> Lattice<decltype(traceIndex<ColourIndexPT>(lhs._odata[0]))>
+    {
+      return traceIndex<ColourIndexPT>(lhs);
+    }
+    template<int Index,class vobj>
+    inline auto traceColour(const vobj &lhs) -> Lattice<decltype(traceIndex<ColourIndexPT>(lhs))>
+    {
+      return traceIndex<ColourIndexPT>(lhs);
+    }
 
 }   //namespace QCDpt
 }   //namespace QCD

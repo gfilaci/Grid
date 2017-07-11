@@ -35,6 +35,7 @@ Author: paboyle <paboyle@ph.ed.ac.uk>
 /////////////////////////
 #include <Grid/GridCore.h>
 #include <Grid/qcd/QCD.h>
+#include <Grid/qcd/QCD_pt.h>
 #include <Grid/qcd/spin/Spin.h>
 #include <Grid/qcd/utils/Utils.h>
 #include <Grid/qcd/representations/Representations.h>

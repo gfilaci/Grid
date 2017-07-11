@@ -49,7 +49,14 @@ template<class vtype, int N> inline iVector<vtype, N> Exponentiate(const iVector
       return ret;
     }
 
-
+template<class vtype, int N> inline iMatrix<vtype, N> Exponentiate(const iMatrix<vtype,N>&r)
+    {
+      iMatrix<vtype, N> ret;
+      for (int i = 0; i < N; i++)
+        ret._internal[i] = Exponentiate(r._internal[i]);
+      return ret;
+    }
+    
 template<class vtype, int N> inline iPert<vtype, N> Exponentiate(const iPert<vtype,N> &P)
   {
       // ASSUMING P(0) = 0
@@ -63,7 +70,9 @@ template<class vtype, int N> inline iPert<vtype, N> Exponentiate(const iPert<vty
       for(int k=2; k<N; k++){
           zeroit(tmp);
           // i runs from 1 to N-1 (interval where P is defined)
-          for(int i=1; i<N; i++){
+          // but newtemp starts at order k-1
+          // so there is a contribution only for i<N+1-k
+          for(int i=1; i<N+1-k; i++){
               // j runs from k-1 to N-1 (interval where newtmp is defined)
               // but imposing i+j<N leads to j<N-i
               for(int j=k-1; j<N-i; j++){
@@ -74,6 +83,64 @@ template<class vtype, int N> inline iPert<vtype, N> Exponentiate(const iPert<vty
           
           newtmp = (1./(double)k) * tmp;
           ret += newtmp;
+      }
+      
+      return ret;
+  }
+  
+  ///////////////////////////////////////////////
+  // Logarithm of perturbative series
+  ///////////////////////////////////////////////
+  
+  template<class vtype> inline iScalar<vtype> Logarithm(const iScalar<vtype>&r)
+    {
+      iScalar<vtype> ret;
+      ret._internal = Logarithm(r._internal);
+      return ret;
+    }
+
+template<class vtype, int N> inline iVector<vtype, N> Logarithm(const iVector<vtype,N>&r)
+    {
+      iVector<vtype, N> ret;
+      for (int i = 0; i < N; i++)
+        ret._internal[i] = Logarithm(r._internal[i]);
+      return ret;
+    }
+
+template<class vtype, int N> inline iMatrix<vtype, N> Logarithm(const iMatrix<vtype,N>&r)
+    {
+      iMatrix<vtype, N> ret;
+      for (int i = 0; i < N; i++)
+        ret._internal[i] = Logarithm(r._internal[i]);
+      return ret;
+    }
+    
+template<class vtype, int N> inline iPert<vtype, N> Logarithm(const iPert<vtype,N> &P)
+  {
+      // ASSUMING P(0) = 1
+      iPert<vtype, N> ret(P), newtmp(P), tmp;
+      double factor, sign = 1.;
+      
+      zeroit(ret._internal[0]);
+      
+      for(int k=2; k<N; k++){
+          zeroit(tmp);
+          // i runs from 1 to N-1 (interval where P is defined)
+          // but newtemp starts at order k-1
+          // so there is a contribution only for i<N+1-k
+          for(int i=1; i<N+1-k; i++){
+              // j runs from k-1 to N-1 (interval where newtmp is defined)
+              // but imposing i+j<N leads to j<N-i
+              for(int j=k-1; j<N-i; j++){
+                  // now k<=i+k<N
+                  tmp._internal[i+j] += newtmp._internal[j] * P._internal[i];
+              }
+          }
+          
+          newtmp = tmp;
+          sign = -sign;
+          factor = sign/(double)k;
+          ret += factor * newtmp;
       }
       
       return ret;

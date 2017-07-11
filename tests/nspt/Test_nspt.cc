@@ -35,9 +35,9 @@ using namespace std;
 
 static constexpr double tolerance = 1.0e-12;
 
-const int vsz = 10;
-const int msz = 9;
-const int psz = 8;
+const int vsz = 1;
+const int msz = 3;
+const int psz = 5;
 
 const Complex im(0,1);
 
@@ -352,6 +352,28 @@ int main(int argc, char *argv[]) {
         }
     }
     print_test("perturbative exponential            ",Exponentiate(P),Tman);
+    loopv(i){
+        double sign = 1.;
+        zeroit(P(i)(0));
+        Tman(i) = P(i);
+        zeroit(Tman(i)(0));
+        S(i) = P(i);
+        for(int k=2; k<psz; k++){
+            S(i) = P(i)*S(i);
+            sign = -sign;
+            Tman(i) += sign*(1./(double)k)*S(i);
+        }
+        P(i)(0) = unit;
+    }
+    print_test("perturbative logarithm              ",Logarithm(P),Tman);
+    loopv(i)
+    P(i)(0) = unit;
+    print_test("exp(log) = identity                 ",Exponentiate(Logarithm(P)),P);
+    loopv(i)
+    zeroit(P(i)(0));
+    print_test("log(exp) = identity                 ",Logarithm(Exponentiate(P)),P);
+    
+    
     
     Grid_finalize();
     return EXIT_SUCCESS;

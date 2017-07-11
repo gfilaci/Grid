@@ -11,6 +11,7 @@ Author: Peter Boyle <paboyle@ph.ed.ac.uk>
 Author: Peter Boyle <peterboyle@Peters-MacBook-Pro-2.local>
 Author: neo <cossu@post.kek.jp>
 Author: paboyle <paboyle@ph.ed.ac.uk>
+Author: Gianluca Filaci <g.filaci@ed.ac.uk>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,124 +30,80 @@ Author: paboyle <paboyle@ph.ed.ac.uk>
     See the full license in the file "LICENSE" in the top level distribution directory
     *************************************************************************************/
     /*  END LEGAL */
-#ifndef GRID_QCD_BASE_H
-#define GRID_QCD_BASE_H
+#ifndef GRID_QCD_PT_BASE_H
+#define GRID_QCD_PT_BASE_H
 namespace Grid{
 namespace QCD {
+namespace QCDpt {
+    
+    static const int Np=7;
+    
+    #define PertIndex      2
+    #define ColourIndexPT  3
+    
+    template<typename vtype> using iColourMatrix                  = iScalar<iScalar<iScalar<iMatrix<vtype, Nc> > > > ;
+    template<typename vtype> using iLorentzColourMatrix           = iVector<iScalar<iScalar<iMatrix<vtype, Nc> > >, Nd > ;
+    template<typename vtype> using iPertColourMatrix              = iScalar<iScalar<iPert<iMatrix<vtype, Nc>, Np> > > ;
+    template<typename vtype> using iLorentzPertColourMatrix       = iVector<iScalar<iPert<iMatrix<vtype, Nc>, Np> >, Nd > ;
+    
+    template<typename vtype> using iColourVector                  = iScalar<iScalar<iScalar<iVector<vtype, Nc> > > >;
+    template<typename vtype> using iSpinColourVector              = iScalar<iVector<iScalar<iVector<vtype, Nc> >, Ns> >;
+    template<typename vtype> using iPertColourVector              = iScalar<iScalar<iPert<iVector<vtype, Nc>, Np> > >;
+    template<typename vtype> using iSpinPertColourVector          = iScalar<iVector<iPert<iVector<vtype, Nc>, Np>, Ns> >;
+    
+    template<typename vtype> using iSpinColourMatrix              = iScalar<iVector<iScalar<iMatrix<vtype, Nc> >, Ns> >;
+    template<typename vtype> using iPertColourMatrix              = iScalar<iScalar<iPert<iMatrix<vtype, Nc>, Np> > >;
+    template<typename vtype> using iSpinPertColourMatrix          = iScalar<iVector<iPert<iMatrix<vtype, Nc>, Np>, Ns> >;
+    
+    
+    
+    typedef iColourMatrix<Complex  >                     ColourMatrix;
+    typedef iColourMatrix<ComplexF >                     ColourMatrixF;
+    typedef iColourMatrix<ComplexD >                     ColourMatrixD;
+    
+    typedef iLorentzColourMatrix<Complex  >              LorentzColourMatrix;
+    typedef iLorentzColourMatrix<ComplexF >              LorentzColourMatrixF;
+    typedef iLorentzColourMatrix<ComplexD >              LorentzColourMatrixD;
+    
+    typedef iPertColourMatrix<Complex  >                 PertColourMatrix;
+    typedef iPertColourMatrix<ComplexF >                 PertColourMatrixF;
+    typedef iPertColourMatrix<ComplexD >                 PertColourMatrixD;
+    
+    typedef iLorentzPertColourMatrix<Complex  >          LorentzPertColourMatrix;
+    typedef iLorentzPertColourMatrix<ComplexF >          LorentzPertColourMatrixF;
+    typedef iLorentzPertColourMatrix<ComplexD >          LorentzPertColourMatrixD;
+    
+    
+    typedef iColourVector<Complex  >                     ColourVector;
+    typedef iColourVector<ComplexF >                     ColourVectorF;
+    typedef iColourVector<ComplexD >                     ColourVectorD;
+    
+    typedef iSpinColourVector<Complex  >                 SpinColourVector;
+    typedef iSpinColourVector<ComplexF >                 SpinColourVectorF;
+    typedef iSpinColourVector<ComplexD >                 SpinColourVectorD;
+    
+    typedef iPertColourVector<Complex  >                 PertColourVector;
+    typedef iPertColourVector<ComplexF >                 PertColourVectorF;
+    typedef iPertColourVector<ComplexD >                 PertColourVectorD;
+    
+    typedef iSpinPertColourVector<Complex  >             SpinPertColourVector;
+    typedef iSpinPertColourVector<ComplexF >             SpinPertColourVectorF;
+    typedef iSpinPertColourVector<ComplexD >             SpinPertColourVectorD;
+    
+    
+    typedef iSpinColourMatrix<Complex  >                 SpinColourMatrix;
+    typedef iSpinColourMatrix<ComplexF >                 SpinColourMatrixF;
+    typedef iSpinColourMatrix<ComplexD >                 SpinColourMatrixD;
+    
+    typedef iPertColourMatrix<Complex  >                 PertColourMatrix;
+    typedef iPertColourMatrix<ComplexF >                 PertColourMatrixF;
+    typedef iPertColourMatrix<ComplexD >                 PertColourMatrixD;
+    
+    typedef iSpinPertColourMatrix<Complex  >             SpinPertColourMatrix;
+    typedef iSpinPertColourMatrix<ComplexF >             SpinPertColourMatrixF;
+    typedef iSpinPertColourMatrix<ComplexD >             SpinPertColourMatrixD;
 
-    //
 
-//    #define ColourIndex  2
-//    #define SpinIndex    1
-//    #define LorentzIndex 0
-//    const int SpinorIndex = 2;
-//
-//    // s,sp,c,spc,lc
-//    template<typename vtype> using iSinglet                   = iScalar<iScalar<iScalar<vtype> > >;
-//    template<typename vtype> using iSpinMatrix                = iScalar<iMatrix<iScalar<vtype>, Ns> >;
-//    template<typename vtype> using iColourMatrix              = iScalar<iScalar<iMatrix<vtype, Nc> > > ;
-//    template<typename vtype> using iSpinColourMatrix          = iScalar<iMatrix<iMatrix<vtype, Nc>, Ns> >;
-//    template<typename vtype> using iLorentzColourMatrix       = iVector<iScalar<iMatrix<vtype, Nc> >, Nd > ;
-//    template<typename vtype> using iDoubleStoredColourMatrix  = iVector<iScalar<iMatrix<vtype, Nc> >, Nds > ;
-//    template<typename vtype> using iSpinVector                = iScalar<iVector<iScalar<vtype>, Ns> >;
-//    template<typename vtype> using iColourVector              = iScalar<iScalar<iVector<vtype, Nc> > >;
-//    template<typename vtype> using iSpinColourVector          = iScalar<iVector<iVector<vtype, Nc>, Ns> >;
-//    template<typename vtype> using iHalfSpinVector            = iScalar<iVector<iScalar<vtype>, Nhs> >;
-//    template<typename vtype> using iHalfSpinColourVector      = iScalar<iVector<iVector<vtype, Nc>, Nhs> >;
-//
-//    template<typename vtype> using iGparitySpinColourVector       = iVector<iVector<iVector<vtype, Nc>, Ns>, Ngp >;
-//    template<typename vtype> using iGparityHalfSpinColourVector   = iVector<iVector<iVector<vtype, Nc>, Nhs>, Ngp >;
-//
-//    // Spin matrix
-//    typedef iSpinMatrix<Complex  >          SpinMatrix;
-//    typedef iSpinMatrix<ComplexF >          SpinMatrixF;
-//    typedef iSpinMatrix<ComplexD >          SpinMatrixD;
-//
-//    typedef iSpinMatrix<vComplex >          vSpinMatrix;
-//    typedef iSpinMatrix<vComplexF>          vSpinMatrixF;
-//    typedef iSpinMatrix<vComplexD>          vSpinMatrixD;
-//
-//    // Colour Matrix
-//    typedef iColourMatrix<Complex  >        ColourMatrix;
-//    typedef iColourMatrix<ComplexF >        ColourMatrixF;
-//    typedef iColourMatrix<ComplexD >        ColourMatrixD;
-//
-//    typedef iColourMatrix<vComplex >        vColourMatrix;
-//    typedef iColourMatrix<vComplexF>        vColourMatrixF;
-//    typedef iColourMatrix<vComplexD>        vColourMatrixD;
-//
-//    // SpinColour matrix
-//    typedef iSpinColourMatrix<Complex  >    SpinColourMatrix;
-//    typedef iSpinColourMatrix<ComplexF >    SpinColourMatrixF;
-//    typedef iSpinColourMatrix<ComplexD >    SpinColourMatrixD;
-//
-//    typedef iSpinColourMatrix<vComplex >    vSpinColourMatrix;
-//    typedef iSpinColourMatrix<vComplexF>    vSpinColourMatrixF;
-//    typedef iSpinColourMatrix<vComplexD>    vSpinColourMatrixD;
-//
-//    // LorentzColour
-//    typedef iLorentzColourMatrix<Complex  > LorentzColourMatrix;
-//    typedef iLorentzColourMatrix<ComplexF > LorentzColourMatrixF;
-//    typedef iLorentzColourMatrix<ComplexD > LorentzColourMatrixD;
-//
-//    typedef iLorentzColourMatrix<vComplex > vLorentzColourMatrix;
-//    typedef iLorentzColourMatrix<vComplexF> vLorentzColourMatrixF;
-//    typedef iLorentzColourMatrix<vComplexD> vLorentzColourMatrixD;
-//
-//    // DoubleStored gauge field
-//    typedef iDoubleStoredColourMatrix<Complex  > DoubleStoredColourMatrix;
-//    typedef iDoubleStoredColourMatrix<ComplexF > DoubleStoredColourMatrixF;
-//    typedef iDoubleStoredColourMatrix<ComplexD > DoubleStoredColourMatrixD;
-//
-//    typedef iDoubleStoredColourMatrix<vComplex > vDoubleStoredColourMatrix;
-//    typedef iDoubleStoredColourMatrix<vComplexF> vDoubleStoredColourMatrixF;
-//    typedef iDoubleStoredColourMatrix<vComplexD> vDoubleStoredColourMatrixD;
-//
-//    // Spin vector
-//    typedef iSpinVector<Complex >           SpinVector;
-//    typedef iSpinVector<ComplexF>           SpinVectorF;
-//    typedef iSpinVector<ComplexD>           SpinVectorD;
-//
-//    typedef iSpinVector<vComplex >           vSpinVector;
-//    typedef iSpinVector<vComplexF>           vSpinVectorF;
-//    typedef iSpinVector<vComplexD>           vSpinVectorD;
-//
-//    // Colour vector
-//    typedef iColourVector<Complex >         ColourVector;
-//    typedef iColourVector<ComplexF>         ColourVectorF;
-//    typedef iColourVector<ComplexD>         ColourVectorD;
-//
-//    typedef iColourVector<vComplex >         vColourVector;
-//    typedef iColourVector<vComplexF>         vColourVectorF;
-//    typedef iColourVector<vComplexD>         vColourVectorD;
-//
-//    // SpinColourVector
-//    typedef iSpinColourVector<Complex >     SpinColourVector;
-//    typedef iSpinColourVector<ComplexF>     SpinColourVectorF;
-//    typedef iSpinColourVector<ComplexD>     SpinColourVectorD;
-//
-//    typedef iSpinColourVector<vComplex >     vSpinColourVector;
-//    typedef iSpinColourVector<vComplexF>     vSpinColourVectorF;
-//    typedef iSpinColourVector<vComplexD>     vSpinColourVectorD;
-//
-//    // HalfSpin vector
-//    typedef iHalfSpinVector<Complex >       HalfSpinVector;
-//    typedef iHalfSpinVector<ComplexF>       HalfSpinVectorF;
-//    typedef iHalfSpinVector<ComplexD>       HalfSpinVectorD;
-//
-//    typedef iHalfSpinVector<vComplex >       vHalfSpinVector;
-//    typedef iHalfSpinVector<vComplexF>       vHalfSpinVectorF;
-//    typedef iHalfSpinVector<vComplexD>       vHalfSpinVectorD;
-//
-//    // HalfSpinColour vector
-//    typedef iHalfSpinColourVector<Complex > HalfSpinColourVector;
-//    typedef iHalfSpinColourVector<ComplexF> HalfSpinColourVectorF;
-//    typedef iHalfSpinColourVector<ComplexD> HalfSpinColourVectorD;
-//    
-//    typedef iHalfSpinColourVector<vComplex > vHalfSpinColourVector;
-//    typedef iHalfSpinColourVector<vComplexF> vHalfSpinColourVectorF;
-//    typedef iHalfSpinColourVector<vComplexD> vHalfSpinColourVectorD;
-//    
 //    // singlets
 //    typedef iSinglet<Complex >         TComplex;     // FIXME This is painful. Tensor singlet complex type.
 //    typedef iSinglet<ComplexF>         TComplexF;    // FIXME This is painful. Tensor singlet complex type.
@@ -445,41 +402,8 @@ namespace QCD {
 //      return traceIndex<ColourIndex>(lhs);
 //    }
 
+}   //namespace QCDpt
 }   //namespace QCD
 } // Grid
-
-/*
-<<<<<<< HEAD
-#include <Grid/qcd/utils/SpaceTimeGrid.h>
-#include <Grid/qcd/spin/Dirac.h>
-#include <Grid/qcd/spin/TwoSpinor.h>
-#include <Grid/qcd/utils/LinalgUtils.h>
-#include <Grid/qcd/utils/CovariantCshift.h>
-
-// Include representations  
-#include <Grid/qcd/utils/SUn.h>
-#include <Grid/qcd/utils/SUnAdjoint.h>
-#include <Grid/qcd/utils/SUnTwoIndex.h>
-#include <Grid/qcd/representations/hmc_types.h>
-
-// Scalar field
-#include <Grid/qcd/utils/ScalarObjs.h>
-
-#include <Grid/qcd/action/Actions.h>
-
-#include <Grid/qcd/smearing/Smearing.h>
-
-#include <Grid/qcd/hmc/integrators/Integrator.h>
-#include <Grid/qcd/hmc/integrators/Integrator_algorithm.h>
-#include <Grid/qcd/observables/hmc_observable.h>
-#include <Grid/qcd/hmc/HMC.h>
-
-
-//#include <Grid/qcd/modules/mods.h>
-=======
-
->>>>>>> develop
-*/
-
 
 #endif

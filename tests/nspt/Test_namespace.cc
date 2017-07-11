@@ -55,18 +55,9 @@ int main(int argc, char *argv[]) {
     U = ProjectOnGroup(U);
     
     double beta = 1.0;
-//    WilsonGaugeActionR Action(beta);
+    WilsonGaugeActionR Action(beta);
 //    Action.deriv(U,F);
-
-    RealD factor = 0.5 * beta / RealD(Nc);
-//
-//    
-//    for (int mu = 0; mu < Nd; mu++) {
-//        WilsonLoops<Gimpl>::StapleMult(dSdU_mu, U, mu);
-//        F = Ta(dSdU_mu) * factor;
-//        PokeIndex<LorentzIndex>(dSdU, dSdU_mu, mu);
-//    }
-//    
+    
     
     
     Grid_finalize();

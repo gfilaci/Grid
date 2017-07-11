@@ -297,20 +297,6 @@ int main(int argc, char *argv[]) {
     print_test("imaginary part                      ",Treim,Treimman);
     
     
-    
-    std::cout << GridLogMessage << "======== Test projections" << std::endl;
-    
-    loopv(i)loopp(j)
-    Tman(i)(j) = Ta(P(i)(j));
-    T = Ta(P);
-    print_test("projection on algebra   ",T,Tman);
-
-// check projection on group not with a random matrix...
-//    loopv(i)loopp(j)
-//    Tman(i)(j) = ProjectOnGroup(P(i)(j));
-//    T = ProjectOnGroup(P);
-//    print_test("projection on group     ",T,Tman);
-    
     std::cout << GridLogMessage << "======== Test index" << std::endl;
     
     print_test("index rank                          ",indexRank<1,decltype(P)>(),psz);
@@ -374,6 +360,25 @@ int main(int argc, char *argv[]) {
     print_test("log(exp) = identity                 ",Logarithm(Exponentiate(P)),P);
     
     
+    std::cout << GridLogMessage << "======== Test projections" << std::endl;
+    
+    loopv(i)loopp(j)
+    Tman(i)(j) = Ta(P(i)(j));
+    T = Ta(P);
+    print_test("projection on algebra               ",T,Tman);
+    
+    loopv(i)
+    P(i)(0) = unit;
+    zeroit(Tman);
+    loopv(i)
+    Tman(i)(0) = unit;
+    T = ProjectOnGroup(P);
+    loopv(i)
+    T(i) = T(i)*adj(T(i));
+    print_test("projection on group                 ",T,Tman);
+
+
+
     
     Grid_finalize();
     return EXIT_SUCCESS;

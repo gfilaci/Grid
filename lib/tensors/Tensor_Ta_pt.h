@@ -52,11 +52,14 @@ namespace Grid {
 
   template<class vtype,int N> inline iPert<vtype,N> ProjectOnGroup(const iPert<vtype,N>&r)
     {
-      iPert<vtype,N> ret;
-      for(int i=0;i<N;i++){
-        ret._internal[i] = ProjectOnGroup(r._internal[i]);
-      }
-      return ret;
+      iPert<vtype,N> ret(r);
+      
+      // force the expansion to start from the identity...
+      typedef vtype mytype;
+      mytype unit(1.0);
+      ret._internal[0] = unit;
+      
+      return Exponentiate(Ta(Logarithm(ret)));
     }
 
 }

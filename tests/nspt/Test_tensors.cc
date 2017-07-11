@@ -35,9 +35,9 @@ using namespace std;
 
 static constexpr double tolerance = 1.0e-12;
 
-const int vsz = 1;
-const int msz = 3;
-const int psz = 5;
+const int vsz = 10;
+const int msz = 9;
+const int psz = 8;
 
 const Complex im(0,1);
 

@@ -240,19 +240,19 @@ namespace QCDpt {
     
     // Physical names
     
-    typedef LatticeSpinPertColourMatrix                  LatticeFermion;
-    typedef LatticeSpinPertColourMatrixF                 LatticeFermionF;
-    typedef LatticeSpinPertColourMatrixD                 LatticeFermionD;
-    
     typedef LatticeLorentzPertColourMatrix               LatticeGaugeField;
     typedef LatticeLorentzPertColourMatrixF              LatticeGaugeFieldF;
     typedef LatticeLorentzPertColourMatrixD              LatticeGaugeFieldD;
     
+    typedef LatticeSpinPertColourMatrix                  LatticeFermion;
+    typedef LatticeSpinPertColourMatrixF                 LatticeFermionF;
+    typedef LatticeSpinPertColourMatrixD                 LatticeFermionD;
+    
+    
     //////////////////////////////////////////////////////////////////////////////
-    // Peek and Poke named after physics attributes
+    // Redefine templates leaning on ColourIndex attribute
     //////////////////////////////////////////////////////////////////////////////
     
-    //colour
     template<class vobj> auto peekColour(const vobj &rhs,int i) -> decltype(PeekIndex<ColourIndexPT>(rhs,0))
     {
       return PeekIndex<ColourIndexPT>(rhs,i);
@@ -270,11 +270,20 @@ namespace QCDpt {
       return PeekIndex<ColourIndexPT>(rhs,i,j);
     }
     
-
-    //////////////////////////////////////////////
-    // Poke lattice
-    //////////////////////////////////////////////
-    template<class vobj> 
+    template<class vobj> auto peekPert(const vobj &rhs,int i) -> decltype(PeekIndex<PertIndex>(rhs,0))
+    {
+      return PeekIndex<PertIndex>(rhs,i);
+    }
+    
+    template<class vobj> auto peekPert(const Lattice<vobj> &rhs,int i) -> decltype(PeekIndex<PertIndex>(rhs,0))
+    {
+      return PeekIndex<PertIndex>(rhs,i);
+    }
+    
+    
+    
+    
+    template<class vobj>
       void pokeColour(Lattice<vobj> &lhs,
               const Lattice<decltype(peekIndex<ColourIndexPT>(lhs._odata[0],0))> & rhs,
               int i)
@@ -289,10 +298,6 @@ namespace QCDpt {
       PokeIndex<ColourIndexPT>(lhs,rhs,i,j);
     }
     
-    //////////////////////////////////////////////
-    // Poke scalars
-    //////////////////////////////////////////////
-    
     template<class vobj> void pokeColour(vobj &lhs,const decltype(peekIndex<ColourIndexPT>(lhs,0)) & rhs,int i)
     {
       pokeIndex<ColourIndexPT>(lhs,rhs,i);
@@ -302,10 +307,20 @@ namespace QCDpt {
       pokeIndex<ColourIndexPT>(lhs,rhs,i,j);
     }
     
-
-    //////////////////////////////////////////////
-    // transpose array and scalar
-    //////////////////////////////////////////////
+    template<class vobj>
+      void pokePert(Lattice<vobj> &lhs,
+              const Lattice<decltype(peekIndex<PertIndex>(lhs._odata[0],0))> & rhs,
+              int i)
+    {
+      PokeIndex<PertIndex>(lhs,rhs,i);
+    }
+    template<class vobj> void pokePert(vobj &lhs,const decltype(peekIndex<PertIndex>(lhs,0)) & rhs,int i)
+    {
+      pokeIndex<PertIndex>(lhs,rhs,i);
+    }
+    
+    
+    
     
     template<int Index,class vobj> inline Lattice<vobj> transposeColour(const Lattice<vobj> &lhs){
       return transposeIndex<ColourIndexPT>(lhs);
@@ -313,10 +328,6 @@ namespace QCDpt {
     template<int Index,class vobj> inline vobj transposeColour(const vobj &lhs){
       return transposeIndex<ColourIndexPT>(lhs);
     }
-
-    //////////////////////////////////////////
-    // Trace lattice and non-lattice
-    //////////////////////////////////////////
     
     template<int Index,class vobj>
     inline auto traceColour(const Lattice<vobj> &lhs) -> Lattice<decltype(traceIndex<ColourIndexPT>(lhs._odata[0]))>

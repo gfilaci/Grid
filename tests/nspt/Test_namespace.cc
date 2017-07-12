@@ -61,8 +61,8 @@ int main(int argc, char *argv[]) {
 /////////////////////////////////////////////////////////
 /////////////////// new gauge implementation and attributes
 /////////////////////////////////////////////////////////
-    GaugeImplTypes_pt<vComplex, Nc> boh;
-    cout<<boh.isPerturbative()<<endl;
+    GaugeImplTypes<vComplex, Nc> boh;
+    cout<<isPerturbative<decltype(boh)>::value<<endl;
     
     QCDpt::LatticeGaugeField U(&Grid);
     QCDpt::LatticeGaugeField F(&Grid);

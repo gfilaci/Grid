@@ -30,6 +30,7 @@ directory
 #define GRID_QCD_GAUGE_IMPLEMENTATIONS_H
 
 #include "GaugeImplTypes.h"
+#include "GaugeImplTypes_pt.h"
 
 namespace Grid {
 namespace QCD {

@@ -50,23 +50,24 @@ int main(int argc, char *argv[]) {
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
 
 
-    LatticeGaugeField s(&Grid);
+//    QCDpt::LatticeGaugeField s(&Grid);
 //    cout<<s<<endl;
-    cout<<peekColour(s,0,0)<<endl;
+//    cout<<peekColour(s,0,0)<<endl;
 //    cout<<peekIndex<ColourIndex>(s,0,0)<<endl;
     
-//    QCDpt::LatticeGaugeField U(&Grid);
-//    QCDpt::LatticeGaugeField F(&Grid);
-//    gaussian(pRNG,U);
-//    U = ProjectOnGroup(U);
-//    
-//    double beta = 1.0;
+    QCDpt::LatticeGaugeField U(&Grid);
+    QCDpt::LatticeGaugeField F(&Grid);
+    gaussian(pRNG,U);
+    U = ProjectOnGroup(U);
+//
+    double beta = 1.0;
 //    WilsonGaugeActionR Action(beta);
-//    Action.deriv(U,F);
+//    WilsonGaugeAction<PeriodicGimplR> Action(beta);
+//    WilsonGaugeAction<PeriodicGaugeImpl<GimplTypesR>> Action(beta);
+    WilsonGaugeAction<PeriodicGaugeImpl<GaugeImplTypes_pt<vComplex, Nc>>> Action(beta);
     
-//    PertColourMatrix A;
-//    cout<<peekColour(A,1)<<endl;
-    
+    Action.deriv(U,F);
+    cout<<F<<endl;
     
     Grid_finalize();
     return EXIT_SUCCESS;

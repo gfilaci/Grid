@@ -135,6 +135,8 @@ public:
   static inline void ColdConfiguration(GridParallelRNG &pRNG, Field &U) {
     SU<Nc>::ColdConfiguration(pRNG, U);
   }
+  
+  static inline bool isPerturbative(void) { return false; }
 };
 
 

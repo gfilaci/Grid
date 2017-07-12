@@ -137,20 +137,26 @@ public:
     SU<Nc>::ColdConfiguration(pRNG, U);
   }
   
-  static inline bool isPerturbative(void) { return true; }
 };
 
 
-typedef GaugeImplTypes<vComplex, Nc> GimplTypesR;
-typedef GaugeImplTypes<vComplexF, Nc> GimplTypesF;
-typedef GaugeImplTypes<vComplexD, Nc> GimplTypesD;
-
-typedef GaugeImplTypes<vComplex, SU<Nc>::AdjointDimension> GimplAdjointTypesR;
-typedef GaugeImplTypes<vComplexF, SU<Nc>::AdjointDimension> GimplAdjointTypesF;
-typedef GaugeImplTypes<vComplexD, SU<Nc>::AdjointDimension> GimplAdjointTypesD;
-
+typedef GaugeImplTypes_pt<vComplex, Nc> GimplTypes_ptR;
 
 } // QCDpt
+
+/////////////////////////////////////////////////////
+////////// Definition of perturbative trait
+/////////////////////////////////////////////////////
+
+template<typename T> struct isPerturbative {
+  static const bool value = false;
+  static const bool notvalue = true;
+};
+template<> struct isPerturbative<QCDpt::GimplTypes_ptR > {
+  static const bool value = true;
+  static const bool notvalue = false;
+};
+
 } // QCD
 } // Grid
 

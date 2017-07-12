@@ -136,7 +136,6 @@ public:
     SU<Nc>::ColdConfiguration(pRNG, U);
   }
   
-  static inline bool isPerturbative(void) { return false; }
 };
 
 

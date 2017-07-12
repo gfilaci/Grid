@@ -49,11 +49,20 @@ int main(int argc, char *argv[]) {
     GridParallelRNG          pRNG(&Grid);
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
 
-
+/////////////////////////////////////////////////////////
+/////////////////// test peek and poke colour and pert
+/////////////////////////////////////////////////////////
 //    QCDpt::LatticeGaugeField s(&Grid);
 //    cout<<s<<endl;
 //    cout<<peekColour(s,0,0)<<endl;
 //    cout<<peekIndex<ColourIndex>(s,0,0)<<endl;
+    
+    
+/////////////////////////////////////////////////////////
+/////////////////// new gauge implementation and attributes
+/////////////////////////////////////////////////////////
+    GaugeImplTypes_pt<vComplex, Nc> boh;
+    cout<<boh.isPerturbative()<<endl;
     
     QCDpt::LatticeGaugeField U(&Grid);
     QCDpt::LatticeGaugeField F(&Grid);
@@ -67,7 +76,7 @@ int main(int argc, char *argv[]) {
     WilsonGaugeAction<PeriodicGaugeImpl<GaugeImplTypes_pt<vComplex, Nc>>> Action(beta);
     
     Action.deriv(U,F);
-    cout<<F<<endl;
+//    cout<<F<<endl;
     
     Grid_finalize();
     return EXIT_SUCCESS;

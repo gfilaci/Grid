@@ -54,7 +54,6 @@ namespace QCDpt {
     template<typename vtype> using iSpinPertColourVector          = iScalar<iVector<iPert<iVector<vtype, Nc>, Np>, Ns> >;
     
     template<typename vtype> using iSpinColourMatrix              = iScalar<iVector<iScalar<iMatrix<vtype, Nc> >, Ns> >;
-    template<typename vtype> using iPertColourMatrix              = iScalar<iScalar<iPert<iMatrix<vtype, Nc>, Np> > >;
     template<typename vtype> using iSpinPertColourMatrix          = iScalar<iVector<iPert<iMatrix<vtype, Nc>, Np>, Ns> >;
     
     
@@ -157,14 +156,6 @@ namespace QCDpt {
     typedef iSpinColourMatrix<vComplexF >                vSpinColourMatrixF;
     typedef iSpinColourMatrix<vComplexD >                vSpinColourMatrixD;
     
-    typedef iPertColourMatrix<Complex  >                 PertColourMatrix;
-    typedef iPertColourMatrix<ComplexF >                 PertColourMatrixF;
-    typedef iPertColourMatrix<ComplexD >                 PertColourMatrixD;
-    
-    typedef iPertColourMatrix<vComplex  >                vPertColourMatrix;
-    typedef iPertColourMatrix<vComplexF >                vPertColourMatrixF;
-    typedef iPertColourMatrix<vComplexD >                vPertColourMatrixD;
-    
     typedef iSpinPertColourMatrix<Complex  >             SpinPertColourMatrix;
     typedef iSpinPertColourMatrix<ComplexF >             SpinPertColourMatrixF;
     typedef iSpinPertColourMatrix<ComplexD >             SpinPertColourMatrixD;
@@ -228,10 +219,6 @@ namespace QCDpt {
     typedef Lattice<vSpinColourMatrixF>                  LatticeSpinColourMatrixF;
     typedef Lattice<vSpinColourMatrixD>                  LatticeSpinColourMatrixD;
     
-    typedef Lattice<vPertColourMatrix>                   LatticePertColourMatrix;
-    typedef Lattice<vPertColourMatrixF>                  LatticePertColourMatrixF;
-    typedef Lattice<vPertColourMatrixD>                  LatticePertColourMatrixD;
-    
     typedef Lattice<vSpinPertColourMatrix>               LatticeSpinPertColourMatrix;
     typedef Lattice<vSpinPertColourMatrixF>              LatticeSpinPertColourMatrixF;
     typedef Lattice<vSpinPertColourMatrixD>              LatticeSpinPertColourMatrixD;
@@ -248,6 +235,7 @@ namespace QCDpt {
     typedef LatticeSpinPertColourMatrixF                 LatticeFermionF;
     typedef LatticeSpinPertColourMatrixD                 LatticeFermionD;
     
+    typedef QCDpt::LatticeGaugeField                     LatticeGaugeField;
     
     //////////////////////////////////////////////////////////////////////////////
     // Redefine templates leaning on ColourIndex attribute

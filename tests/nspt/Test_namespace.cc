@@ -28,7 +28,7 @@ See the full license in the file "LICENSE" in the top level distribution directo
 #include <Grid/Grid.h>
 
 using namespace std;
-using namespace Grid::QCD::QCDpt;
+using namespace QCDpt;
 
 int main(int argc, char *argv[]) {
     
@@ -48,16 +48,24 @@ int main(int argc, char *argv[]) {
     
     GridParallelRNG          pRNG(&Grid);
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
+
+
+    LatticeGaugeField s(&Grid);
+//    cout<<s<<endl;
+    cout<<peekColour(s,0,0)<<endl;
+//    cout<<peekIndex<ColourIndex>(s,0,0)<<endl;
     
-    QCDpt::LatticeGaugeField U(&Grid);
-    QCDpt::LatticeGaugeField F(&Grid);
-    gaussian(pRNG,U);
-    U = ProjectOnGroup(U);
-    
-    double beta = 1.0;
-    WilsonGaugeActionR Action(beta);
+//    QCDpt::LatticeGaugeField U(&Grid);
+//    QCDpt::LatticeGaugeField F(&Grid);
+//    gaussian(pRNG,U);
+//    U = ProjectOnGroup(U);
+//    
+//    double beta = 1.0;
+//    WilsonGaugeActionR Action(beta);
 //    Action.deriv(U,F);
     
+//    PertColourMatrix A;
+//    cout<<peekColour(A,1)<<endl;
     
     
     Grid_finalize();

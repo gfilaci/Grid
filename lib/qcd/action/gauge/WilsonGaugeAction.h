@@ -58,11 +58,11 @@ class WilsonGaugeAction : public Action<typename Gimpl::GaugeField> {
   virtual void refresh(const GaugeField &U,
                        GridParallelRNG &pRNG){};  // noop as no pseudoferms
 
-  virtual RealD S(const GaugeField &U) {
-    RealD plaq = WilsonLoops<Gimpl>::avgPlaquette(U);
-    RealD vol = U._grid->gSites();
-    RealD action = beta * (1.0 - plaq) * (Nd * (Nd - 1.0)) * vol * 0.5;
-    return action;
+  virtual RealD S(const GaugeField &U) {//$//
+//    RealD plaq = WilsonLoops<Gimpl>::avgPlaquette(U);
+//    RealD vol = U._grid->gSites();
+//    RealD action = beta * (1.0 - plaq) * (Nd * (Nd - 1.0)) * vol * 0.5;
+//    return action;
   };
 
   virtual void deriv(const GaugeField &U, GaugeField &dSdU) {

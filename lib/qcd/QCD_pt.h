@@ -42,6 +42,7 @@ namespace QCDpt {
     #define ColourIndexPT  3
     
     template<typename vtype> using iSinglet                       = iScalar<iScalar<iScalar<iScalar<vtype> > > >;
+    template<typename vtype> using iPertSinglet                   = iScalar<iScalar<iPert<iScalar<vtype>, Np> > >;
     
     template<typename vtype> using iColourMatrix                  = iScalar<iScalar<iScalar<iMatrix<vtype, Nc> > > > ;
     template<typename vtype> using iLorentzColourMatrix           = iVector<iScalar<iScalar<iMatrix<vtype, Nc> > >, Nd > ;
@@ -77,6 +78,25 @@ namespace QCDpt {
     
     typedef iSinglet<Integer >                           TInteger;
     typedef iSinglet<vInteger>                           vTInteger;
+    
+    typedef iPertSinglet<Complex >                       TPertComplex;
+    typedef iPertSinglet<ComplexF>                       TPertComplexF;
+    typedef iPertSinglet<ComplexD>                       TPertComplexD;
+    
+    typedef iPertSinglet<vComplex >                      vTPertComplex ;
+    typedef iPertSinglet<vComplexF>                      vTPertComplexF;
+    typedef iPertSinglet<vComplexD>                      vTPertComplexD;
+    
+    typedef iPertSinglet<Real >                          TPertReal;
+    typedef iPertSinglet<RealF>                          TPertRealF;
+    typedef iPertSinglet<RealD>                          TPertRealD;
+    
+    typedef iPertSinglet<vReal >                         vTPertReal;
+    typedef iPertSinglet<vRealF>                         vTPertRealF;
+    typedef iPertSinglet<vRealD>                         vTPertRealD;
+    
+    typedef iPertSinglet<Integer >                       TPertInteger;
+    typedef iPertSinglet<vInteger>                       vTPertInteger;
     
     // gauge fields
     
@@ -176,6 +196,16 @@ namespace QCDpt {
     typedef Lattice<vTRealD>                             LatticeRealD;
     
     typedef Lattice<vTInteger>                           LatticeInteger;
+
+    typedef Lattice<vTPertComplex>                       LatticePertComplex;
+    typedef Lattice<vTPertComplexF>                      LatticePertComplexF;
+    typedef Lattice<vTPertComplexD>                      LatticePertComplexD;
+    
+    typedef Lattice<vTPertReal>                          LatticePertReal;
+    typedef Lattice<vTPertRealF>                         LatticePertRealF;
+    typedef Lattice<vTPertRealD>                         LatticePertRealD;
+    
+    typedef Lattice<vTPertInteger>                       LatticePertInteger;
     
     // lattice gauge fields
     

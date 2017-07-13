@@ -35,7 +35,9 @@ template <class vtype, int N>
 class iPert {
  public:
   vtype _internal[N];
-
+  
+  
+  
   typedef vtype element;
   typedef typename GridTypeMapper<vtype>::scalar_type scalar_type;
   typedef typename GridTypeMapper<vtype>::vector_type vector_type;
@@ -145,6 +147,17 @@ class iPert {
   //    strong_inline vtype && operator ()(int i) {
   //      return _internal[i];
   //    }
+  
+  
+  strong_inline auto real() -> iPert<decltype(real(_internal[0])), N> {
+    typedef iPert<decltype(_internal[0].real()),N> ret_t;
+    ret_t ret;
+    for(int i=0;i<N;i++){
+      ret._internal[i] = _internal[i].real();
+    }
+    return ret;
+  }
+  
 };
 
 

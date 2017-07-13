@@ -378,17 +378,41 @@ int main(int argc, char *argv[]) {
     print_test("projection on group                 ",T,Tman);
 
 
-std::cout << GridLogMessage << "======== Test tensor remove" << std::endl;
+    std::cout << GridLogMessage << "======== Test of operations on \"scalar\" perturbative series" << std::endl;
+    int check;
+
     iScalar<iScalar<iPert<iScalar<iScalar<Complex>>,psz>>> faketensor;
     iPert<Complex,psz> reducedtensor, reducedtensorman;
+    iPert<Complex,psz> Treducedtensor, Treducedtensorman;
     random(sRNG, faketensor);
     loopp(i)
     reducedtensorman(i) = faketensor._internal._internal._internal[i]._internal._internal;
     reducedtensor = TensorRemove(faketensor);
-    int check = 0;
+    check = 0;
     loopp(i)
     if(reducedtensor(i)!=reducedtensorman(i)) check++;
     print_test("tensor remove                       ",0,check);
+
+    check = 0;
+    loopp(i)
+    if(real(reducedtensor)(i)!=(reducedtensor.real())(i)) check++;
+    print_test("real member                         ",0,check);
+    
+    loopp(i){
+        Treducedtensorman(i) = reducedtensor(i) / mydouble;
+        Treducedtensorman(i) = Treducedtensorman(i) / mycomplex;
+    }
+    Treducedtensor = reducedtensor / mydouble;
+    Treducedtensor = Treducedtensor / mycomplex;
+    check = 0;
+    loopp(i)
+    if(norm(Treducedtensor(i)-Treducedtensorman(i))>tolerance) check++;
+    print_test("division by fundamental type        ",0,check);
+    
+    
+    // test other operations...
+    cout<<1.-reducedtensor<<endl;
+    
     
     Grid_finalize();
     return EXIT_SUCCESS;

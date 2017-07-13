@@ -81,5 +81,119 @@ template<class l,int N> strong_inline iPert<l,N> operator * (const iPert<l,N>& l
 }
 template<class l,int N> strong_inline iPert<l,N> operator * (Integer lhs,const iPert<l,N>& rhs) {  return rhs*lhs; }
 
+
+////////////////////////////////////////////////////////////////////
+// DIVISION
+////////////////////////////////////////////////////////////////////
+
+template<class l,int N> strong_inline iPert<l,N> operator / (const iPert<l,N>& lhs,double rhs)
+{
+  typename iScalar<l>::scalar_type t;t=rhs;
+  typename iScalar<l>::tensor_reduced srhs;srhs=t;
+  return lhs/srhs;
+}
+
+template<class l,int N> strong_inline iPert<l,N> operator / (const iPert<l,N>& lhs,ComplexD rhs)
+{
+  typename iScalar<l>::scalar_type t;t=rhs;
+  typename iScalar<l>::tensor_reduced srhs;srhs=t;
+  return lhs/srhs;
+}
+
+////////////////////////////////////////////////////////////////////
+// ADDITION and SUBTRACTION to zero order
+////////////////////////////////////////////////////////////////////
+  
+    // double
+template<class vtype,int N> strong_inline auto operator + (const iPert<vtype,N>& lhs,const double& rhs) ->iPert<decltype(lhs._internal[0]+rhs),N>
+    {
+      typedef iPert<decltype(lhs._internal[0]+rhs),N> ret_t;
+    ret_t ret(lhs);
+    ret._internal[0] = ret._internal[0] + rhs;
+    return ret;
+    }
+template<class vtype,int N> strong_inline auto operator - (const iPert<vtype,N>& lhs,const double& rhs) ->iPert<decltype(lhs._internal[0]+rhs),N>
+    {
+      typedef iPert<decltype(lhs._internal[0]+rhs),N> ret_t;
+    ret_t ret(lhs);
+    ret._internal[0] = ret._internal[0] - rhs;
+    return ret;
+    }
+template<class vtype,int N> strong_inline auto operator + (const double& lhs,const iPert<vtype,N>& rhs) ->iPert<decltype(lhs+rhs._internal[0]),N>
+    {
+      typedef iPert<decltype(lhs+rhs._internal[0]),N> ret_t;
+    ret_t ret(rhs);
+    ret._internal[0] = lhs + ret._internal[0];
+    return ret;
+    }
+template<class vtype,int N> strong_inline auto operator - (const double& lhs,const iPert<vtype,N>& rhs) ->iPert<decltype(lhs+rhs._internal[0]),N>
+    {
+      typedef iPert<decltype(lhs+rhs._internal[0]),N> ret_t;
+    ret_t ret(rhs);
+    ret._internal[0] = lhs - ret._internal[0];
+    return ret;
+    }
+    
+    // complex
+template<class vtype,int N> strong_inline auto operator + (const iPert<vtype,N>& lhs,const ComplexD& rhs) ->iPert<decltype(lhs._internal[0]+rhs),N>
+    {
+      typedef iPert<decltype(lhs._internal[0]+rhs),N> ret_t;
+    ret_t ret(lhs);
+    ret._internal[0] = ret._internal[0] + rhs;
+    return ret;
+    }
+template<class vtype,int N> strong_inline auto operator - (const iPert<vtype,N>& lhs,const ComplexD& rhs) ->iPert<decltype(lhs._internal[0]+rhs),N>
+    {
+      typedef iPert<decltype(lhs._internal[0]+rhs),N> ret_t;
+    ret_t ret(lhs);
+    ret._internal[0] = ret._internal[0] - rhs;
+    return ret;
+    }
+template<class vtype,int N> strong_inline auto operator + (const ComplexD& lhs,const iPert<vtype,N>& rhs) ->iPert<decltype(lhs+rhs._internal[0]),N>
+    {
+      typedef iPert<decltype(lhs+rhs._internal[0]),N> ret_t;
+    ret_t ret(rhs);
+    ret._internal[0] = lhs + ret._internal[0];
+    return ret;
+    }
+template<class vtype,int N> strong_inline auto operator - (const ComplexD& lhs,const iPert<vtype,N>& rhs) ->iPert<decltype(lhs+rhs._internal[0]),N>
+    {
+      typedef iPert<decltype(lhs+rhs._internal[0]),N> ret_t;
+    ret_t ret(rhs);
+    ret._internal[0] = lhs - ret._internal[0];
+    return ret;
+    }
+    
+    // int
+template<class vtype,int N> strong_inline auto operator + (const iPert<vtype,N>& lhs,const Integer& rhs) ->iPert<decltype(lhs._internal[0]+rhs),N>
+    {
+      typedef iPert<decltype(lhs._internal[0]+rhs),N> ret_t;
+    ret_t ret(lhs);
+    ret._internal[0] = ret._internal[0] + rhs;
+    return ret;
+    }
+template<class vtype,int N> strong_inline auto operator - (const iPert<vtype,N>& lhs,const Integer& rhs) ->iPert<decltype(lhs._internal[0]+rhs),N>
+    {
+      typedef iPert<decltype(lhs._internal[0]+rhs),N> ret_t;
+    ret_t ret(lhs);
+    ret._internal[0] = ret._internal[0] - rhs;
+    return ret;
+    }
+template<class vtype,int N> strong_inline auto operator + (const Integer& lhs,const iPert<vtype,N>& rhs) ->iPert<decltype(lhs+rhs._internal[0]),N>
+    {
+      typedef iPert<decltype(lhs+rhs._internal[0]),N> ret_t;
+    ret_t ret(rhs);
+    ret._internal[0] = lhs + ret._internal[0];
+    return ret;
+    }
+template<class vtype,int N> strong_inline auto operator - (const Integer& lhs,const iPert<vtype,N>& rhs) ->iPert<decltype(lhs+rhs._internal[0]),N>
+    {
+      typedef iPert<decltype(lhs+rhs._internal[0]),N> ret_t;
+    ret_t ret(rhs);
+    ret._internal[0] = lhs - ret._internal[0];
+    return ret;
+    }
+    
+    
 }
 #endif

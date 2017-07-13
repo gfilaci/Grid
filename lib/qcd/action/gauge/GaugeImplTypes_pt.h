@@ -143,20 +143,6 @@ public:
 typedef GaugeImplTypes_pt<vComplex, Nc> GimplTypes_ptR;
 
 } // QCDpt
-
-/////////////////////////////////////////////////////
-////////// Definition of perturbative trait
-/////////////////////////////////////////////////////
-
-template<typename T> struct isPerturbative {
-  static const bool value = false;
-  static const bool notvalue = true;
-};
-template<> struct isPerturbative<QCDpt::GimplTypes_ptR > {
-  static const bool value = true;
-  static const bool notvalue = false;
-};
-
 } // QCD
 } // Grid
 

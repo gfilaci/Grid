@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 /////////////////////////////////////////////////////////
 /////////////////// new gauge implementation and attributes
 /////////////////////////////////////////////////////////
-    GaugeImplTypes<vComplex, Nc> boh;
+    PeriodicGaugeImpl<GimplTypes_ptR> boh;
     cout<<isPerturbative<decltype(boh)>::value<<endl;
     
     QCDpt::LatticeGaugeField U(&Grid);
@@ -74,8 +74,8 @@ int main(int argc, char *argv[]) {
 //    WilsonGaugeAction<PeriodicGimplR> Action(beta);
     WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>> Action(beta);
 //    WilsonGaugeAction<PeriodicGaugeImpl<GaugeImplTypes_pt<vComplex, Nc>>> Action(beta);
-    
-    Action.deriv(U,F);
+//
+//    Action.deriv(U,F);
 //    cout<<F<<endl;
     
     Grid_finalize();

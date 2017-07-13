@@ -139,10 +139,17 @@ public:
   
 };
 
-
+// perturbative implementation types
 typedef GaugeImplTypes_pt<vComplex, Nc> GimplTypes_ptR;
 
 } // QCDpt
+
+// give perturbative trait to the field of a perturbative implementation type
+template<> struct isPerturbative<QCDpt::GimplTypes_ptR::Field > {
+  static const bool value = true;
+  static const bool notvalue = false;
+};
+
 } // QCD
 } // Grid
 

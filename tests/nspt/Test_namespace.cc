@@ -61,21 +61,18 @@ int main(int argc, char *argv[]) {
 /////////////////////////////////////////////////////////
 /////////////////// new gauge implementation and attributes
 /////////////////////////////////////////////////////////
-    PeriodicGaugeImpl<GimplTypes_ptR> boh;
-    cout<<isPerturbative<decltype(boh)>::value<<endl;
+    GimplTypes_ptR boh;
+    cout<<isPerturbative<GimplTypes_ptR::Field>::value<<endl;
     
     QCDpt::LatticeGaugeField U(&Grid);
     QCDpt::LatticeGaugeField F(&Grid);
     gaussian(pRNG,U);
     U = ProjectOnGroup(U);
-//
+    
     double beta = 1.0;
-//    WilsonGaugeActionR Action(beta);
-//    WilsonGaugeAction<PeriodicGimplR> Action(beta);
+
     WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>> Action(beta);
-//    WilsonGaugeAction<PeriodicGaugeImpl<GaugeImplTypes_pt<vComplex, Nc>>> Action(beta);
-//
-//    Action.deriv(U,F);
+    Action.deriv(U,F);
 //    cout<<F<<endl;
     
     Grid_finalize();

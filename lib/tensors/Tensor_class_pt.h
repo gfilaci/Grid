@@ -155,5 +155,19 @@ void vprefetch(const iPert<v, N> &vv) {
   }
 }
 
+///////////////////////////////////////////////////////////
+// Allows to turn scalar<scalar<pert<scalar<scalar<double>>>>>> back to pert<double>.
+///////////////////////////////////////////////////////////
+template <class vtype, int N>
+strong_inline auto TensorRemove(iPert<vtype,N> arg)
+    -> iPert<decltype(TensorRemove(arg._internal[0])),N> {
+  typedef iPert<decltype(TensorRemove(arg._internal[0])),N> ret_t;
+  ret_t ret;
+  for(int c1=0;c1<N;c1++){
+      ret._internal[c1] = TensorRemove(arg._internal[c1]);
+  }
+  return ret;
+}
+
 }
 #endif

@@ -378,7 +378,17 @@ int main(int argc, char *argv[]) {
     print_test("projection on group                 ",T,Tman);
 
 
-
+std::cout << GridLogMessage << "======== Test tensor remove" << std::endl;
+    iScalar<iScalar<iPert<iScalar<iScalar<Complex>>,psz>>> faketensor;
+    iPert<Complex,psz> reducedtensor, reducedtensorman;
+    random(sRNG, faketensor);
+    loopp(i)
+    reducedtensorman(i) = faketensor._internal._internal._internal[i]._internal._internal;
+    reducedtensor = TensorRemove(faketensor);
+    int check = 0;
+    loopp(i)
+    if(reducedtensor(i)!=reducedtensorman(i)) check++;
+    print_test("tensor remove                       ",0,check);
     
     Grid_finalize();
     return EXIT_SUCCESS;

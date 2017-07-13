@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 //    cout<<s<<endl;
 //    cout<<peekColour(s,0,0)<<endl;
 //    cout<<peekIndex<ColourIndex>(s,0,0)<<endl;
-    
+
     
 /////////////////////////////////////////////////////////
 /////////////////// new gauge implementation and attributes
@@ -72,8 +72,8 @@ int main(int argc, char *argv[]) {
     double beta = 1.0;
 //    WilsonGaugeActionR Action(beta);
 //    WilsonGaugeAction<PeriodicGimplR> Action(beta);
-//    WilsonGaugeAction<PeriodicGaugeImpl<GimplTypesR>> Action(beta);
-    WilsonGaugeAction<PeriodicGaugeImpl<GaugeImplTypes_pt<vComplex, Nc>>> Action(beta);
+    WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>> Action(beta);
+//    WilsonGaugeAction<PeriodicGaugeImpl<GaugeImplTypes_pt<vComplex, Nc>>> Action(beta);
     
     Action.deriv(U,F);
 //    cout<<F<<endl;

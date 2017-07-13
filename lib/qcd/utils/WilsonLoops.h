@@ -42,7 +42,7 @@ public:
   typedef typename Gimpl::GaugeLinkField GaugeMat;
   typedef typename Gimpl::GaugeField GaugeLorentz;
 
-  typedef typename std::conditional<isPerturbative<Gimpl>::value, int, double>::type Type1;
+  typedef typename std::conditional<isPerturbative<Gimpl>::value, int, RealD>::type PlaqType;
 
   //////////////////////////////////////////////////
   // directed plaquette oriented in mu,nu plane
@@ -99,7 +99,7 @@ public:
   //////////////////////////////////////////////////
   // sum over all x,y,z,t and over all planes of plaquette
   //////////////////////////////////////////////////
-  static RealD sumPlaquette(const GaugeLorentz &Umu) {
+  static PlaqType sumPlaquette(const GaugeLorentz &Umu) {
     std::vector<GaugeMat> U(Nd, Umu._grid);
     // inefficient here
     for (int mu = 0; mu < Nd; mu++) {
@@ -118,8 +118,8 @@ public:
   //////////////////////////////////////////////////
   // average over all x,y,z,t and over all planes of plaquette
   //////////////////////////////////////////////////
-  static RealD avgPlaquette(const GaugeLorentz &Umu) {
-    RealD sumplaq = sumPlaquette(Umu);
+  static PlaqType avgPlaquette(const GaugeLorentz &Umu) {
+    PlaqType sumplaq = sumPlaquette(Umu);
     double vol = Umu._grid->gSites();
     double faces = (1.0 * Nd * (Nd - 1)) / 2.0;
     return sumplaq / vol / faces / Nc; // Nd , Nc dependent... FIXME
@@ -128,7 +128,7 @@ public:
   //////////////////////////////////////////////////
   // average over traced single links
   //////////////////////////////////////////////////
-  static RealD linkTrace(const GaugeLorentz &Umu) {
+  static PlaqType linkTrace(const GaugeLorentz &Umu) {
     std::vector<GaugeMat> U(Nd, Umu._grid);
 
     ComplexField Tr(Umu._grid);
@@ -399,7 +399,7 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
   //////////////////////////////////////////////////
   // sum over all x,y,z,t and over all planes of plaquette
   //////////////////////////////////////////////////
-  static RealD sumRectangle(const GaugeLorentz &Umu) {
+  static PlaqType sumRectangle(const GaugeLorentz &Umu) {
     std::vector<GaugeMat> U(Nd, Umu._grid);
 
     for (int mu = 0; mu < Nd; mu++) {
@@ -417,9 +417,9 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
   //////////////////////////////////////////////////
   // average over all x,y,z,t and over all planes of plaquette
   //////////////////////////////////////////////////
-  static RealD avgRectangle(const GaugeLorentz &Umu) {
+  static PlaqType avgRectangle(const GaugeLorentz &Umu) {
 
-    RealD sumrect = sumRectangle(Umu);
+    PlaqType sumrect = sumRectangle(Umu);
 
     double vol = Umu._grid->gSites();
 

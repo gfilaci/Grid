@@ -9,6 +9,7 @@ Copyright (C) 2015-2016
 Author: Peter Boyle <paboyle@ph.ed.ac.uk>
 Author: neo <cossu@post.kek.jp>
 Author: Guido Cossu <guido.cossu@ed.ac.uk>
+Author: Gianluca Filaci <g.filaci@ed.ac.uk>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -35,20 +36,35 @@ directory
 namespace Grid {
 namespace QCD {
 
+/////////////////////////////////////////////////////
+////////// Definition of perturbative trait
+/////////////////////////////////////////////////////
+
+template<typename T> struct isPerturbative {
+  static const bool value = false;
+  static const bool notvalue = true;
+};
+
+/////////////////////////////////////////////////////
+////////// Action
+/////////////////////////////////////////////////////
+
 template <class GaugeField >
 class Action 
 {
-
  public:
+  typedef typename std::conditional<isPerturbative<GaugeField>::value, QCDpt::PRealD, RealD>::type SType;
   bool is_smeared = false;
   // Heatbath?
   virtual void refresh(const GaugeField& U, GridParallelRNG& pRNG) = 0; // refresh pseudofermions
-  virtual RealD S(const GaugeField& U) = 0;                             // evaluate the action
+  virtual SType S(const GaugeField& U) = 0;                             // evaluate the action
   virtual void deriv(const GaugeField& U, GaugeField& dSdU) = 0;        // evaluate the action derivative
   virtual std::string action_name()    = 0;                             // return the action name
   virtual std::string LogParameters()  = 0;                             // prints action parameters
   virtual ~Action(){}
 };
+
+
 
 }
 }

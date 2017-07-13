@@ -43,8 +43,8 @@ template <class Gimpl>
 class WilsonGaugeAction : public Action<typename Gimpl::GaugeField> {
  public:  
   INHERIT_GIMPL_TYPES(Gimpl);
-  //$// ereditare da Action...
-
+  typedef typename Action<typename Gimpl::GaugeField>::SType PlaqType;
+  
   /////////////////////////// constructors
   explicit WilsonGaugeAction(RealD beta_):beta(beta_){};
 

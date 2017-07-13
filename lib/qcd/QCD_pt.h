@@ -41,6 +41,7 @@ namespace QCDpt {
     #define PertIndex      2
     #define ColourIndexPT  3
     
+    
     template<typename vtype> using iSinglet                       = iScalar<iScalar<iScalar<iScalar<vtype> > > >;
     template<typename vtype> using iPertSinglet                   = iScalar<iScalar<iPert<iScalar<vtype>, Np> > >;
     
@@ -57,6 +58,27 @@ namespace QCDpt {
     template<typename vtype> using iSpinColourMatrix              = iScalar<iVector<iScalar<iMatrix<vtype, Nc> >, Ns> >;
     template<typename vtype> using iSpinPertColourMatrix          = iScalar<iVector<iPert<iMatrix<vtype, Nc>, Np>, Ns> >;
     
+    
+    // perturbative fundamental types (minimal nesting)
+    
+    typedef iPert<Complex, Np >                          PComplex;
+    typedef iPert<ComplexF, Np>                          PComplexF;
+    typedef iPert<ComplexD, Np>                          PComplexD;
+    
+    typedef iPert<vComplex, Np >                         vPComplex ;
+    typedef iPert<vComplexF, Np>                         vPComplexF;
+    typedef iPert<vComplexD, Np>                         vPComplexD;
+    
+    typedef iPert<Real, Np >                             PReal;
+    typedef iPert<RealF, Np>                             PRealF;
+    typedef iPert<RealD, Np>                             PRealD;
+    
+    typedef iPert<vReal, Np >                            vPReal;
+    typedef iPert<vRealF, Np>                            vPRealF;
+    typedef iPert<vRealD, Np>                            vPRealD;
+    
+    typedef iPert<Integer, Np >                          PInteger;
+    typedef iPert<vInteger, Np>                          vPInteger;
     
     // singlets
     

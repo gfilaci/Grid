@@ -41,9 +41,9 @@ public:
 
   typedef typename Gimpl::GaugeLinkField GaugeMat;
   typedef typename Gimpl::GaugeField GaugeLorentz;
-
-  // ereditare PlaqType...
-
+  
+  typedef typename std::conditional<isPerturbative<typename Gimpl::GaugeField>::value, QCDpt::PRealD, RealD>::type PlaqType;
+  
   //////////////////////////////////////////////////
   // directed plaquette oriented in mu,nu plane
   //////////////////////////////////////////////////

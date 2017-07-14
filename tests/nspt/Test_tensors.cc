@@ -409,10 +409,33 @@ int main(int argc, char *argv[]) {
     if(norm(Treducedtensor(i)-Treducedtensorman(i))>tolerance) check++;
     print_test("division by fundamental type        ",0,check);
     
-    
-    // test other operations...
-    cout<<1.-reducedtensor<<endl;
-    
+    Treducedtensorman = reducedtensor;
+    Treducedtensorman(0) = reducedtensor(0) + mydouble;
+    Treducedtensorman(0) = 2*mydouble + Treducedtensorman(0);
+    Treducedtensorman(0) = Treducedtensorman(0) - 0.5*mydouble;
+    Treducedtensorman(0) = 0.5*mydouble - Treducedtensorman(0);
+    Treducedtensor = reducedtensor + mydouble;
+    Treducedtensor = 2*mydouble + Treducedtensor;
+    Treducedtensor = Treducedtensor - 0.5*mydouble;
+    Treducedtensor = 0.5*mydouble - Treducedtensor;
+    check = 0;
+    loopp(i)
+    if(norm(Treducedtensor(i)-Treducedtensorman(i))>tolerance) check++;
+    print_test("addition and subtraction (double)   ",0,check);
+
+    Treducedtensorman = reducedtensor;
+    Treducedtensorman(0) = reducedtensor(0) + mycomplex;
+    Treducedtensorman(0) = 2.*mycomplex + Treducedtensorman(0);
+    Treducedtensorman(0) = Treducedtensorman(0) - 0.5*mycomplex;
+    Treducedtensorman(0) = 0.5*mycomplex - Treducedtensorman(0);
+    Treducedtensor = reducedtensor + mycomplex;
+    Treducedtensor = 2.*mycomplex + Treducedtensor;
+    Treducedtensor = Treducedtensor - 0.5*mycomplex;
+    Treducedtensor = 0.5*mycomplex - Treducedtensor;
+    check = 0;
+    loopp(i)
+    if(norm(Treducedtensor(i)-Treducedtensorman(i))>tolerance) check++;
+    print_test("addition and subtraction (complex)  ",0,check);
     
     Grid_finalize();
     return EXIT_SUCCESS;

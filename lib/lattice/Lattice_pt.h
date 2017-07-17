@@ -52,6 +52,17 @@ template<class vobj>
         return ret;
     }
 
+template<class vobj1,class vobj2>
+    inline auto AddToOrd(const int &ord, const Lattice<vobj1> &lhs, const Lattice<vobj2> &rhs)
+    -> Lattice<decltype(AddToOrd(ord,lhs._odata[0],rhs._odata[0]))>
+    {
+        Lattice<decltype(AddToOrd(ord,lhs._odata[0],rhs._odata[0]))> ret(lhs._grid);
+        parallel_for(int ss=0;ss<lhs._grid->oSites();ss++){
+            ret._odata[ss] = AddToOrd(ord,lhs._odata[ss],rhs._odata[ss]);
+        }
+        return ret;
+    }
+    
 }
 #endif
 

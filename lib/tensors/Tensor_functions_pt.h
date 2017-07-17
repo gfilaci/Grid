@@ -53,7 +53,8 @@ template<class vtype, int N> inline iMatrix<vtype, N> Exponentiate(const iMatrix
     {
       iMatrix<vtype, N> ret;
       for (int i = 0; i < N; i++)
-        ret._internal[i] = Exponentiate(r._internal[i]);
+          for (int j = 0; j < N; j++)
+              ret._internal[i][j] = Exponentiate(r._internal[i][j]);
       return ret;
     }
     
@@ -111,7 +112,8 @@ template<class vtype, int N> inline iMatrix<vtype, N> Logarithm(const iMatrix<vt
     {
       iMatrix<vtype, N> ret;
       for (int i = 0; i < N; i++)
-        ret._internal[i] = Logarithm(r._internal[i]);
+          for (int j = 0; j < N; j++)
+              ret._internal[i][j] = Logarithm(r._internal[i][j]);
       return ret;
     }
     
@@ -145,6 +147,52 @@ template<class vtype, int N> inline iPert<vtype, N> Logarithm(const iPert<vtype,
       
       return ret;
   }
+
+  ///////////////////////////////////////////////
+  // Add to a given order
+  ///////////////////////////////////////////////
+  
+  template<class vtype1, class vtype2> inline iScalar<vtype1> AddToOrd(const int &ord, const iScalar<vtype1>&r, const iScalar<vtype2> &Q)
+    {
+      iScalar<vtype1> ret;
+      ret._internal = AddToOrd(ord,r._internal,Q._internal);
+      return ret;
+    }
+
+template<class vtype1, class vtype2, int N> inline iVector<vtype1, N> AddToOrd(const int &ord, const iVector<vtype1,N>&r, const iScalar<vtype2> &Q)
+    {
+      iVector<vtype1, N> ret;
+      for (int i = 0; i < N; i++)
+        ret._internal[i] = AddToOrd(ord,r._internal[i],Q._internal);
+      return ret;
+    }
+
+template<class vtype1, class vtype2, int N> inline iVector<vtype1, N> AddToOrd(const int &ord, const iVector<vtype1,N>&r, const iVector<vtype2,N> &Q)
+    {
+      iVector<vtype1, N> ret;
+      for (int i = 0; i < N; i++)
+        ret._internal[i] = AddToOrd(ord,r._internal[i],Q._internal[i]);
+      return ret;
+    }
+    
+template<class vtype1, class vtype2, int N> inline iMatrix<vtype1, N> AddToOrd(const int &ord, const iMatrix<vtype1,N>&r, const iScalar<vtype2> &Q)
+    {
+      iMatrix<vtype1, N> ret;
+      for (int i = 0; i < N; i++)
+          for (int j = 0; j < N; j++)
+              ret._internal[i][j] = AddToOrd(ord,r._internal[i][j],Q._internal);
+      return ret;
+    }
+    
+template<class vtype, int N> inline iPert<vtype, N> AddToOrd(const int &ord, const iPert<vtype,N> &P, const iScalar<vtype> &Q)
+  {
+      iPert<vtype, N> ret(P);
+      
+      ret._internal[ord] += Q._internal;
+      
+      return ret;
+  }
+
 
 }
 #endif

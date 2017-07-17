@@ -32,6 +32,21 @@ using namespace QCDpt;
 
 static constexpr double tolerance = 1.0e-12;
 
+// fix...
+//PRealD myInnerProduct(const QCDpt::LatticeGaugeField &U, const QCDpt::LatticeGaugeField &V){
+//    PRealD res;
+//    zeroit(res);
+//    QCDpt::LatticeGaugeField W(&(*U._grid));
+//    for (int mu=0; mu<Nd; mu++) {
+//        pokeLorentz(W,peekLorentz(U,mu)*adj(peekLorentz(V,mu)),mu);
+//        for (int k=0; k<Np; k++) {
+////            res(k) += TensorRemove(trace(peekPert(peekLorentz(W,mu),k)));// / Nc / U._grid->gSites() / Nd;
+//            cout<<trace(peekPert(peekLorentz(W,mu),k))<<endl;
+//        }
+//    }
+//    return res;
+//}
+
 void test(const double &a, const double &b)
 {
   if (a - b < tolerance)
@@ -64,12 +79,9 @@ int main(int argc, char *argv[]) {
     std::vector<int> mpi_layout  = GridDefaultMpi();
     
     GridCartesian               Grid(latt_size,simd_layout,mpi_layout);
-//    GridRedBlackCartesian     RBGrid(latt_size,simd_layout,mpi_layout);
     
     int threads = GridThread::GetThreads();
     std::cout<<GridLogMessage << "Grid is setup to use "<<threads<<" threads"<<std::endl;
-    
-    std::vector<int> seeds({1,2,3,4});
     
     GridParallelRNG          pRNG(&Grid);
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
@@ -112,20 +124,31 @@ int main(int argc, char *argv[]) {
     
     QCDpt::LatticeGaugeField U(&Grid);
     QCDpt::LatticeGaugeField F(&Grid);
-    gaussian(pRNG,U);
-    U = ProjectOnGroup(U);
+    QCDpt::LatticeLorentzColourMatrix noise(&Grid);
+//    gaussian(pRNG,U);
+//    U = ProjectOnGroup(U);
     
-    double beta = 1.0;
-
+    double beta = 1.;
     WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>> Action(beta);
-//    for (int i=0; i<1000; i++) {
-//        Action.deriv(U,F);
-        F = Logarithm(F);
-        U = F+U;
-//    }
     
-    cout<<U<<endl;
-//    cout<<Action.S(U)<<endl;
+    QCDpt::LatticeColourMatrix tmp(&Grid);
+    for (int mu=0; mu<Nd; mu++) {
+        QCDpt::SU<Nc>::GaussianFundamentalLieAlgebraMatrix(pRNG, tmp, M_SQRT1_2);
+        pokeLorentz(noise,tmp,mu);
+    }
+    
+    
+    
+//    for (int i=0; i<10000000; i++) {
+//        Action.deriv(U,F);
+//        F = -0.00001*F;
+//        F = Exponentiate(F);
+//        for (int mu=0; mu<Nd; mu++)
+//            pokeLorentz(U,peekLorentz(F,mu)*peekLorentz(U,mu),mu);
+//        if (i%1000==0) cout<<Action.S(U)<<endl;
+////        if (i%1000==0) cout<<TensorRemove(myInnerProduct(U,U))<<endl;
+//    }
+//    
     
     Grid_finalize();
     return EXIT_SUCCESS;

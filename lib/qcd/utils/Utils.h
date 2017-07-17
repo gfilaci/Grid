@@ -9,6 +9,7 @@
 
 // Include representations
 #include <Grid/qcd/utils/SUn.h>
+#include <Grid/qcd/utils/SUn_pt.h>
 #include <Grid/qcd/utils/SUnAdjoint.h>
 #include <Grid/qcd/utils/SUnTwoIndex.h>
 

@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
     std::vector<int> mpi_layout  = GridDefaultMpi();
     
     GridCartesian               Grid(latt_size,simd_layout,mpi_layout);
-    GridRedBlackCartesian     RBGrid(latt_size,simd_layout,mpi_layout);
+//    GridRedBlackCartesian     RBGrid(latt_size,simd_layout,mpi_layout);
     
     int threads = GridThread::GetThreads();
     std::cout<<GridLogMessage << "Grid is setup to use "<<threads<<" threads"<<std::endl;
@@ -110,16 +110,21 @@ int main(int argc, char *argv[]) {
     
     
     
-//    QCDpt::LatticeGaugeField U(&Grid);
-//    QCDpt::LatticeGaugeField F(&Grid);
-//    gaussian(pRNG,U);
-//    U = ProjectOnGroup(U);
-//    
-//    double beta = 1.0;
-//
-//    WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>> Action(beta);
-//    Action.deriv(U,F);
-//    cout<<F<<endl;
+    QCDpt::LatticeGaugeField U(&Grid);
+    QCDpt::LatticeGaugeField F(&Grid);
+    gaussian(pRNG,U);
+    U = ProjectOnGroup(U);
+    
+    double beta = 1.0;
+
+    WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>> Action(beta);
+    for (int i=0; i<1000; i++) {
+        Action.deriv(U,F);
+//        F = Exponentiate(F);
+//        U = F*U;
+    }
+    
+    cout<<U<<endl;
 //    cout<<Action.S(U)<<endl;
     
     Grid_finalize();

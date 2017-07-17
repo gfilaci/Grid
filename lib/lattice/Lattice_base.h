@@ -334,6 +334,7 @@ public:
 #endif
 #include "Lattice_arith.h"
 #include "Lattice_trace.h"
+#include "Lattice_pt.h"
 #include "Lattice_transpose.h"
 #include "Lattice_local.h"
 #include "Lattice_reduction.h"

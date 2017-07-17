@@ -118,11 +118,11 @@ int main(int argc, char *argv[]) {
     double beta = 1.0;
 
     WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>> Action(beta);
-    for (int i=0; i<1000; i++) {
-        Action.deriv(U,F);
-//        F = Exponentiate(F);
-//        U = F*U;
-    }
+//    for (int i=0; i<1000; i++) {
+//        Action.deriv(U,F);
+        F = Logarithm(F);
+        U = F+U;
+//    }
     
     cout<<U<<endl;
 //    cout<<Action.S(U)<<endl;

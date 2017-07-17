@@ -30,6 +30,31 @@ See the full license in the file "LICENSE" in the top level distribution directo
 using namespace std;
 using namespace QCDpt;
 
+static constexpr double tolerance = 1.0e-12;
+
+void test(const double &a, const double &b)
+{
+  if (a - b < tolerance)
+  {
+    std::cout << "[OK] ";
+  }
+  else
+  {
+    std::cout << "[fail]" << std::endl;
+    std::cout << GridLogError << "a= " << a << std::endl;
+    std::cout << GridLogError << "is different from " << std::endl;
+    std::cout << GridLogError << "b= " << b << std::endl;
+    exit(EXIT_FAILURE);
+  }
+}
+template <typename Expr>
+void print_test(const string &text, const Expr &a, const Expr &b)
+{
+    std::cout << GridLogMessage << text << " : ";
+    test(a,b);
+    std::cout << std::endl;
+}
+
 int main(int argc, char *argv[]) {
     
     Grid_init(&argc,&argv);
@@ -50,30 +75,52 @@ int main(int argc, char *argv[]) {
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
 
 /////////////////////////////////////////////////////////
-/////////////////// test peek and poke colour and pert
+/////////////////// TESTS
 /////////////////////////////////////////////////////////
-//    QCDpt::LatticeGaugeField s(&Grid);
-//    cout<<s<<endl;
-//    cout<<peekColour(s,0,0)<<endl;
-//    cout<<peekIndex<ColourIndex>(s,0,0)<<endl;
+    
+    std::cout << GridLogMessage << "======== Test peek perturbative and non-perturbative indices" << std::endl;
 
+    QCD::LatticeGaugeField gfield(&Grid);
+    QCDpt::LatticeGaugeField gfieldpt(&Grid);
+    int counter;
     
-/////////////////////////////////////////////////////////
-/////////////////// new gauge implementation and attributes
-/////////////////////////////////////////////////////////
-    GimplTypes_ptR boh;
-    cout<<isPerturbative<GimplTypes_ptR::Field>::value<<endl;
+    gaussian(pRNG,gfield);
+    gaussian(pRNG,gfieldpt);
     
-    QCDpt::LatticeGaugeField U(&Grid);
-    QCDpt::LatticeGaugeField F(&Grid);
-    gaussian(pRNG,U);
-    U = ProjectOnGroup(U);
+    counter = 0;
+    for (int i=0; i<Np; i++) if (norm2(PeekIndex<2>(gfieldpt,i))-norm2(peekPert(gfieldpt,i))>tolerance) counter++;
+    print_test("peek pert index                           ",0.,(double)counter);
     
-    double beta = 1.0;
-
-    WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>> Action(beta);
-    Action.deriv(U,F);
+    counter = 0;
+    for (int i=0; i<Nc; i++) for (int j=0; j<Nc; j++) if(norm2(PeekIndex<3>(gfieldpt,i,j))-norm2(peekColour(gfieldpt,i,j))>tolerance) counter++;
+    print_test("peek colour index (perturbative)          ",0.,(double)counter);
+    
+    counter = 0;
+    for (int i=0; i<Nc; i++) for (int j=0; j<Nc; j++) if(norm2(PeekIndex<2>(gfield,i,j))-norm2(peekColour(gfield,i,j))>tolerance) counter++;
+    print_test("peek colour index (non-perturbative)      ",0.,(double)counter);
+    
+    
+    std::cout << GridLogMessage << "======== Test perturbative trait" << std::endl;
+    
+    GimplTypes_ptR traitpt;
+    GimplTypesR traitnonpt;
+    
+    print_test("GimplTypes_ptR is perturbative            ",1.,(double)isPerturbative<GimplTypes_ptR::Field>::value);
+    print_test("GimplTypesR is not perturbative           ",0.,(double)isPerturbative<GimplTypesR::Field>::value);
+    
+    
+    
+//    QCDpt::LatticeGaugeField U(&Grid);
+//    QCDpt::LatticeGaugeField F(&Grid);
+//    gaussian(pRNG,U);
+//    U = ProjectOnGroup(U);
+//    
+//    double beta = 1.0;
+//
+//    WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>> Action(beta);
+//    Action.deriv(U,F);
 //    cout<<F<<endl;
+//    cout<<Action.S(U)<<endl;
     
     Grid_finalize();
     return EXIT_SUCCESS;

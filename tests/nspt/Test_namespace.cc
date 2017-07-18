@@ -132,10 +132,10 @@ int main(int argc, char *argv[]) {
     QCDpt::LatticeLorentzColourMatrix noise(&Grid);
     QCDpt::LatticeColourMatrix tmp(&Grid);
 
-//    gaussian(pRNG,U);
+    random(pRNG,U);
     U = ProjectOnGroup(U);
     
-    for (int i=0; i<100000; i++) {
+    for (int i=0; i<10000; i++) {
     
         //noise
         for (int mu=0; mu<Nd; mu++) {
@@ -144,14 +144,13 @@ int main(int argc, char *argv[]) {
         }
     
         Action.deriv(U,F);
-        F = -0.00001*F;
-        F = AddToOrd(1,F,noise);
+        F = -0.001*F;
+//        F = AddToOrd(1,F,noise);
         U = Exponentiate(F) * U;
 //        for (int mu=0; mu<Nd; mu++)
 //            pokeLorentz(U,peekLorentz(F,mu)*peekLorentz(U,mu),mu);
-        if (i%1000==0) cout<<Action.S(U)<<endl;
+        if (i%100==0) {cout<<Action.S(U)<<endl;cout<<"\t"<<Pnorm2(U)<<endl;}
     }
-    
     
     Grid_finalize();
     return EXIT_SUCCESS;

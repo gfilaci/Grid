@@ -62,6 +62,26 @@ template<class vobj1,class vobj2>
         }
         return ret;
     }
+  
+  
+  template<class vobj>
+    inline auto Pnorm2_internal(const Lattice<vobj> &lhs)
+    -> Lattice<decltype(Pnorm2(lhs._odata[0]))>
+    {
+        Lattice<decltype(Pnorm2(lhs._odata[0]))> ret(lhs._grid);
+        parallel_for(int ss=0;ss<lhs._grid->oSites();ss++){
+            ret._odata[ss] = Pnorm2(lhs._odata[ss]);
+        }
+        return ret;
+    }
+    
+  template<class vobj>
+    inline auto Pnorm2(const Lattice<vobj> &lhs)
+    -> decltype(sum(Pnorm2_internal(lhs)))
+    {
+        return sum(Pnorm2_internal(lhs)) / (double)lhs._grid->gSites();
+    }
+    
     
 }
 #endif

@@ -35,9 +35,9 @@ using namespace std;
 
 static constexpr double tolerance = 1.0e-12;
 
-const int vsz = 1;
-const int msz = 2;
-const int psz = 2;
+const int vsz = 10;
+const int msz = 9;
+const int psz = 8;
 
 const Complex im(0,1);
 
@@ -460,8 +460,7 @@ int main(int argc, char *argv[]) {
     zeroit(reducedtensorman);
     loopv(i)
     loopp(j)
-    for (int k=0; k<=j; k++)
-    reducedtensorman(j) += TensorRemove(trace(adj(S(i)(k))*S(i)(j-k)));
+    reducedtensorman(j) += TensorRemove(trace(adj(S(i)(j))*S(i)(j)));
     reducedtensorman = reducedtensorman / (double)msz / (double)vsz;
     reducedtensor = Pnorm2(S);
     check = 0;

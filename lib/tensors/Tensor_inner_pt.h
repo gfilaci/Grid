@@ -92,7 +92,7 @@ namespace Grid {
     ret_t ret;
     ret=zero;
     for(int c1=0;c1<N;c1++){
-        ret += PinnerProduct(lhs._internal[c1],rhs._internal[c1]) / (double)N;
+        ret += PinnerProduct(lhs._internal[c1],rhs._internal[c1]) * (1./(double)N);
     }
     return ret;
   }
@@ -101,13 +101,12 @@ namespace Grid {
   auto PinnerProduct (const iMatrix<l,N>& lhs,const iMatrix<r,N>& rhs) -> decltype(TensorRemove(PinnerProduct(lhs._internal[0][0],rhs._internal[0][0])))
   {
     auto adjlhs = adj(lhs);
-    
     typedef decltype(TensorRemove(PinnerProduct(lhs._internal[0][0],rhs._internal[0][0]))) ret_t;
     ret_t ret;
     zeroit(ret);
     for(int c1=0;c1<N;c1++){
         for(int c2=0;c2<N;c2++){
-            ret += PinnerProduct(adjlhs._internal[c1][c2],rhs._internal[c2][c1]) / (double)N;
+            ret += PinnerProduct(adjlhs._internal[c1][c2],rhs._internal[c2][c1]) * (1./(double)N);
         }
     }
     return ret;
@@ -119,11 +118,16 @@ namespace Grid {
     typedef decltype(TensorRemove(PinnerProduct(lhs._internal[0],rhs._internal[0]))) ret_t;
     iPert<ret_t,N> ret;
     ret=zero;
+    // this definition gives a Pnorm2 which measures the norm of each perturbative order
     for(int c1=0;c1<N;c1++){
-         for(int c2=0;c2<=c1;c2++){
-            ret._internal[c1] += PinnerProduct(lhs._internal[c2],rhs._internal[c1-c2]);
-        }
+        ret._internal[c1] += PinnerProduct(lhs._internal[c1],rhs._internal[c1]);
     }
+    // this definition gives a Pnorm2 which checks if a perturbative object is in SU(N)
+//    for(int c1=0;c1<N;c1++){
+//         for(int c2=0;c2<=c1;c2++){
+//            ret._internal[c1] += PinnerProduct(lhs._internal[c2],rhs._internal[c1-c2]);
+//        }
+//    }
     return ret;
   }
     

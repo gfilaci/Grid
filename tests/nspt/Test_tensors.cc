@@ -203,7 +203,7 @@ int main(int argc, char *argv[]) {
     loopv(i)
     Tman(i) = S(i) * P(i);
     T = S * P;
-    print_test("vector x vector (overloaded)        ",T,Tman);
+    print_test("vec x vec   (overloaded)            ",T,Tman);
     
     
     std::cout << GridLogMessage << "======== Test division by scalar" << std::endl;
@@ -455,6 +455,19 @@ int main(int argc, char *argv[]) {
     loopp(i)
     if(norm(Treducedtensor(i)-Treducedtensorman(i))>tolerance) check++;
     print_test("addition and subtraction (complex)  ",0,check);
+    
+    random(sRNG,S);
+    zeroit(reducedtensorman);
+    loopv(i)
+    loopp(j)
+    for (int k=0; k<=j; k++)
+    reducedtensorman(j) += TensorRemove(trace(adj(S(i)(k))*S(i)(j-k)));
+    reducedtensorman = reducedtensorman / (double)msz / (double)vsz;
+    reducedtensor = Pnorm2(S);
+    check = 0;
+    loopp(i)
+    if(norm(reducedtensor(i)-reducedtensorman(i))>tolerance) check++;
+    print_test("norm with perturbative structure    ",0,check);
     
     Grid_finalize();
     return EXIT_SUCCESS;

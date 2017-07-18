@@ -61,5 +61,71 @@ namespace Grid {
     return ret;
   }
   
+  
+  
+  ///////////////////////////////////////////////////////////////////////////////////////
+  // INNER PRODUCT & NORM WITH PERTURBATIVE STRUCTURE
+  ///////////////////////////////////////////////////////////////////////////////////////
+  
+  template<class l> inline
+  auto Pnorm2 (const l lhs) -> decltype(PinnerProduct(lhs,lhs))
+  {
+    return PinnerProduct(lhs,lhs);
+  }
+  
+  template<class l,class r> inline
+  auto PinnerProduct (const l lhs,const r rhs) -> decltype(lhs*rhs)
+  {
+    return lhs*rhs;
+  }
+  
+  template<class l,class r> inline
+  auto PinnerProduct (const iScalar<l>& lhs,const iScalar<r>& rhs) -> decltype(TensorRemove(PinnerProduct(lhs._internal,rhs._internal)))
+  {
+    return PinnerProduct(lhs._internal,rhs._internal);;
+  }
+  
+  template<class l,class r,int N> inline
+  auto PinnerProduct (const iVector<l,N>& lhs,const iVector<r,N>& rhs) -> decltype(TensorRemove(PinnerProduct(lhs._internal[0],rhs._internal[0])))
+  {
+    typedef decltype(TensorRemove(PinnerProduct(lhs._internal[0],rhs._internal[0]))) ret_t;
+    ret_t ret;
+    ret=zero;
+    for(int c1=0;c1<N;c1++){
+        ret += PinnerProduct(lhs._internal[c1],rhs._internal[c1]) / (double)N;
+    }
+    return ret;
+  }
+  
+  template<class l,class r,int N> inline
+  auto PinnerProduct (const iMatrix<l,N>& lhs,const iMatrix<r,N>& rhs) -> decltype(TensorRemove(PinnerProduct(lhs._internal[0][0],rhs._internal[0][0])))
+  {
+    auto adjlhs = adj(lhs);
+    
+    typedef decltype(TensorRemove(PinnerProduct(lhs._internal[0][0],rhs._internal[0][0]))) ret_t;
+    ret_t ret;
+    zeroit(ret);
+    for(int c1=0;c1<N;c1++){
+        for(int c2=0;c2<N;c2++){
+            ret += PinnerProduct(adjlhs._internal[c1][c2],rhs._internal[c2][c1]) / (double)N;
+        }
+    }
+    return ret;
+  }
+  
+  template<class l,class r,int N> inline
+  auto PinnerProduct (const iPert<l,N>& lhs,const iPert<r,N>& rhs) -> iPert<decltype(TensorRemove(PinnerProduct(lhs._internal[0],rhs._internal[0]))),N>
+  {
+    typedef decltype(TensorRemove(PinnerProduct(lhs._internal[0],rhs._internal[0]))) ret_t;
+    iPert<ret_t,N> ret;
+    ret=zero;
+    for(int c1=0;c1<N;c1++){
+         for(int c2=0;c2<=c1;c2++){
+            ret._internal[c1] += PinnerProduct(lhs._internal[c2],rhs._internal[c1-c2]);
+        }
+    }
+    return ret;
+  }
+    
 }
 #endif

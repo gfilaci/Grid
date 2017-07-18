@@ -119,5 +119,18 @@ auto operator * (const iPert<l,N>& lhs,const iPert<r,N>& rhs) -> iPert<decltype(
     return ret;
 }
 
+    // Multiplicate separately each component of the vectors
+    // vector x vector = vector
+    //
+template<class l,class r,int N> strong_inline
+auto operator * (const iVector<l,N>& lhs,const iVector<r,N>& rhs) -> iVector<decltype(lhs._internal[0]*rhs._internal[0]),N>
+{
+    typedef decltype(lhs._internal[0]*rhs._internal[0]) ret_t;
+    iVector<ret_t,N> ret;
+    for(int c1=0;c1<N;c1++){
+        mult(&ret._internal[c1],&lhs._internal[c1],&rhs._internal[c1]);
+    }
+    return ret;
+}
 }
 #endif

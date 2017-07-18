@@ -146,9 +146,9 @@ int main(int argc, char *argv[]) {
         Action.deriv(U,F);
         F = -0.00001*F;
         F = AddToOrd(1,F,noise);
-        F = Exponentiate(F);
-        for (int mu=0; mu<Nd; mu++)
-            pokeLorentz(U,peekLorentz(F,mu)*peekLorentz(U,mu),mu);
+        U = Exponentiate(F) * U;
+//        for (int mu=0; mu<Nd; mu++)
+//            pokeLorentz(U,peekLorentz(F,mu)*peekLorentz(U,mu),mu);
         if (i%1000==0) cout<<Action.S(U)<<endl;
     }
     

@@ -200,6 +200,10 @@ int main(int argc, char *argv[]) {
     T(i) = S(i) * Q._internal;
     print_test("pert x pert (overloaded)            ",T,Tman);
     
+    loopv(i)
+    Tman(i) = S(i) * P(i);
+    T = S * P;
+    print_test("vector x vector (overloaded)        ",T,Tman);
     
     
     std::cout << GridLogMessage << "======== Test division by scalar" << std::endl;

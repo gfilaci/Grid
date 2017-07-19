@@ -48,8 +48,9 @@ int main(int argc, char *argv[]) {
     
     
     double beta = 1.;
-    double tau = 0.0025*2*2;
+    double tau = 0.01;
     double stau = std::sqrt(tau);
+    double alpha = -0.5*tau;
     
     WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>> Action(beta);
     
@@ -57,7 +58,9 @@ int main(int argc, char *argv[]) {
     QCDpt::LatticeGaugeField F(&Grid);
     QCDpt::LatticeLorentzColourMatrix noise(&Grid);
     QCDpt::LatticeColourMatrix tmp(&Grid);
-
+    QCDpt::LatticePertColourMatrix gt(&Grid), div(&Grid);
+    
+    
     // cold start
     zeroit(U);
     
@@ -68,18 +71,34 @@ int main(int argc, char *argv[]) {
     
     for (int i=0; i<10000; i++) {
     
-        //noise
+        // noise
         for (int mu=0; mu<Nd; mu++) {
             QCDpt::SU<Nc>::GaussianFundamentalLieAlgebraMatrix(pRNG, tmp, M_SQRT2);
             pokeLorentz(noise,tmp,mu);
         }
+        
+        // Langevin update (Euler)
         Action.deriv(U,F);
         F = - stau * F;
         F = stau * AddToOrd(1,F,noise);
         U = Exponentiate(F) * U;
+        
+        // stochastic gauge fixing
+        zeroit(gt);
+        for (int mu=0; mu<Nd; mu++) {
+            div = peekLorentz(U,mu);
+            gt += div - Cshift(div,mu,-1);
+        }
+        gt = alpha * Ta(gt);
+        gt = Exponentiate(gt);
+        QCDpt::SU<Nc>::GaugeTransform(U,gt);
+        
+        
 //        if (i%100==0) {cout<<Action.S(U)<<endl;cout<<"\t"<<Pnorm2(U)<<endl;}
         if (i%100==0) cout<<WilsonLoops<PeriodicGaugeImpl<GimplTypes_ptR>>::avgPlaquette(U)<<endl;
     }
+    
+    
     
     
     Grid_finalize();

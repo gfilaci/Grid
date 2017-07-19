@@ -152,14 +152,14 @@ template<class vtype, int N> inline iPert<vtype, N> Logarithm(const iPert<vtype,
   // Add to a given order
   ///////////////////////////////////////////////
   
-  template<class vtype1, class vtype2> inline iScalar<vtype1> AddToOrd(const int &ord, const iScalar<vtype1>&r, const iScalar<vtype2> &Q)
+  template<class vtype1, class vtype2> inline iScalar<vtype1> AddToOrd(const int &ord, const iScalar<vtype1> &r, const iScalar<vtype2> &Q)
     {
       iScalar<vtype1> ret;
       ret._internal = AddToOrd(ord,r._internal,Q._internal);
       return ret;
     }
 
-template<class vtype1, class vtype2, int N> inline iVector<vtype1, N> AddToOrd(const int &ord, const iVector<vtype1,N>&r, const iScalar<vtype2> &Q)
+template<class vtype1, class vtype2, int N> inline iVector<vtype1, N> AddToOrd(const int &ord, const iVector<vtype1,N> &r, const iScalar<vtype2> &Q)
     {
       iVector<vtype1, N> ret;
       for (int i = 0; i < N; i++)
@@ -167,7 +167,7 @@ template<class vtype1, class vtype2, int N> inline iVector<vtype1, N> AddToOrd(c
       return ret;
     }
 
-template<class vtype1, class vtype2, int N> inline iVector<vtype1, N> AddToOrd(const int &ord, const iVector<vtype1,N>&r, const iVector<vtype2,N> &Q)
+template<class vtype1, class vtype2, int N> inline iVector<vtype1, N> AddToOrd(const int &ord, const iVector<vtype1,N> &r, const iVector<vtype2,N> &Q)
     {
       iVector<vtype1, N> ret;
       for (int i = 0; i < N; i++)
@@ -175,7 +175,7 @@ template<class vtype1, class vtype2, int N> inline iVector<vtype1, N> AddToOrd(c
       return ret;
     }
     
-template<class vtype1, class vtype2, int N> inline iMatrix<vtype1, N> AddToOrd(const int &ord, const iMatrix<vtype1,N>&r, const iScalar<vtype2> &Q)
+template<class vtype1, class vtype2, int N> inline iMatrix<vtype1, N> AddToOrd(const int &ord, const iMatrix<vtype1,N> &r, const iScalar<vtype2> &Q)
     {
       iMatrix<vtype1, N> ret;
       for (int i = 0; i < N; i++)

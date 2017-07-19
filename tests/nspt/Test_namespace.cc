@@ -32,21 +32,6 @@ using namespace QCDpt;
 
 static constexpr double tolerance = 1.0e-12;
 
-// fix...
-//PRealD myInnerProduct(const QCDpt::LatticeGaugeField &U, const QCDpt::LatticeGaugeField &V){
-//    PRealD res;
-//    zeroit(res);
-//    QCDpt::LatticeGaugeField W(&(*U._grid));
-//    for (int mu=0; mu<Nd; mu++) {
-//        pokeLorentz(W,peekLorentz(U,mu)*adj(peekLorentz(V,mu)),mu);
-//        for (int k=0; k<Np; k++) {
-////            res(k) += TensorRemove(trace(peekPert(peekLorentz(W,mu),k)));// / Nc / U._grid->gSites() / Nd;
-//            cout<<trace(peekPert(peekLorentz(W,mu),k))<<endl;
-//        }
-//    }
-//    return res;
-//}
-
 void test(const double &a, const double &b)
 {
   if (a - b < tolerance)
@@ -119,38 +104,6 @@ int main(int argc, char *argv[]) {
     
     print_test("GimplTypes_ptR is perturbative            ",1.,(double)isPerturbative<GimplTypes_ptR::Field>::value);
     print_test("GimplTypesR is not perturbative           ",0.,(double)isPerturbative<GimplTypesR::Field>::value);
-    
-    
-    
-
-    
-    double beta = 1.;
-    WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>> Action(beta);
-    
-    QCDpt::LatticeGaugeField U(&Grid);
-    QCDpt::LatticeGaugeField F(&Grid);
-    QCDpt::LatticeLorentzColourMatrix noise(&Grid);
-    QCDpt::LatticeColourMatrix tmp(&Grid);
-
-    random(pRNG,U);
-    U = ProjectOnGroup(U);
-    
-    for (int i=0; i<10000; i++) {
-    
-        //noise
-        for (int mu=0; mu<Nd; mu++) {
-            QCDpt::SU<Nc>::GaussianFundamentalLieAlgebraMatrix(pRNG, tmp, M_SQRT1_2);
-            pokeLorentz(noise,tmp,mu);
-        }
-    
-        Action.deriv(U,F);
-        F = -0.001*F;
-//        F = AddToOrd(1,F,noise);
-        U = Exponentiate(F) * U;
-//        for (int mu=0; mu<Nd; mu++)
-//            pokeLorentz(U,peekLorentz(F,mu)*peekLorentz(U,mu),mu);
-        if (i%100==0) {cout<<Action.S(U)<<endl;cout<<"\t"<<Pnorm2(U)<<endl;}
-    }
     
     Grid_finalize();
     return EXIT_SUCCESS;

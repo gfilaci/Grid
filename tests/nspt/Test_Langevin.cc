@@ -62,13 +62,10 @@ int main(int argc, char *argv[]) {
     
     
     // cold start
-    zeroit(U);
-    
+    PertVacuum(U);
     // random start
-//    random(pRNG,U);
+//    PertRandom(pRNG,U);
 
-    U = ProjectOnGroup(U);
-    
     for (int i=0; i<10000; i++) {
     
         // noise

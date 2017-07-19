@@ -192,7 +192,6 @@ template<class vtype, int N> inline iPert<vtype, N> AddToOrd(const int &ord, con
       
       return ret;
   }
-
-
+    
 }
 #endif

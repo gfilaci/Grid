@@ -82,7 +82,6 @@ template<class vobj1,class vobj2>
         return sum(Pnorm2_internal(lhs)) / (double)lhs._grid->gSites();
     }
     
-    
 }
 #endif
 

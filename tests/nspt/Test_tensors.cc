@@ -377,6 +377,14 @@ int main(int argc, char *argv[]) {
     }
     print_test("add to specific order               ",T,Tman);
     
+    random(sRNG,P);
+    random(sRNG,S);
+    Tman = P;
+    loopv(i)
+    for (int k=2; k<psz; k++)
+    Tman(i)(k) += S(i)(k-2);
+    T = ShiftedSum(2,P,S);
+    print_test("add to shifted order                ",T,Tman);
     
     
     std::cout << GridLogMessage << "======== Test projections" << std::endl;

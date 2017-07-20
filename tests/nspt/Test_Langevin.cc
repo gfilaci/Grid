@@ -43,60 +43,24 @@ int main(int argc, char *argv[]) {
     int threads = GridThread::GetThreads();
     std::cout<<GridLogMessage << "Grid is setup to use "<<threads<<" threads"<<std::endl;
     
-    GridParallelRNG          pRNG(&Grid);
-    pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
     
-    
-    double beta = 1.;
     double tau = 0.01;
-    double stau = std::sqrt(tau);
     double alpha = -0.5*tau;
     
-    WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>> Action(beta);
-    
     QCDpt::LatticeGaugeField U(&Grid);
-    QCDpt::LatticeGaugeField F(&Grid);
-    QCDpt::LatticeLorentzColourMatrix noise(&Grid);
-    QCDpt::LatticeColourMatrix tmp(&Grid);
-    QCDpt::LatticePertColourMatrix gt(&Grid), div(&Grid);
-    
     
     // cold start
     PertVacuum(U);
     // random start
 //    PertRandom(pRNG,U);
 
+    PertLangevin<WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>>> L(&Grid,tau,alpha);
+    
     for (int i=0; i<10000; i++) {
-    
-        // noise
-        for (int mu=0; mu<Nd; mu++) {
-            QCDpt::SU<Nc>::GaussianFundamentalLieAlgebraMatrix(pRNG, tmp, M_SQRT2);
-            pokeLorentz(noise,tmp,mu);
-        }
-        
-        // Langevin update (Euler)
-        Action.deriv(U,F);
-        F = - stau * F;
-        F = stau * AddToOrd(1,F,noise);
-        U = Exponentiate(F) * U;
-        
-        // stochastic gauge fixing
-        zeroit(gt);
-        for (int mu=0; mu<Nd; mu++) {
-            div = peekLorentz(U,mu);
-            gt += div - Cshift(div,mu,-1);
-        }
-        gt = alpha * Ta(gt);
-        gt = Exponentiate(gt);
-        QCDpt::SU<Nc>::GaugeTransform(U,gt);
-        
-        
+        L.QuenchRKStep(U);
 //        if (i%100==0) {cout<<Action.S(U)<<endl;cout<<"\t"<<Pnorm2(U)<<endl;}
-        if (i%100==0) cout<<WilsonLoops<PeriodicGaugeImpl<GimplTypes_ptR>>::avgPlaquette(U)<<endl;
+        if (i%10==0) cout<<WilsonLoops<PeriodicGaugeImpl<GimplTypes_ptR>>::avgPlaquette(U)<<endl;
     }
-    
-    
-    
     
     Grid_finalize();
     return EXIT_SUCCESS;

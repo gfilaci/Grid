@@ -62,6 +62,22 @@ template<class vobj1,class vobj2>
         }
         return ret;
     }
+
+template<class vobj1,class vobj2>
+    inline void AddToOrdVoid(const int &ord, Lattice<vobj1> &lhs, const Lattice<vobj2> &rhs)
+    {
+        parallel_for(int ss=0;ss<lhs._grid->oSites();ss++){
+            AddToOrdVoid(ord,lhs._odata[ss],rhs._odata[ss]);
+        }
+    }
+
+template<class vobj1,class vobj2>
+    inline void AddToOrdVoid(const int &ord, Lattice<vobj1> &lhs, const Lattice<vobj2> &rhs, const RealD factor)
+    {
+        parallel_for(int ss=0;ss<lhs._grid->oSites();ss++){
+            AddToOrdVoid(ord,lhs._odata[ss],rhs._odata[ss],factor);
+        }
+    }
     
 template<class vobj1,class vobj2>
     inline auto ShiftedSum(const int &ord, const Lattice<vobj1> &lhs, const Lattice<vobj2> &rhs)
@@ -74,6 +90,14 @@ template<class vobj1,class vobj2>
         return ret;
     }
   
+template<class vobj1,class vobj2>
+    inline void ShiftedSumVoid(const int &ord, Lattice<vobj1> &lhs, const Lattice<vobj2> &rhs, const RealD factor)
+    {
+        parallel_for(int ss=0;ss<lhs._grid->oSites();ss++){
+            ShiftedSumVoid(ord,lhs._odata[ss],rhs._odata[ss],factor);
+        }
+    }
+    
 template<class vobj>
     inline auto Pnorm2_internal(const Lattice<vobj> &lhs)
     -> Lattice<decltype(Pnorm2(lhs._odata[0]))>

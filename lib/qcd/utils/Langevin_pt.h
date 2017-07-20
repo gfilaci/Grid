@@ -46,9 +46,10 @@ protected:
     
     RealD tau;
     RealD alpha;
-    double stau = std::sqrt(tau);
-    double halftau = 0.5 * tau;
-    double RKtau = (double)Nc * tau * tau / 6.;
+    double stau;
+    double mtau;
+    double halftau;
+    double RKtau;
     
     typedef typename Action::GaugeField FieldType;
     FieldType F, F0, U0;
@@ -74,6 +75,10 @@ public:
     div(grid)
     {
         pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
+        stau = std::sqrt(tau);
+        mtau = - tau;
+        halftau = 0.5 * tau;
+        RKtau = - (double)Nc * tau * tau / 6.;
     };
 
     void GenerateNoise() {
@@ -98,8 +103,8 @@ public:
     void QuenchEulerStep(FieldType &U) {
         GenerateNoise();
         ac.deriv(U,F);
-        F = - tau * F;
-        F = AddToOrd(1,F,noise);
+        F = mtau * F;
+        AddToOrdVoid(1,F,noise);
         U = Exponentiate(F) * U;
         StochasticGF(U);
     }
@@ -107,16 +112,15 @@ public:
     void QuenchRKStep(FieldType &U) {
         GenerateNoise();
         ac.deriv(U,F);
-        F = - tau * F;
-        F = AddToOrd(1,F,noise);
+        F = mtau * F;
+        AddToOrdVoid(1,F,noise);
         U0 = Exponentiate(F) * U;
         // Go from F = -tau*nabla_S[U] + stau*noise ...
-        F = 0.5 * AddToOrd(1,F,noise);
+        AddToOrdVoid(1,F,noise,0.5);
         // ... to F = -tau/2*nabla_S[U] + stau*noise .
         ac.deriv(U0,F0);
         F -= halftau * F0;
-        F0 = - RKtau * F0;
-        F = ShiftedSum(2,F,F0); // multiplication by 1/beta
+        ShiftedSumVoid(2,F,F0,RKtau); // multiplication by 1/beta
         U = Exponentiate(F) * U;
         StochasticGF(U);
     }

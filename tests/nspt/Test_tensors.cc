@@ -376,6 +376,12 @@ int main(int argc, char *argv[]) {
         T = AddToOrd(i,T,NP2);
     }
     print_test("add to specific order               ",T,Tman);
+    T = P;
+    loopp(i){
+        NP2 = (double)(i+1) * NP;
+        AddToOrdVoid(i,T,NP2);
+    }
+    print_test("add to specific order (void)        ",T,Tman);
     
     random(sRNG,P);
     random(sRNG,S);
@@ -385,7 +391,9 @@ int main(int argc, char *argv[]) {
     Tman(i)(k) += S(i)(k-2);
     T = ShiftedSum(2,P,S);
     print_test("add to shifted order                ",T,Tman);
-    
+    T = P;
+    ShiftedSumVoid(2,T,S,1.);
+    print_test("add to shifted order (void)         ",T,Tman);
     
     std::cout << GridLogMessage << "======== Test projections" << std::endl;
     

@@ -51,15 +51,20 @@ int main(int argc, char *argv[]) {
     
     // cold start
     PertVacuum(U);
+    
     // random start
-//    PertRandom(pRNG,U);
+    GridParallelRNG pRNG(&Grid);
+    pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
+    PertRandom(pRNG,U);
 
     PertLangevin<WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>>> L(&Grid,tau,alpha);
     
     for (int i=0; i<10000; i++) {
+        
         L.QuenchRKStep(U);
+        
 //        if (i%100==0) {cout<<Action.S(U)<<endl;cout<<"\t"<<Pnorm2(U)<<endl;}
-        if (i%10==0) cout<<WilsonLoops<PeriodicGaugeImpl<GimplTypes_ptR>>::avgPlaquette(U)<<endl;
+        if (i%25==0) cout<<WilsonLoops<PeriodicGaugeImpl<GimplTypes_ptR>>::avgPlaquette(U)<<endl;
     }
     
     Grid_finalize();

@@ -192,7 +192,71 @@ template<class vtype, int N> inline iPert<vtype, N> AddToOrd(const int &ord, con
       
       return ret;
   }
+  
+  ///////////////////////////////////////////////
+  // Add to a given order (void)
+  ///////////////////////////////////////////////
+  
+  template<class vtype1, class vtype2> inline void AddToOrdVoid(const int &ord, iScalar<vtype1> &r, const iScalar<vtype2> &Q)
+    {
+      AddToOrdVoid(ord,r._internal,Q._internal);
+    }
+
+template<class vtype1, class vtype2, int N> inline void AddToOrdVoid(const int &ord, iVector<vtype1,N> &r, const iScalar<vtype2> &Q)
+    {
+      for (int i = 0; i < N; i++)
+        AddToOrdVoid(ord,r._internal[i],Q._internal);
+    }
+
+template<class vtype1, class vtype2, int N> inline void AddToOrdVoid(const int &ord, iVector<vtype1,N> &r, const iVector<vtype2,N> &Q)
+    {
+      for (int i = 0; i < N; i++)
+        AddToOrdVoid(ord,r._internal[i],Q._internal[i]);
+    }
     
+template<class vtype1, class vtype2, int N> inline void AddToOrdVoid(const int &ord, iMatrix<vtype1,N> &r, const iScalar<vtype2> &Q)
+    {
+      for (int i = 0; i < N; i++)
+          for (int j = 0; j < N; j++)
+              AddToOrdVoid(ord,r._internal[i][j],Q._internal);
+    }
+    
+template<class vtype, int N> inline void AddToOrdVoid(const int &ord, iPert<vtype,N> &P, const iScalar<vtype> &Q)
+  {
+      P._internal[ord] += Q._internal;
+  }
+
+  
+template<class vtype1, class vtype2> inline void AddToOrdVoid(const int &ord, iScalar<vtype1> &r, const iScalar<vtype2> &Q, const RealD factor)
+    {
+      AddToOrdVoid(ord,r._internal,Q._internal,factor);
+    }
+
+template<class vtype1, class vtype2, int N> inline void AddToOrdVoid(const int &ord, iVector<vtype1,N> &r, const iScalar<vtype2> &Q, const RealD factor)
+    {
+      for (int i = 0; i < N; i++)
+        AddToOrdVoid(ord,r._internal[i],Q._internal,factor);
+    }
+
+template<class vtype1, class vtype2, int N> inline void AddToOrdVoid(const int &ord, iVector<vtype1,N> &r, const iVector<vtype2,N> &Q, const RealD factor)
+    {
+      for (int i = 0; i < N; i++)
+        AddToOrdVoid(ord,r._internal[i],Q._internal[i],factor);
+    }
+    
+template<class vtype1, class vtype2, int N> inline void AddToOrdVoid(const int &ord, iMatrix<vtype1,N> &r, const iScalar<vtype2> &Q, const RealD factor)
+    {
+      for (int i = 0; i < N; i++)
+          for (int j = 0; j < N; j++)
+              AddToOrdVoid(ord,r._internal[i][j],Q._internal,factor);
+    }
+    
+template<class vtype, int N> inline void AddToOrdVoid(const int &ord, iPert<vtype,N> &P, const iScalar<vtype> &Q, const RealD factor)
+  {
+      P._internal[ord] += Q._internal;
+      P = factor * P;
+  }
+  
   ///////////////////////////////////////////////
   // Shifted sum
   ///////////////////////////////////////////////
@@ -237,6 +301,41 @@ template<class vtype, int N> inline iPert<vtype, N> ShiftedSum(const int &ord, c
           ret._internal[i] += Q._internal[i-ord];
       }
       return ret;
+  }
+
+  ///////////////////////////////////////////////
+  // Shifted sum (void)
+  ///////////////////////////////////////////////
+  
+template<class vtype1, class vtype2> inline void ShiftedSumVoid(const int &ord, iScalar<vtype1> &r, const iScalar<vtype2> &Q, const RealD factor)
+    {
+        ShiftedSumVoid(ord,r._internal,Q._internal,factor);
+    }
+
+template<class vtype1, class vtype2, int N> inline void ShiftedSumVoid(const int &ord, iVector<vtype1,N> &r, const iScalar<vtype2> &Q, const RealD factor)
+    {
+      for (int i = 0; i < N; i++)
+        ShiftedSumVoid(ord,r._internal[i],Q._internal,factor);
+    }
+
+template<class vtype1, class vtype2, int N> inline void ShiftedSumVoid(const int &ord, iVector<vtype1,N> &r, const iVector<vtype2,N> &Q, const RealD factor)
+    {
+      for (int i = 0; i < N; i++)
+        ShiftedSumVoid(ord,r._internal[i],Q._internal[i],factor);
+    }
+    
+template<class vtype1, class vtype2, int N> inline void ShiftedSumVoid(const int &ord, iMatrix<vtype1,N> &r, const iScalar<vtype2> &Q, const RealD factor)
+    {
+      for (int i = 0; i < N; i++)
+          for (int j = 0; j < N; j++)
+              ShiftedSumVoid(ord,r._internal[i][j],Q._internal,factor);
+    }
+    
+template<class vtype, int N> inline void ShiftedSumVoid(const int &ord, iPert<vtype,N> &P, const iPert<vtype, N> &Q, const RealD factor)
+  {
+      for (int i=ord; i<N; i++) {
+          P._internal[i] += factor * Q._internal[i-ord];
+      }
   }
 
 

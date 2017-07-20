@@ -30,7 +30,7 @@ Author: Gianluca Filaci <g.filaci@ed.ac.uk>
 
 namespace Grid {
     
-  template<class vobj>
+template<class vobj>
     inline auto Exponentiate(const Lattice<vobj> &lhs)
     -> Lattice<decltype(Exponentiate(lhs._odata[0]))>
     {
@@ -62,9 +62,19 @@ template<class vobj1,class vobj2>
         }
         return ret;
     }
+    
+template<class vobj1,class vobj2>
+    inline auto ShiftedSum(const int &ord, const Lattice<vobj1> &lhs, const Lattice<vobj2> &rhs)
+    -> Lattice<decltype(ShiftedSum(ord,lhs._odata[0],rhs._odata[0]))>
+    {
+        Lattice<decltype(ShiftedSum(ord,lhs._odata[0],rhs._odata[0]))> ret(lhs._grid);
+        parallel_for(int ss=0;ss<lhs._grid->oSites();ss++){
+            ret._odata[ss] = ShiftedSum(ord,lhs._odata[ss],rhs._odata[ss]);
+        }
+        return ret;
+    }
   
-  
-  template<class vobj>
+template<class vobj>
     inline auto Pnorm2_internal(const Lattice<vobj> &lhs)
     -> Lattice<decltype(Pnorm2(lhs._odata[0]))>
     {
@@ -75,7 +85,7 @@ template<class vobj1,class vobj2>
         return ret;
     }
     
-  template<class vobj>
+template<class vobj>
     inline auto Pnorm2(const Lattice<vobj> &lhs)
     -> decltype(sum(Pnorm2_internal(lhs)))
     {

@@ -193,5 +193,52 @@ template<class vtype, int N> inline iPert<vtype, N> AddToOrd(const int &ord, con
       return ret;
   }
     
+  ///////////////////////////////////////////////
+  // Shifted sum
+  ///////////////////////////////////////////////
+  
+  template<class vtype1, class vtype2> inline iScalar<vtype1> ShiftedSum(const int &ord, const iScalar<vtype1> &r, const iScalar<vtype2> &Q)
+    {
+      iScalar<vtype1> ret;
+      ret._internal = ShiftedSum(ord,r._internal,Q._internal);
+      return ret;
+    }
+
+template<class vtype1, class vtype2, int N> inline iVector<vtype1, N> ShiftedSum(const int &ord, const iVector<vtype1,N> &r, const iScalar<vtype2> &Q)
+    {
+      iVector<vtype1, N> ret;
+      for (int i = 0; i < N; i++)
+        ret._internal[i] = ShiftedSum(ord,r._internal[i],Q._internal);
+      return ret;
+    }
+
+template<class vtype1, class vtype2, int N> inline iVector<vtype1, N> ShiftedSum(const int &ord, const iVector<vtype1,N> &r, const iVector<vtype2,N> &Q)
+    {
+      iVector<vtype1, N> ret;
+      for (int i = 0; i < N; i++)
+        ret._internal[i] = ShiftedSum(ord,r._internal[i],Q._internal[i]);
+      return ret;
+    }
+    
+template<class vtype1, class vtype2, int N> inline iMatrix<vtype1, N> ShiftedSum(const int &ord, const iMatrix<vtype1,N> &r, const iScalar<vtype2> &Q)
+    {
+      iMatrix<vtype1, N> ret;
+      for (int i = 0; i < N; i++)
+          for (int j = 0; j < N; j++)
+              ret._internal[i][j] = ShiftedSum(ord,r._internal[i][j],Q._internal);
+      return ret;
+    }
+    
+template<class vtype, int N> inline iPert<vtype, N> ShiftedSum(const int &ord, const iPert<vtype,N> &P, const iPert<vtype, N> &Q)
+  {
+      iPert<vtype, N> ret(P);
+      
+      for (int i=ord; i<N; i++) {
+          ret._internal[i] += Q._internal[i-ord];
+      }
+      return ret;
+  }
+
+
 }
 #endif

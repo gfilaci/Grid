@@ -41,6 +41,8 @@ template <class Action>
 class PertLangevin {
 
 protected:
+    
+    GridBase* grid;
     GridParallelRNG pRNG;
     Action ac;
     
@@ -50,43 +52,59 @@ protected:
     double mtau;
     double halftau;
     double RKtau;
+    Complex ci;
+    ColourMatrix ta;
     
     typedef typename Action::GaugeField FieldType;
     FieldType F, F0, U0;
     typedef decltype(peekPert(F,0)) NoiseType;
     NoiseType noise;
-    typedef decltype(peekLorentz(noise,0)) ColourMatrixType;
-    ColourMatrixType tmp;
+    typedef Lattice<iVector<iScalar<iScalar<iScalar<vReal>>>,Nd>> rndType;
+    rndType ca;
     typedef decltype(peekLorentz(F,0)) GTType;
     GTType gt, div;
     
 public:
-    explicit PertLangevin(GridBase* grid, RealD tau_, RealD alpha_):
-    pRNG(grid),
+    explicit PertLangevin(GridBase* grid_, RealD tau_, RealD alpha_):
+    pRNG(grid_),
     ac(1.),
     tau(tau_),
     alpha(alpha_),
-    F(grid),
-    F0(grid),
-    U0(grid),
-    noise(grid),
-    tmp(grid),
-    gt(grid),
-    div(grid)
+    F(grid_),
+    F0(grid_),
+    U0(grid_),
+    noise(grid_),
+    ca(grid_),
+    gt(grid_),
+    div(grid_),
+    grid(grid_),
+    ci(0.,1.)
     {
         pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
         stau = std::sqrt(tau);
         mtau = - tau;
         halftau = 0.5 * tau;
         RKtau = - (double)Nc * tau * tau / 6.;
+        ci *= stau * M_SQRT2;
     };
 
     void GenerateNoise() {
-        for (int mu=0; mu<Nd; mu++) {
-            SU<Nc>::GaussianFundamentalLieAlgebraMatrix(pRNG, tmp, M_SQRT2);
-            pokeLorentz(noise,tmp,mu);
+        zeroit(noise);
+        for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
+            gaussian(pRNG, ca);
+            SU<Nc>::generator(a, ta);
+            noise += toComplex(ca) * ta;
         }
-        noise *= stau;
+        noise *= ci;
+        
+    // this is slower, it's better to make GaussianFundamentalLieAlgebraMatrix explicit
+//        typedef decltype(peekLorentz(noise,0)) ColourMatrixType;
+//        ColourMatrixType tmp(grid);
+//        for (int mu=0; mu<Nd; mu++) {
+//            SU<Nc>::GaussianFundamentalLieAlgebraMatrix(pRNG, tmp, M_SQRT2);
+//            pokeLorentz(noise,tmp,mu);
+//        }
+//        noise *= stau;
     }
     
     void StochasticGF(FieldType &U) {

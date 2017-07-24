@@ -125,6 +125,5 @@ namespace ConjugateBC {
 
 }
 
-
 }}
 #endif

@@ -2,7 +2,7 @@
 
 Grid physics library, www.github.com/paboyle/Grid 
 
-Source file: ./tests/Test_Langevin.cc
+Source file: ./tests/Test_twistedBC.cc
 
 Copyright (C) 2015-2017
 
@@ -44,29 +44,21 @@ int main(int argc, char *argv[]) {
     std::cout<<GridLogMessage << "Grid is setup to use "<<threads<<" threads"<<std::endl;
     
     
+    cout<<twist.twist_tensor()<<endl;
+    
     double tau = 0.01;
     double alpha = -0.5*tau;
     
     QCDpt::LatticeGaugeField U(&Grid);
-    
-    // cold start
     PertVacuum(U);
     
-    // random start
-//    GridParallelRNG pRNG(&Grid);
-//    pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
-//    PertRandom(pRNG,U);
-
-    PertLangevin<WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>>> L(&Grid,tau,alpha);
+    PertLangevin<WilsonGaugeAction<TwistedGaugeImpl<GimplTypes_ptR>>> L(&Grid,tau,alpha);
     
     for (int i=0; i<10000; i++) {
-//        std::cout<<GridLogMessage << "start step"<<std::endl;
         L.QuenchEulerStep(U);
-//        std::cout<<GridLogMessage << "end step"<<std::endl;
-//        cout<<Action.S(U)<<endl;
-//        if (i%25==0) {cout<<Pnorm2(U)<<endl;}
         if (i%25==0) cout<<WilsonLoops<PeriodicGaugeImpl<GimplTypes_ptR>>::avgPlaquette(U)<<endl;
     }
+    
     
     Grid_finalize();
     return EXIT_SUCCESS;

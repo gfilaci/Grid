@@ -99,21 +99,7 @@ public:
   }
 
   static inline Field projectForce(Field &P) { return Ta(P); }
-//$//
-//  static inline void update_field(Field& P, Field& U, double ep){
-//    //static std::chrono::duration<double> diff;
-//
-//    //auto start = std::chrono::high_resolution_clock::now();
-//    parallel_for(int ss=0;ss<P._grid->oSites();ss++){
-//      for (int mu = 0; mu < Nd; mu++) 
-//        U[ss]._internal[mu] = ProjectOnGroup(Exponentiate(P[ss]._internal[mu], ep, Nexp) * U[ss]._internal[mu]);
-//    }
-//    
-//    //auto end = std::chrono::high_resolution_clock::now();
-//   // diff += end - start;
-//   // std::cout << "Time to exponentiate matrix " << diff.count() << " s\n";
-//  }
-
+  
   static inline RealD FieldSquareNorm(Field& U){
     LatticeComplex Hloc(U._grid);
     Hloc = zero;

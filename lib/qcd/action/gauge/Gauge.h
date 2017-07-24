@@ -30,6 +30,7 @@ directory
 #define GRID_QCD_GAUGE_H
 
 #include <Grid/qcd/action/gauge/GaugeImplementations.h>
+#include <Grid/qcd/action/gauge/GaugeImplementations_tbc.h>
 #include <Grid/qcd/utils/WilsonLoops.h>
 #include <Grid/qcd/action/gauge/WilsonGaugeAction.h>
 #include <Grid/qcd/action/gauge/PlaqPlusRectangleAction.h>

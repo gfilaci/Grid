@@ -48,15 +48,15 @@ int main(int argc, char *argv[]) {
     
     double tau = 0.01;
     double alpha = -0.5*tau;
-    
+
     QCDpt::LatticeGaugeField U(&Grid);
     PertVacuum(U);
     
-    PertLangevin<WilsonGaugeAction<TwistedGaugeImpl<GimplTypes_ptR>>> L(&Grid,tau,alpha);
+    PertLangevin<WilsonGaugeAction<TwistedGimpl_ptR>> L(&Grid,tau,alpha);
     
     for (int i=0; i<10000; i++) {
         L.QuenchEulerStep(U);
-        if (i%25==0) cout<<WilsonLoops<PeriodicGaugeImpl<GimplTypes_ptR>>::avgPlaquette(U)<<endl;
+        if (i%25==0) cout<<WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U)<<endl;
     }
     
     

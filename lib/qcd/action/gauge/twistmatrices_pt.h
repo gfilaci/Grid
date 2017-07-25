@@ -54,17 +54,17 @@ public:
   {
       initialisetwist();
 
-#define istwisted(mu) (mu==1 || mu==2)
+#define istwisted(mu) (mu==0 || mu==1)
       
-//      omega[0] = omega1;
-//      omega[1] = omega2;
-//      omega[2] = identity;
-//      omega[3] = identity;
-
-      omega[0] = identity;
-      omega[1] = omega1;
-      omega[2] = omega2;
+      omega[0] = omega1;
+      omega[1] = omega2;
+      omega[2] = identity;
       omega[3] = identity;
+
+//      omega[0] = identity;
+//      omega[1] = omega1;
+//      omega[2] = omega2;
+//      omega[3] = identity;
       
       for (int i=0; i<Nd; i++) {
           adjomega[i] = adj(omega[i]);

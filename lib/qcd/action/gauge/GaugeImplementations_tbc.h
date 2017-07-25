@@ -37,12 +37,9 @@ namespace Grid {
 namespace QCD {
 namespace QCDpt {
   
-  // move in twistmatrices...?
-  #define istwisted(mu) mu==0 || mu==1
-  
-  // is it possible to do something better than if(istwisted(mu))?
-  // move it inside gauge implementation... //$//
-  twistmatrices<Nc> twist; // ~3kB
+  // this is allocated even if tbc are not used...
+  // ~3kB
+  twistmatrices<Nc> twist;
   
 namespace TwistedBC {
 
@@ -81,6 +78,7 @@ namespace TwistedBC {
     Lattice<covariant> tmp(grid);
 
     tmp = adj(Link)*field;
+    
     if(istwisted(mu))
     tmp = where(coor==Lmu,twist.backward(tmp,mu),tmp);
     
@@ -96,11 +94,7 @@ namespace TwistedBC {
 template <class GimplTypes> class TwistedGaugeImpl : public GimplTypes {
 public:
   INHERIT_GIMPL_TYPES(GimplTypes);
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Support needed for the assembly of loops including all boundary condition
-  // effects such as Gparity.
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
   template <class covariant>
   static Lattice<covariant> CovShiftForward(const GaugeLinkField &Link, int mu,
                                             const Lattice<covariant> &field) {
@@ -123,8 +117,10 @@ public:
     
     GaugeLinkField tmp(grid);
     tmp = adj(Link);
+    
     if(istwisted(mu))
     tmp = where(coor == Lmu, twist.backward(tmp,mu), tmp);
+    
     return Cshift(tmp, mu, -1);
   }
   static inline GaugeLinkField
@@ -141,14 +137,18 @@ public:
 
     GaugeLinkField tmp(grid);
     tmp = Cshift(Link, mu, 1);
+    
     if(istwisted(mu))
     tmp = where(coor == Lmu, twist.forward(tmp,mu), tmp);
+    
     return tmp;
   }
 
   static inline bool isPeriodicGaugeField(void) { return false; }
 };
 
+typedef TwistedGaugeImpl<GimplTypes_ptR> TwistedGimpl_ptR;
+typedef PeriodicGaugeImpl<GimplTypes_ptR> PeriodicGimpl_ptR;
 
 }
 }

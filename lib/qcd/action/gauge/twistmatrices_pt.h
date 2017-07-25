@@ -32,7 +32,7 @@ directory
 namespace Grid {
 namespace QCD {
 namespace QCDpt {
-
+  
 template <int ncolour>
 class twistmatrices {
 
@@ -53,15 +53,23 @@ public:
   explicit twistmatrices()
   {
       initialisetwist();
+
+#define istwisted(mu) mu==1 || mu==2
       
-      omega[0] = omega1;
-      omega[1] = omega2;
-      omega[2] = identity;
+//      omega[0] = omega1;
+//      omega[1] = omega2;
+//      omega[2] = identity;
+//      omega[3] = identity;
+
+      omega[0] = identity;
+      omega[1] = omega1;
+      omega[2] = omega2;
       omega[3] = identity;
       
       for (int i=0; i<Nd; i++) {
           adjomega[i] = adj(omega[i]);
       }
+      
   }
   
   void initialisetwist(){
@@ -85,20 +93,18 @@ public:
   }
   
   template<class T>
-  T forward(T field, int mu)
+  T forward(const T &field, const int &mu)
   {
       return omega[mu] * field * adjomega[mu];
   }
   template<class T>
-  T backward(T field, int mu)
+  T backward(const T &field, const int &mu)
   {
       return adjomega[mu] * field * omega[mu];
   }
     
     
-  };
-
-
+};
 
 
 // specialisation for SU(2) twist matrices

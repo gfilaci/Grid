@@ -54,7 +54,7 @@ public:
   {
       initialisetwist();
 
-#define istwisted(mu) mu==1 || mu==2
+#define istwisted(mu) (mu==1 || mu==2)
       
 //      omega[0] = omega1;
 //      omega[1] = omega2;

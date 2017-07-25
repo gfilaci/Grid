@@ -54,9 +54,18 @@ int main(int argc, char *argv[]) {
     
     PertLangevin<WilsonGaugeAction<TwistedGimpl_ptR>> L(&Grid,tau,alpha);
     
-    for (int i=0; i<10000; i++) {
-        L.QuenchEulerStep(U);
-        if (i%25==0) cout<<WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U)<<endl;
+    // gnuplot:
+//    plot for [i=0:6] "plaquette.txt" every 7::i u 1
+    ofstream plaqfile("plaquette.txt");
+    plaqfile.precision(30);
+    plaqfile << scientific;
+    
+    PRealD plaq;
+    for (int i=0; i<100000; i++) {
+        L.QuenchRKStep(U);
+        plaq = WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U);
+        for (int k=0; k<Np; k++) plaqfile << plaq(k) << endl;
+//        if (i%25==0) cout<<WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U)<<endl;
     }
     
     

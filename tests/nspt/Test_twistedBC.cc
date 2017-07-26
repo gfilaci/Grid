@@ -57,6 +57,19 @@ int main(int argc, char *argv[]) {
     
     PertLangevin<WilsonGaugeAction<TwistedGimpl_ptR>> L(&Grid,pRNG,tau,alpha);
     
+    
+    // checkpointer
+    CheckpointerParameters CPparams;
+    CPparams.config_prefix = "NSPTckpoint_lat";
+    CPparams.rng_prefix = "NSPTckpoint_rng";
+    CPparams.saveInterval = 25;
+    CPparams.format = "IEEE64BIG";
+    BinaryHmcCheckpointer<TwistedGimpl_ptR> CP(CPparams);
+    // is it needed?
+    GridSerialRNG sRNG;
+    sRNG.SeedFixedIntegers(std::vector<int>({1,2,3,4}));
+    
+    
     // gnuplot:
     // plot for [i=0:6] "plaquette.txt" every 7::i u 1
     ofstream plaqfile("plaquette.txt");
@@ -64,11 +77,12 @@ int main(int argc, char *argv[]) {
     plaqfile << scientific;
     
     PRealD plaq;
-    for (int i=0; i<10000; i++) {
+    for (int i=0; i<25; i++) {
         L.QuenchRKStep(U);
         plaq = WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U);
         for (int k=0; k<Np; k++) plaqfile << plaq(k) << endl;
 //        if (i%25==0) cout<<WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U)<<endl;
+        CP.TrajectoryComplete(i,U,sRNG,pRNG);
     }
     
     L.LandauGF(U, gftolerance);

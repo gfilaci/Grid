@@ -43,7 +43,9 @@ template <class Gimpl>
 class WilsonGaugeAction : public Action<typename Gimpl::GaugeField> {
  public:  
   INHERIT_GIMPL_TYPES(Gimpl);
+  
   typedef typename Action<typename Gimpl::GaugeField>::SType PlaqType;
+  typedef Gimpl Gimplementation; // it allows to export Gimpl type elsewhere
   
   /////////////////////////// constructors
   explicit WilsonGaugeAction(RealD beta_):beta(beta_){};

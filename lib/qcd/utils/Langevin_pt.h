@@ -55,6 +55,8 @@ protected:
     Complex ci;
     ColourMatrix ta;
     
+    typedef typename Action::Gimplementation Gimpl;
+    
     typedef typename Action::GaugeField FieldType;
     FieldType F, F0, U0;
     typedef decltype(peekPert(F,0)) NoiseType;
@@ -62,11 +64,11 @@ protected:
     typedef Lattice<iVector<iScalar<iScalar<iScalar<vReal>>>,Nd>> rndType;
     rndType ca;
     typedef decltype(peekLorentz(F,0)) GTType;
-    GTType gt, div;
+    GTType gt, agt, div;
     
 public:
-    explicit PertLangevin(GridBase* grid_, RealD tau_, RealD alpha_):
-    pRNG(grid_),
+    explicit PertLangevin(GridBase* grid_, GridParallelRNG pRNG_, RealD tau_, RealD alpha_):
+    pRNG(pRNG_),
     ac(1.),
     tau(tau_),
     alpha(alpha_),
@@ -76,11 +78,11 @@ public:
     noise(grid_),
     ca(grid_),
     gt(grid_),
+    agt(grid_),
     div(grid_),
     grid(grid_),
     ci(0.,1.)
     {
-        pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
         stau = std::sqrt(tau);
         mtau = - tau;
         halftau = 0.5 * tau;
@@ -107,17 +109,37 @@ public:
 //        noise *= stau;
     }
     
+    
+    // twisted BC
     void StochasticGF(FieldType &U) {
         zeroit(gt);
         for (int mu=0; mu<Nd; mu++) {
             div = peekLorentz(U,mu);
-            gt += div - Cshift(div,mu,-1);
+            gt += div - Gimpl::MoveBackward(div,mu);
         }
         gt = alpha * Ta(gt);
         gt = Exponentiate(gt);
-        SU<Nc>::GaugeTransform(U,gt);
+        agt = adj(gt);
+        for(int mu=0;mu<Nd;mu++){
+            // use div as a tmp field
+            div = PeekIndex<LorentzIndex>(U,mu);
+            div = gt * div * Gimpl::MoveForward(agt,mu);
+            PokeIndex<LorentzIndex>(U,div,mu);
+        }
     }
     
+    // only periodic BC - use this when GaugeTransform will be generalised to other BC
+//    void StochasticGF(FieldType &U) {
+//        zeroit(gt);
+//        for (int mu=0; mu<Nd; mu++) {
+//            div = peekLorentz(U,mu);
+//            gt += div - Cshift(div,mu,-1);
+//        }
+//        gt = alpha * Ta(gt);
+//        gt = Exponentiate(gt);
+//        SU<Nc>::GaugeTransform(U,gt);
+//    }
+
     void QuenchEulerStep(FieldType &U) {
         GenerateNoise();
         ac.deriv(U,F);
@@ -141,6 +163,31 @@ public:
         ShiftedSumVoid(2,F,F0,RKtau); // multiplication by 1/beta
         U = Exponentiate(F) * U;
         StochasticGF(U);
+    }
+    
+    // twisted BC
+    void LandauGF(FieldType &U, const double gftolerance) {
+        PComplexD residualdiv;
+        do{
+            zeroit(gt);
+            // use F as a tmp field
+            F = Logarithm(U);
+            for (int mu=0; mu<Nd; mu++) {
+                div = peekLorentz(F,mu);
+                gt += div - Gimpl::MoveBackward(div,mu);
+            }
+            residualdiv = Pnorm2(gt);
+            // Ta(gt) is not needed, gt is already in the algebra
+            gt *= alpha;
+            gt = Exponentiate(gt);
+            agt = adj(gt);
+            for(int mu=0;mu<Nd;mu++){
+                // use div as a tmp field
+                div = PeekIndex<LorentzIndex>(U,mu);
+                div = gt * div * Gimpl::MoveForward(agt,mu);
+                PokeIndex<LorentzIndex>(U,div,mu);
+            }
+        } while (residualdiv(Np-1).real() > gftolerance);
     }
     
 };

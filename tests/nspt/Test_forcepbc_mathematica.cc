@@ -148,96 +148,97 @@ int main(int argc, char *argv[]) {
 /////////////////////
 // Compare with results from this Mathematica example code
 /////////////////////
+/*
+pTimes[{A1_, A2_}, {B1_, B2_}] := {A1 + B1, A2 + B2 + A1.B1};
+Staple[U1_, U2_, U3_, U4_] := pTimes[pTimes[pTimes[U1, U2], U3], U4];
+reH[A_] := 
+  1/2 (A - ConjugateTranspose[A] - 
+     1/2 Tr[A - ConjugateTranspose[A]] IdentityMatrix[2]);
+preH[{A1_, A2_}] := {reH[A1], reH[A2]};
+dag[{A1_, A2_}] := {ConjugateTranspose[A1], ConjugateTranspose[A2]};
+pExp[{A1_, A2_}] := {A1, A2 + 1/2 A1.A1};
+CompleteStaple[U0_, Uxf1_, Uxf2_, Uxf3_, Uxb1_, Uxb2_, Uxb3_, Uyf1_, 
+   Uyf2_, Uyf3_, Uyb1_, Uyb2_, Uyb3_, Uzf1_, Uzf2_, Uzf3_, Uzb1_, 
+   Uzb2_, Uzb3_] := 
+  Staple[U0, Uxf1, Uxf2, Uxf3] + Staple[U0, Uxb1, Uxb2, Uxb3] + 
+   Staple[U0, Uyf1, Uyf2, Uyf3] + Staple[U0, Uyb1, Uyb2, Uyb3] + 
+   Staple[U0, Uzf1, Uzf2, Uzf3] + Staple[U0, Uzb1, Uzb2, Uzb3];
+EvolveLink[taug_, U0_, Uxf1_, Uxf2_, Uxf3_, Uxb1_, Uxb2_, Uxb3_, 
+   Uyf1_, Uyf2_, Uyf3_, Uyb1_, Uyb2_, Uyb3_, Uzf1_, Uzf2_, Uzf3_, 
+   Uzb1_, Uzb2_, Uzb3_] := 
+  pTimes[pExp[
+    taug*preH[
+      CompleteStaple[U0, Uxf1, Uxf2, Uxf3, Uxb1, Uxb2, Uxb3, Uyf1, 
+       Uyf2, Uyf3, Uyb1, Uyb2, Uyb3, Uzf1, Uzf2, Uzf3, Uzb1, Uzb2, 
+       Uzb3]]], U0];
+PrintLink[{A1_, A2_}] := {A1 // MatrixForm, A2 // MatrixForm};
+A1 = {{0, I}, {-1, 0}};
+A1 // MatrixForm
+A2 = {{1, 1 + I}, {-1, 0}};
+A2 // MatrixForm
+A3 = {{0, 0}, {-1, 1}};
+A3 // MatrixForm
+A4 = {{I, -1}, {-1, I}};
+A4 // MatrixForm
+A5 = {{0.5, -7 I}, {-1 + I, 0}};
+A5 // MatrixForm
+A6 = {{0.5 + I, 3 I}, {-1, 1}};
+A6 // MatrixForm
+A7 = {{-I, 4 - I}, {-1, 2}};
+A7 // MatrixForm
+myconfig[x0_, x1_, x2_, x3_, mu_, k_] := 
+  x0*A1 + x1*A2 + x2*A3 + x3*A4 - k*mu*A5 + x2*k*A6 - x0*mu*A7;
+link[x0_, x1_, x2_, x3_, mu_] := {myconfig[x0, x1, x2, x3, mu, 1], 
+   myconfig[x0, x1, x2, x3, mu, 2]};
+   
+   PrintLink[link[1, 0, 1, 0, 3]]
+   
+   
+   (* update link (0,0,0,0) mu=0 (site=0) *)
+   
+PrintLink[EvolveLink[-0.0025, link[0, 0, 0, 0, 0],
+  link[1, 0, 0, 0, 1], dag[link[0, 1, 0, 0, 0]], 
+  dag[link[0, 0, 0, 0, 1]],
+  link[1, 0, 0, 0, 2], dag[link[0, 0, 1, 0, 0]], 
+  dag[link[0, 0, 0, 0, 2]],
+  link[1, 0, 0, 0, 3], dag[link[0, 0, 0, 1, 0]], 
+  dag[link[0, 0, 0, 0, 3]],
+  dag[link[1, 1, 0, 0, 1]], dag[link[0, 1, 0, 0, 0]], 
+  link[0, 1, 0, 0, 1],
+  dag[link[1, 0, 1, 0, 2]], dag[link[0, 0, 1, 0, 0]], 
+  link[0, 0, 1, 0, 2],
+  dag[link[1, 0, 0, 1, 3]], dag[link[0, 0, 0, 1, 0]], 
+  link[0, 0, 0, 1, 3]]]
 
-//pTimes[{A1_, A2_}, {B1_, B2_}] := {A1 + B1, A2 + B2 + A1.B1};
-//Staple[U1_, U2_, U3_, U4_] := pTimes[pTimes[pTimes[U1, U2], U3], U4];
-//reH[A_] := 
-//  1/2 (A - ConjugateTranspose[A] - 
-//     1/2 Tr[A - ConjugateTranspose[A]] IdentityMatrix[2]);
-//preH[{A1_, A2_}] := {reH[A1], reH[A2]};
-//dag[{A1_, A2_}] := {ConjugateTranspose[A1], ConjugateTranspose[A2]};
-//pExp[{A1_, A2_}] := {A1, A2 + 1/2 A1.A1};
-//CompleteStaple[U0_, Uxf1_, Uxf2_, Uxf3_, Uxb1_, Uxb2_, Uxb3_, Uyf1_, 
-//   Uyf2_, Uyf3_, Uyb1_, Uyb2_, Uyb3_, Uzf1_, Uzf2_, Uzf3_, Uzb1_, 
-//   Uzb2_, Uzb3_] := 
-//  Staple[U0, Uxf1, Uxf2, Uxf3] + Staple[U0, Uxb1, Uxb2, Uxb3] + 
-//   Staple[U0, Uyf1, Uyf2, Uyf3] + Staple[U0, Uyb1, Uyb2, Uyb3] + 
-//   Staple[U0, Uzf1, Uzf2, Uzf3] + Staple[U0, Uzb1, Uzb2, Uzb3];
-//EvolveLink[taug_, U0_, Uxf1_, Uxf2_, Uxf3_, Uxb1_, Uxb2_, Uxb3_, 
-//   Uyf1_, Uyf2_, Uyf3_, Uyb1_, Uyb2_, Uyb3_, Uzf1_, Uzf2_, Uzf3_, 
-//   Uzb1_, Uzb2_, Uzb3_] := 
-//  pTimes[pExp[
-//    taug*preH[
-//      CompleteStaple[U0, Uxf1, Uxf2, Uxf3, Uxb1, Uxb2, Uxb3, Uyf1, 
-//       Uyf2, Uyf3, Uyb1, Uyb2, Uyb3, Uzf1, Uzf2, Uzf3, Uzb1, Uzb2, 
-//       Uzb3]]], U0];
-//PrintLink[{A1_, A2_}] := {A1 // MatrixForm, A2 // MatrixForm};
-//A1 = {{0, I}, {-1, 0}};
-//A1 // MatrixForm
-//A2 = {{1, 1 + I}, {-1, 0}};
-//A2 // MatrixForm
-//A3 = {{0, 0}, {-1, 1}};
-//A3 // MatrixForm
-//A4 = {{I, -1}, {-1, I}};
-//A4 // MatrixForm
-//A5 = {{0.5, -7 I}, {-1 + I, 0}};
-//A5 // MatrixForm
-//A6 = {{0.5 + I, 3 I}, {-1, 1}};
-//A6 // MatrixForm
-//A7 = {{-I, 4 - I}, {-1, 2}};
-//A7 // MatrixForm
-//myconfig[x0_, x1_, x2_, x3_, mu_, k_] := 
-//  x0*A1 + x1*A2 + x2*A3 + x3*A4 - k*mu*A5 + x2*k*A6 - x0*mu*A7;
-//link[x0_, x1_, x2_, x3_, mu_] := {myconfig[x0, x1, x2, x3, mu, 1], 
-//   myconfig[x0, x1, x2, x3, mu, 2]};
-//   
-//   PrintLink[link[1, 0, 1, 0, 3]]
-//   
-//   
-//   (* update link (0,0,0,0) mu=0 (site=0) *)
-//   
-//PrintLink[EvolveLink[-0.0025, link[0, 0, 0, 0, 0],
-//  link[1, 0, 0, 0, 1], dag[link[0, 1, 0, 0, 0]], 
-//  dag[link[0, 0, 0, 0, 1]],
-//  link[1, 0, 0, 0, 2], dag[link[0, 0, 1, 0, 0]], 
-//  dag[link[0, 0, 0, 0, 2]],
-//  link[1, 0, 0, 0, 3], dag[link[0, 0, 0, 1, 0]], 
-//  dag[link[0, 0, 0, 0, 3]],
-//  dag[link[1, 1, 0, 0, 1]], dag[link[0, 1, 0, 0, 0]], 
-//  link[0, 1, 0, 0, 1],
-//  dag[link[1, 0, 1, 0, 2]], dag[link[0, 0, 1, 0, 0]], 
-//  link[0, 0, 1, 0, 2],
-//  dag[link[1, 0, 0, 1, 3]], dag[link[0, 0, 0, 1, 0]], 
-//  link[0, 0, 0, 1, 3]]]
-//
-// (* update link (0,1,0,0) mu=1 (site=4) *)
-//
-//PrintLink[EvolveLink[-0.0025, link[0, 1, 0, 0, 1],
-//  link[0, 0, 0, 0, 0], dag[link[1, 1, 0, 0, 1]], 
-//  dag[link[0, 1, 0, 0, 0]],
-//  link[0, 0, 0, 0, 2], dag[link[0, 1, 1, 0, 1]], 
-//  dag[link[0, 1, 0, 0, 2]],
-//  link[0, 0, 0, 0, 3], dag[link[0, 1, 0, 1, 1]], 
-//  dag[link[0, 1, 0, 0, 3]],
-//  dag[link[1, 0, 0, 0, 0]], dag[link[1, 1, 0, 0, 1]], 
-//  link[1, 1, 0, 0, 0],
-//  dag[link[0, 0, 1, 0, 2]], dag[link[0, 1, 1, 0, 1]], 
-//  link[0, 1, 1, 0, 2],
-//  dag[link[0, 0, 0, 1, 3]], dag[link[0, 1, 0, 1, 1]], 
-//  link[0, 1, 0, 1, 3]]]
-//
-// (* update link (1,1,1,1) mu=3 (site=15) *)
-//
-//PrintLink[EvolveLink[-0.0025, link[1, 1, 1, 1, 3],
-//  link[1, 1, 1, 0, 0], dag[link[0, 1, 1, 1, 3]], 
-//  dag[link[1, 1, 1, 1, 0]],
-//  link[1, 1, 1, 0, 1], dag[link[1, 0, 1, 1, 3]], 
-//  dag[link[1, 1, 1, 1, 1]],
-//  link[1, 1, 1, 0, 2], dag[link[1, 1, 0, 1, 3]], 
-//  dag[link[1, 1, 1, 1, 2]],
-//  dag[link[0, 1, 1, 0, 0]], dag[link[0, 1, 1, 1, 3]], 
-//  link[0, 1, 1, 1, 0],
-//  dag[link[1, 0, 1, 0, 1]], dag[link[1, 0, 1, 1, 3]], 
-//  link[1, 0, 1, 1, 1],
-//  dag[link[1, 1, 0, 0, 2]], dag[link[1, 1, 0, 1, 3]], 
-//  link[1, 1, 0, 1, 2]]]
+ (* update link (0,1,0,0) mu=1 (site=4) *)
+
+PrintLink[EvolveLink[-0.0025, link[0, 1, 0, 0, 1],
+  link[0, 0, 0, 0, 0], dag[link[1, 1, 0, 0, 1]], 
+  dag[link[0, 1, 0, 0, 0]],
+  link[0, 0, 0, 0, 2], dag[link[0, 1, 1, 0, 1]], 
+  dag[link[0, 1, 0, 0, 2]],
+  link[0, 0, 0, 0, 3], dag[link[0, 1, 0, 1, 1]], 
+  dag[link[0, 1, 0, 0, 3]],
+  dag[link[1, 0, 0, 0, 0]], dag[link[1, 1, 0, 0, 1]], 
+  link[1, 1, 0, 0, 0],
+  dag[link[0, 0, 1, 0, 2]], dag[link[0, 1, 1, 0, 1]], 
+  link[0, 1, 1, 0, 2],
+  dag[link[0, 0, 0, 1, 3]], dag[link[0, 1, 0, 1, 1]], 
+  link[0, 1, 0, 1, 3]]]
+
+ (* update link (1,1,1,1) mu=3 (site=15) *)
+
+PrintLink[EvolveLink[-0.0025, link[1, 1, 1, 1, 3],
+  link[1, 1, 1, 0, 0], dag[link[0, 1, 1, 1, 3]], 
+  dag[link[1, 1, 1, 1, 0]],
+  link[1, 1, 1, 0, 1], dag[link[1, 0, 1, 1, 3]], 
+  dag[link[1, 1, 1, 1, 1]],
+  link[1, 1, 1, 0, 2], dag[link[1, 1, 0, 1, 3]], 
+  dag[link[1, 1, 1, 1, 2]],
+  dag[link[0, 1, 1, 0, 0]], dag[link[0, 1, 1, 1, 3]], 
+  link[0, 1, 1, 1, 0],
+  dag[link[1, 0, 1, 0, 1]], dag[link[1, 0, 1, 1, 3]], 
+  link[1, 0, 1, 1, 1],
+  dag[link[1, 1, 0, 0, 2]], dag[link[1, 1, 0, 1, 3]], 
+  link[1, 1, 0, 1, 2]]]
+*/

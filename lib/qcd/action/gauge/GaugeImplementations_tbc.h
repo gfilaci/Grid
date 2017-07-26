@@ -143,7 +143,26 @@ public:
     
     return tmp;
   }
+  
+  static inline GaugeLinkField MoveForward(const GaugeLinkField &Link, int mu) {
+    return ShiftStaple(Link,mu);
+  }
+  
+  static inline GaugeLinkField MoveBackward(const GaugeLinkField &Link, int mu) {
+    GridBase *grid = Link._grid;
+    int Lmu = grid->GlobalDimensions()[mu] - 1;
 
+    Lattice<iScalar<vInteger>> coor(grid);
+    LatticeCoordinate(coor, mu);
+
+    GaugeLinkField tmp = Link;
+    
+    if(istwisted(mu))
+    tmp = where(coor == Lmu, twist.backward(tmp,mu), tmp);
+    
+    return Cshift(tmp, mu, -1);
+  }
+  
   static inline bool isPeriodicGaugeField(void) { return false; }
 };
 

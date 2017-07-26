@@ -43,31 +43,35 @@ int main(int argc, char *argv[]) {
     int threads = GridThread::GetThreads();
     std::cout<<GridLogMessage << "Grid is setup to use "<<threads<<" threads"<<std::endl;
     
+    GridParallelRNG pRNG(&Grid);
+    pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
     
     cout<<twist.twist_tensor()<<endl;
     
     double tau = 0.01;
     double alpha = -0.5*tau;
-
+    double gftolerance = 0.1;
+    
     QCDpt::LatticeGaugeField U(&Grid);
     PertVacuum(U);
     
-    PertLangevin<WilsonGaugeAction<TwistedGimpl_ptR>> L(&Grid,tau,alpha);
+    PertLangevin<WilsonGaugeAction<TwistedGimpl_ptR>> L(&Grid,pRNG,tau,alpha);
     
     // gnuplot:
-//    plot for [i=0:6] "plaquette.txt" every 7::i u 1
+    // plot for [i=0:6] "plaquette.txt" every 7::i u 1
     ofstream plaqfile("plaquette.txt");
     plaqfile.precision(30);
     plaqfile << scientific;
     
     PRealD plaq;
-    for (int i=0; i<100000; i++) {
+    for (int i=0; i<10000; i++) {
         L.QuenchRKStep(U);
         plaq = WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U);
         for (int k=0; k<Np; k++) plaqfile << plaq(k) << endl;
 //        if (i%25==0) cout<<WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U)<<endl;
     }
     
+    L.LandauGF(U, gftolerance);
     
     Grid_finalize();
     return EXIT_SUCCESS;

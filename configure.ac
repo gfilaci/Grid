@@ -13,6 +13,10 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 ################ Get git info
 #AC_REVISION([m4_esyscmd_s([./scripts/configure.commit])])
 
+################ Set flags
+# do not move!
+CXXFLAGS="-O3 $CXXFLAGS"
+
 ############### Checks for programs
 AC_PROG_CXX
 AC_PROG_RANLIB
@@ -27,7 +31,6 @@ AX_GXX_VERSION
 AC_DEFINE_UNQUOTED([GXX_VERSION],["$GXX_VERSION"],
       [version of g++ that will compile the code])
 
-CXXFLAGS="-O3 $CXXFLAGS"
 
 
 ############### Checks for typedefs, structures, and compiler characteristics
@@ -51,8 +54,13 @@ AC_CHECK_HEADERS(malloc/malloc.h)
 AC_CHECK_HEADERS(malloc.h)
 AC_CHECK_HEADERS(endian.h)
 AC_CHECK_HEADERS(execinfo.h)
+AC_CHECK_HEADERS(numaif.h)
 AC_CHECK_DECLS([ntohll],[], [], [[#include <arpa/inet.h>]])
 AC_CHECK_DECLS([be64toh],[], [], [[#include <arpa/inet.h>]])
+
+############## Standard libraries
+AC_CHECK_LIB([m],[cos])
+AC_CHECK_LIB([stdc++],[abort])
 
 ############### GMP and MPFR
 AC_ARG_WITH([gmp],
@@ -186,8 +194,13 @@ Info at: http://usqcd.jlab.org/usqcd-docs/c-lime/)])
 
 AC_SEARCH_LIBS([crc32], [z],
                [AC_DEFINE([HAVE_ZLIB], [1], [Define to 1 if you have the `LIBZ' library])]
-               [have_zlib=true],
+               [have_zlib=true] [LIBS="${LIBS} -lz"],
 	       [AC_MSG_ERROR(zlib library was not found in your system.)])
+
+AC_SEARCH_LIBS([move_pages], [numa],
+               [AC_DEFINE([HAVE_LIBNUMA], [1], [Define to 1 if you have the `LIBNUMA' library])]
+               [have_libnuma=true] [LIBS="${LIBS} -lnuma"],
+	       [AC_MSG_WARN(libnuma library was not found in your system. Some optimisations will not apply)])
 
 AC_SEARCH_LIBS([H5Fopen], [hdf5_cpp],
                [AC_DEFINE([HAVE_HDF5], [1], [Define to 1 if you have the `HDF5' library])]

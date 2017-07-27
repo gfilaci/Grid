@@ -32,6 +32,9 @@ See the full license in the file "LICENSE" in the top level distribution directo
 #define loopp(n) for (int n=0; n<psz; n++)
 
 using namespace std;
+using namespace Grid;
+using namespace QCD;
+using namespace QCDpt;
 
 static constexpr double tolerance = 1.0e-12;
 

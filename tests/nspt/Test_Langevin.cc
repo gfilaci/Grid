@@ -28,6 +28,8 @@ See the full license in the file "LICENSE" in the top level distribution directo
 #include <Grid/Grid.h>
 
 using namespace std;
+using namespace Grid;
+using namespace QCD;
 using namespace QCDpt;
 
 int main(int argc, char *argv[]) {
@@ -43,6 +45,8 @@ int main(int argc, char *argv[]) {
     int threads = GridThread::GetThreads();
     std::cout<<GridLogMessage << "Grid is setup to use "<<threads<<" threads"<<std::endl;
     
+    GridParallelRNG pRNG(&Grid);
+    pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
     
     double tau = 0.01;
     double alpha = -0.5*tau;
@@ -57,7 +61,7 @@ int main(int argc, char *argv[]) {
 //    pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
 //    PertRandom(pRNG,U);
 
-    PertLangevin<WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>>> L(&Grid,tau,alpha);
+    PertLangevin<WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>>> L(&Grid,pRNG,tau,alpha);
     
     for (int i=0; i<10000; i++) {
 //        std::cout<<GridLogMessage << "start step"<<std::endl;

@@ -28,6 +28,8 @@ See the full license in the file "LICENSE" in the top level distribution directo
 #include <Grid/Grid.h>
 
 using namespace std;
+using namespace Grid;
+using namespace QCD;
 using namespace QCDpt;
 
 static constexpr double tolerance = 1.0e-12;

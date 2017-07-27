@@ -55,7 +55,11 @@ template<> void
 WilsonKernels<WilsonImplF>::AsmDhopSite(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U, SiteHalfSpinor *buf,
 						int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out)
 #include <qcd/action/fermion/WilsonKernelsAsmBody.h>
-      
+template<> void 
+WilsonKernels<QCDpt::PWilsonSmellImplF>::AsmDhopSite(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U, SiteHalfSpinor *buf,
+						int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out)
+#include <qcd/action/fermion/WilsonKernelsAsmBody.h>
+
 /////////////////////////////////////////////////////////////////
 // XYZT vectorised, dag Kernel, single
 /////////////////////////////////////////////////////////////////
@@ -64,7 +68,11 @@ template<> void
 WilsonKernels<WilsonImplF>::AsmDhopSiteDag(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U,SiteHalfSpinor *buf,
 						   int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out)
 #include <qcd/action/fermion/WilsonKernelsAsmBody.h>
-				    
+template<> void 
+WilsonKernels<QCdpt::PWilsonSmellImplF>::AsmDhopSiteDag(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U,SiteHalfSpinor *buf,
+						   int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out)
+#include <qcd/action/fermion/WilsonKernelsAsmBody.h>
+
 #undef MAYBEPERM
 #undef MULT_2SPIN
 #define MAYBEPERM(A,B) 
@@ -107,6 +115,10 @@ template<> void
 WilsonKernels<WilsonImplD>::AsmDhopSite(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U, SiteHalfSpinor *buf,
 						int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out)
 #include <qcd/action/fermion/WilsonKernelsAsmBody.h>
+template<> void 
+WilsonKernels<QCDpt::PWilsonSmellImplD>::AsmDhopSite(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U, SiteHalfSpinor *buf,
+						int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out)
+#include <qcd/action/fermion/WilsonKernelsAsmBody.h>
 /////////////////////////////////////////////////////////////////
       
 
@@ -116,6 +128,10 @@ WilsonKernels<WilsonImplD>::AsmDhopSite(StencilImpl &st,LebesgueOrder & lo,Doubl
 #define KERNEL_DAG
 template<> void 
 WilsonKernels<WilsonImplD>::AsmDhopSiteDag(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U,SiteHalfSpinor *buf,
+						   int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out)
+#include <qcd/action/fermion/WilsonKernelsAsmBody.h>
+template<> void 
+WilsonKernels<QCDpt::PWilsonSmellImplD>::AsmDhopSiteDag(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U,SiteHalfSpinor *buf,
 						   int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out)
 #include <qcd/action/fermion/WilsonKernelsAsmBody.h>
 /////////////////////////////////////////////////////////////////

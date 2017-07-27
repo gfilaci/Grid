@@ -233,6 +233,8 @@ void CayleyFermion5D<Impl>::MooeeInvDag (const FermionField &psi, FermionField &
 #ifdef CAYLEY_DPERP_CACHE
   INSTANTIATE_DPERP(WilsonImplF);
   INSTANTIATE_DPERP(WilsonImplD);
+  INSTANTIATE_DPERP(QCDpt::PWilsonSmellImplF);
+  INSTANTIATE_DPERP(QCDpt::PWilsonSmellImplD);
   INSTANTIATE_DPERP(GparityWilsonImplF);
   INSTANTIATE_DPERP(GparityWilsonImplD);
   INSTANTIATE_DPERP(ZWilsonImplF);

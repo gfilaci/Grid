@@ -35,23 +35,71 @@ directory
 
 namespace Grid {
 namespace QCD {
+namespace QCDpt {
 
-#define INHERIT_FIMPL_TYPES(Impl)\
-  typedef typename Impl::FermionField           FermionField;		\
-  typedef typename Impl::PropagatorField     PropagatorField;		\
-  typedef typename Impl::DoubledGaugeField DoubledGaugeField;		\
-  typedef typename Impl::SiteSpinor               SiteSpinor;		\
-  typedef typename Impl::SitePropagator       SitePropagator;		\
-  typedef typename Impl::SiteHalfSpinor       SiteHalfSpinor;		\
-  typedef typename Impl::Compressor               Compressor;		\
-  typedef typename Impl::StencilImpl             StencilImpl;		\
-  typedef typename Impl::ImplParams               ImplParams;	        \
-  typedef typename Impl::Coeff_t                     Coeff_t;           \
-  
-#define INHERIT_IMPL_TYPES(Base) \
-  INHERIT_GIMPL_TYPES(Base)      \
-  INHERIT_FIMPL_TYPES(Base)
-  
+//  template <class T> struct SamePrecisionMapper {
+//    typedef T HigherPrecVector ;
+//    typedef T LowerPrecVector ;
+//  };
+//  template <class T> struct LowerPrecisionMapper {  };
+//  template <> struct LowerPrecisionMapper<vRealF> {
+//    typedef vRealF HigherPrecVector ;
+//    typedef vRealH LowerPrecVector ;
+//  };
+//  template <> struct LowerPrecisionMapper<vRealD> {
+//    typedef vRealD HigherPrecVector ;
+//    typedef vRealF LowerPrecVector ;
+//  };
+//  template <> struct LowerPrecisionMapper<vComplexF> {
+//    typedef vComplexF HigherPrecVector ;
+//    typedef vComplexH LowerPrecVector ;
+//  };
+//  template <> struct LowerPrecisionMapper<vComplexD> {
+//    typedef vComplexD HigherPrecVector ;
+//    typedef vComplexF LowerPrecVector ;
+//  };
+//
+//  struct CoeffReal {
+//  public:
+//    typedef RealD _Coeff_t;
+//    static const int Nhcs = 2;
+//    template<class Simd> using PrecisionMapper = SamePrecisionMapper<Simd>;
+//  };
+//  struct CoeffRealHalfComms {
+//  public:
+//    typedef RealD _Coeff_t;
+//    static const int Nhcs = 1;
+//    template<class Simd> using PrecisionMapper = LowerPrecisionMapper<Simd>;
+//  };
+//  struct CoeffComplex {
+//  public:
+//    typedef ComplexD _Coeff_t;
+//    static const int Nhcs = 2;
+//    template<class Simd> using PrecisionMapper = SamePrecisionMapper<Simd>;
+//  };
+//  struct CoeffComplexHalfComms {
+//  public:
+//    typedef ComplexD _Coeff_t;
+//    static const int Nhcs = 1;
+//    template<class Simd> using PrecisionMapper = LowerPrecisionMapper<Simd>;
+//  };
+//  
+//#define INHERIT_FIMPL_TYPES(Impl)\
+//  typedef typename Impl::FermionField           FermionField;		\
+//  typedef typename Impl::PropagatorField     PropagatorField;		\
+//  typedef typename Impl::DoubledGaugeField DoubledGaugeField;		\
+//  typedef typename Impl::SiteSpinor               SiteSpinor;		\
+//  typedef typename Impl::SitePropagator       SitePropagator;		\
+//  typedef typename Impl::SiteHalfSpinor       SiteHalfSpinor;		\
+//  typedef typename Impl::Compressor               Compressor;		\
+//  typedef typename Impl::StencilImpl             StencilImpl;		\
+//  typedef typename Impl::ImplParams               ImplParams;	        \
+//  typedef typename Impl::Coeff_t                     Coeff_t;           \
+//  
+//#define INHERIT_IMPL_TYPES(Base) \
+//  INHERIT_GIMPL_TYPES(Base)      \
+//  INHERIT_FIMPL_TYPES(Base)
+//  
   /////////////////////////////////////////////////////////////////////////////
   // Perturbative fermion with smell
   /////////////////////////////////////////////////////////////////////////////
@@ -174,6 +222,6 @@ typedef PWilsonSmellImpl<vComplex,  FundamentalRepresentation, CoeffReal > PWils
 typedef PWilsonSmellImpl<vComplexF, FundamentalRepresentation, CoeffReal > PWilsonSmellImplF;  // Float
 typedef PWilsonSmellImpl<vComplexD, FundamentalRepresentation, CoeffReal > PWilsonSmellImplD;  // Double
 
-}}
+}}}
 
 #endif

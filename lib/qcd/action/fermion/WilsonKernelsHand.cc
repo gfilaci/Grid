@@ -669,6 +669,8 @@ template void WilsonKernels<A>::HandDhopSiteDagExt(StencilImpl &st,LebesgueOrder
 
 INSTANTIATE_THEM(WilsonImplF);
 INSTANTIATE_THEM(WilsonImplD);
+INSTANTIATE_THEM(QCDpt::PWilsonSmellImplF);
+INSTANTIATE_THEM(QCDpt::PWilsonSmellImplD);
 INSTANTIATE_THEM(ZWilsonImplF);
 INSTANTIATE_THEM(ZWilsonImplD);
 INSTANTIATE_THEM(GparityWilsonImplF);

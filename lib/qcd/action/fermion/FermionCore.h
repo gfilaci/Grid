@@ -53,6 +53,8 @@ Author: Peter Boyle <pabobyle@ph.ed.ac.uk>
 #define FermOp4dVecTemplateInstantiate(A) \
   template class A<WilsonImplF>;		\
   template class A<WilsonImplD>;		\
+  template class A<QCDpt::PWilsonSmellImplF>;		\
+  template class A<QCDpt::PWilsonSmellImplD>;		\
   template class A<ZWilsonImplF>;		\
   template class A<ZWilsonImplD>;		\
   template class A<GparityWilsonImplF>;		\

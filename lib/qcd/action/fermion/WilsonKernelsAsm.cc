@@ -103,6 +103,8 @@ template void WilsonKernels<A>::AsmDhopSiteDagExt(StencilImpl &st,LebesgueOrder 
 
 INSTANTIATE_ASM(WilsonImplF);
 INSTANTIATE_ASM(WilsonImplD);
+INSTANTIATE_ASM(QCDpt::PWilsonSmellImplF);
+INSTANTIATE_ASM(QCDpt::PWilsonSmellImplD);
 INSTANTIATE_ASM(ZWilsonImplF);
 INSTANTIATE_ASM(ZWilsonImplD);
 INSTANTIATE_ASM(GparityWilsonImplF);

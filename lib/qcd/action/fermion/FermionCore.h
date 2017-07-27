@@ -37,6 +37,7 @@ Author: Peter Boyle <pabobyle@ph.ed.ac.uk>
 ////////////////////////////////////////////
 #include <Grid/qcd/action/fermion/WilsonCompressor.h>     //used by all wilson type fermions
 #include <Grid/qcd/action/fermion/FermionOperatorImpl.h>
+#include <Grid/qcd/action/fermion/FermionOperatorImpl_pt.h>
 #include <Grid/qcd/action/fermion/FermionOperator.h>
 #include <Grid/qcd/action/fermion/WilsonKernels.h>        //used by all wilson type fermions
 #include <Grid/qcd/action/fermion/StaggeredKernels.h>        //used by all wilson type fermions

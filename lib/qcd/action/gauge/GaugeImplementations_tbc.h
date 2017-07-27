@@ -37,7 +37,9 @@ namespace Grid {
 namespace QCD {
 namespace QCDpt {
   
-  extern twistmatrices<Nc> twist;
+  // this is allocated even if tbc are not used...
+  // ~3kB
+  static twistmatrices<Nc> twist;
   
 namespace TwistedBC {
 

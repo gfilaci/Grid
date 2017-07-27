@@ -30,13 +30,14 @@ See the full license in the file "LICENSE" in the top level distribution directo
 using namespace std;
 using namespace Grid;
 using namespace QCD;
-//using namespace QCDpt;
+using namespace QCDpt;
 
 int main(int argc, char *argv[]) {
     
     Grid_init(&argc,&argv);
     
-    std::vector<int> latt_size   = GridDefaultLatt();
+//    std::vector<int> latt_size   = GridDefaultLatt();
+    std::vector<int> latt_size({4,4,4,4});
     std::vector<int> simd_layout = GridDefaultSimd(Nd,vComplex::Nsimd());
     std::vector<int> mpi_layout  = GridDefaultMpi();
     
@@ -49,14 +50,18 @@ int main(int argc, char *argv[]) {
     GridParallelRNG pRNG(&Grid);
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
     
-    LatticeGaugeField U(&Grid);
-    LatticeFermion psi(&Grid),psi2(&Grid);
+    QCD::LatticeGaugeField U(&Grid);
+    QCD::LatticeFermion psi(&Grid),psi2(&Grid);
     
     gaussian(pRNG,U);
     gaussian(pRNG,psi);
     
-    RealD mass=-4.0; //kills the diagonal term
-    WilsonFermionR Dw     (U,Grid,RBGrid,mass);
+    RealD mass=-4.0;
+//    WilsonFermionR Dw(U,Grid,RBGrid,mass);
+//    WilsonFermion<WilsonImplR> Dw(U,Grid,RBGrid,mass);
+    WilsonFermion<QCDpt::PWilsonSmellImpl<vComplex,FundamentalRepresentation,CoeffReal>> Dw(U,Grid,RBGrid,mass);
+    
+    
     Dw.M(psi,psi2);
     
     

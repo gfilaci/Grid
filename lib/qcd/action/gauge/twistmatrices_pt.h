@@ -73,8 +73,64 @@ public:
   }
   
   void initialisetwist(){
-      std::cout<<"Need to define twist matrices for Nc = "<<ncolour<<std::endl;
-      exit(EXIT_FAILURE);
+      if(ncolour==2) {
+          Complex im(0.,1.);
+          
+          identity()()()(0,0) = 1.;
+          identity()()()(0,1) = 0.;
+          identity()()()(1,0) = 0.;
+          identity()()()(1,1) = 1.;
+          
+          omega1()()()(0,0) = -im;
+          omega1()()()(0,1) = 0.;
+          omega1()()()(1,0) = 0.;
+          omega1()()()(1,1) = im;
+          
+          omega2()()()(0,0) = 0.;
+          omega2()()()(0,1) = 1.;
+          omega2()()()(1,0) = -1.;
+          omega2()()()(1,1) = 0.;
+          
+      } else if (ncolour==3) {
+          Complex im(0.,1.);
+          double tmp = 2. * M_PI / 3.;
+          double tmpcos = std::cos(tmp);
+          double tmpsin = std::sin(tmp);
+          
+          identity()()()(0,0) = 1.;
+          identity()()()(0,1) = 0.;
+          identity()()()(0,2) = 0.;
+          identity()()()(1,0) = 0.;
+          identity()()()(1,1) = 1.;
+          identity()()()(1,2) = 0.;
+          identity()()()(2,0) = 0.;
+          identity()()()(2,1) = 0.;
+          identity()()()(2,2) = 1.;
+          
+          omega1()()()(0,0) = tmpcos - im*tmpsin;
+          omega1()()()(0,1) = 0.;
+          omega1()()()(0,2) = 0.;
+          omega1()()()(1,0) = 0.;
+          omega1()()()(1,1) = 1.;
+          omega1()()()(1,2) = 0.;
+          omega1()()()(2,0) = 0.;
+          omega1()()()(2,1) = 0.;
+          omega1()()()(2,2) = tmpcos + im*tmpsin;
+          
+          omega2()()()(0,0) = 0.;
+          omega2()()()(0,1) = 1.;
+          omega2()()()(0,2) = 0.;
+          omega2()()()(1,0) = 0.;
+          omega2()()()(1,1) = 0.;
+          omega2()()()(1,2) = 1.;
+          omega2()()()(2,0) = 1.;
+          omega2()()()(2,1) = 0.;
+          omega2()()()(2,2) = 0.;
+          
+      } else {
+          std::cout<<"Need to define twist matrices for Nc = "<<ncolour<<std::endl;
+          exit(EXIT_FAILURE);
+      }
   }
   
   // manually taking the first complex object from SIMD vector... (portable?)

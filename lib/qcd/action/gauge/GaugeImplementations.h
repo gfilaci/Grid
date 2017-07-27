@@ -71,6 +71,15 @@ public:
     return Cshift(Link, mu, 1);
   }
 
+  static inline GaugeLinkField MoveForward(const GaugeLinkField &Link, int mu) {
+    return ShiftStaple(Link,mu);
+  }
+  
+  static inline GaugeLinkField MoveBackward(const GaugeLinkField &Link, int mu) {
+    return Cshift(Link, mu, -1);
+  }
+
+
   static inline bool isPeriodicGaugeField(void) { return true; }
 };
 

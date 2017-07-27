@@ -33,11 +33,7 @@ directory
 namespace Grid {
 namespace QCD {
 namespace QCDpt {
-
-  // this is allocated even if tbc are not used...
-  // ~3kB
-  twistmatrices<Nc> twist;
-  
+    
 // specialisation for SU(2) twist matrices
 template<>
 void twistmatrices<2>::initialisetwist(){

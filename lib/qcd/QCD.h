@@ -78,6 +78,10 @@ namespace QCD {
     template<typename T> struct isSpinor {
       static const bool value = (SpinorIndex==T::TensorLevel);
     };
+    template<typename vtype, int N, int M> struct isSpinor<iVector<iPert<vtype,M>,N>> {
+      static const bool value = (SpinorIndex==iPert<vtype,M>::TensorLevel);
+    };
+    
     template <typename T> using IfSpinor    = Invoke<std::enable_if< isSpinor<T>::value,int> > ;
     template <typename T> using IfNotSpinor = Invoke<std::enable_if<!isSpinor<T>::value,int> > ;
 

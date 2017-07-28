@@ -128,8 +128,6 @@ INSTANTIATE_DPERP(GparityWilsonImplF);
 INSTANTIATE_DPERP(GparityWilsonImplD);
 INSTANTIATE_DPERP(WilsonImplF);
 INSTANTIATE_DPERP(WilsonImplD);
-INSTANTIATE_DPERP(QCDpt::PWilsonSmellImplF);
-INSTANTIATE_DPERP(QCDpt::PWilsonSmellImplD);
 INSTANTIATE_DPERP(ZWilsonImplF);
 INSTANTIATE_DPERP(ZWilsonImplD);
 
@@ -137,8 +135,6 @@ template void CayleyFermion5D<GparityWilsonImplF>::MooeeInternal(const FermionFi
 template void CayleyFermion5D<GparityWilsonImplD>::MooeeInternal(const FermionField &psi, FermionField &chi,int dag, int inv);
 template void CayleyFermion5D<WilsonImplF>::MooeeInternal(const FermionField &psi, FermionField &chi,int dag, int inv);
 template void CayleyFermion5D<WilsonImplD>::MooeeInternal(const FermionField &psi, FermionField &chi,int dag, int inv);
-template void CayleyFermion5D<QCDpt::PWilsonSmellImplF>::MooeeInternal(const FermionField &psi, FermionField &chi,int dag, int inv);
-template void CayleyFermion5D<QCDpt::PWilsonSmellImplD>::MooeeInternal(const FermionField &psi, FermionField &chi,int dag, int inv);
 template void CayleyFermion5D<ZWilsonImplF>::MooeeInternal(const FermionField &psi, FermionField &chi,int dag, int inv);
 template void CayleyFermion5D<ZWilsonImplD>::MooeeInternal(const FermionField &psi, FermionField &chi,int dag, int inv);
 

@@ -147,6 +147,7 @@ namespace QCD {
   typedef typename Impl::SiteSpinor               SiteSpinor;		\
   typedef typename Impl::SitePropagator       SitePropagator;		\
   typedef typename Impl::SiteHalfSpinor       SiteHalfSpinor;		\
+  typedef typename Impl::LatticeSinglet       LatticeSinglet;       \
   typedef typename Impl::Compressor               Compressor;		\
   typedef typename Impl::StencilImpl             StencilImpl;		\
   typedef typename Impl::ImplParams               ImplParams;	        \
@@ -195,6 +196,8 @@ namespace QCD {
     typedef WilsonCompressor<SiteHalfCommSpinor,SiteHalfSpinor, SiteSpinor> Compressor;
     typedef WilsonImplParams ImplParams;
     typedef WilsonStencil<SiteSpinor, SiteHalfSpinor> StencilImpl;
+    
+    typedef Lattice<iSinglet<typename FermionField::vector_type> > LatticeSinglet;
     
     ImplParams Params;
     
@@ -317,6 +320,8 @@ class DomainWallVec5dImpl :  public PeriodicGaugeImpl< GaugeImplTypes< S,Nrepres
   typedef WilsonCompressor<SiteHalfCommSpinor,SiteHalfSpinor, SiteSpinor> Compressor;
   typedef WilsonImplParams ImplParams;
   typedef WilsonStencil<SiteSpinor, SiteHalfSpinor> StencilImpl;
+  
+  typedef Lattice<iSinglet<typename FermionField::vector_type> > LatticeSinglet;
   
   ImplParams Params;
   
@@ -459,7 +464,9 @@ class GparityWilsonImpl : public ConjugateGaugeImpl<GaugeImplTypes<S, Nrepresent
  typedef WilsonStencil<SiteSpinor, SiteHalfSpinor> StencilImpl;
  
  typedef GparityWilsonImplParams ImplParams;
-      
+
+ typedef Lattice<iSinglet<typename FermionField::vector_type> > LatticeSinglet;
+
  ImplParams Params;
 
  GparityWilsonImpl(const ImplParams &p = ImplParams()) : Params(p){};
@@ -662,6 +669,8 @@ class StaggeredImpl : public PeriodicGaugeImpl<GaugeImplTypes<S, Representation:
     typedef StaggeredImplParams ImplParams;
     typedef CartesianStencil<SiteSpinor, SiteSpinor> StencilImpl;
     
+    typedef Lattice<iSinglet<typename FermionField::vector_type> > LatticeSinglet;
+    
     ImplParams Params;
     
     StaggeredImpl(const ImplParams &p = ImplParams()) : Params(p){};
@@ -797,6 +806,8 @@ class StaggeredImpl : public PeriodicGaugeImpl<GaugeImplTypes<S, Representation:
     typedef SimpleCompressor<SiteSpinor> Compressor;
     typedef StaggeredImplParams ImplParams;
     typedef CartesianStencil<SiteSpinor, SiteSpinor> StencilImpl;
+    
+    typedef Lattice<iSinglet<typename FermionField::vector_type> > LatticeSinglet;
     
     ImplParams Params;
     

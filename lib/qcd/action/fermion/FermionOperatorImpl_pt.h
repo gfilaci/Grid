@@ -57,14 +57,14 @@ namespace QCDpt {
   // Perturbative fermion with smell
   /////////////////////////////////////////////////////////////////////////////
   template <class S, class Representation = FundamentalRepresentation,class Options = CoeffReal >
-  class PWilsonSmellImpl : public PeriodicGaugeImpl<GaugeImplTypes<S, Representation::Dimension > > {
+  class PWilsonSmellImpl : public TwistedGaugeImpl<GaugeImplTypes_pt<S, Representation::Dimension > > {
     public:
 
     static const int Dimension = Representation::Dimension;
     static const bool LsVectorised=false;
     static const int Nhcs = Options::Nhcs;
 
-    typedef PeriodicGaugeImpl<GaugeImplTypes<S, Dimension > > Gimpl;
+    typedef TwistedGaugeImpl<GaugeImplTypes_pt<S, Dimension > > Gimpl;
     INHERIT_GIMPL_TYPES(Gimpl);
       
     //Necessary?
@@ -74,17 +74,17 @@ namespace QCDpt {
     typedef typename Options::template PrecisionMapper<Simd>::LowerPrecVector SimdL;
       
       
-//    template <typename vtype> using iImplSpinor            = iScalar<iVector<iPert<iMatrix<vtype, Dimension>, Np>, Ns> >;
-//    template <typename vtype> using iImplPropagator        = iScalar<iMatrix<iPert<iMatrix<vtype, Dimension>, Np>, Ns> >;
-//    template <typename vtype> using iImplHalfSpinor        = iScalar<iVector<iPert<iMatrix<vtype, Dimension>, Np>, Nhs> >;
-//    template <typename vtype> using iImplHalfCommSpinor    = iScalar<iVector<iPert<iMatrix<vtype, Dimension>, Np>, Nhcs> >;
-//    template <typename vtype> using iImplDoubledGaugeField = iVector<iScalar<iPert<iMatrix<vtype, Dimension>, Np> >, Nds>;
+    template <typename vtype> using iImplSpinor            = iScalar<iVector<iPert<iMatrix<vtype, Dimension>, Np>, Ns> >;
+    template <typename vtype> using iImplPropagator        = iScalar<iMatrix<iPert<iMatrix<vtype, Dimension>, Np>, Ns> >;
+    template <typename vtype> using iImplHalfSpinor        = iScalar<iVector<iPert<iMatrix<vtype, Dimension>, Np>, Nhs> >;
+    template <typename vtype> using iImplHalfCommSpinor    = iScalar<iVector<iPert<iMatrix<vtype, Dimension>, Np>, Nhcs> >;
+    template <typename vtype> using iImplDoubledGaugeField = iVector<iScalar<iPert<iMatrix<vtype, Dimension>, Np> >, Nds>;
       
-    template <typename vtype> using iImplSpinor            = iScalar<iVector<iVector<vtype, Dimension>, Ns> >;
-    template <typename vtype> using iImplPropagator        = iScalar<iMatrix<iMatrix<vtype, Dimension>, Ns> >;
-    template <typename vtype> using iImplHalfSpinor        = iScalar<iVector<iVector<vtype, Dimension>, Nhs> >;
-    template <typename vtype> using iImplHalfCommSpinor    = iScalar<iVector<iVector<vtype, Dimension>, Nhcs> >;
-    template <typename vtype> using iImplDoubledGaugeField = iVector<iScalar<iMatrix<vtype, Dimension> >, Nds>;
+//    template <typename vtype> using iImplSpinor            = iScalar<iVector<iVector<vtype, Dimension>, Ns> >;
+//    template <typename vtype> using iImplPropagator        = iScalar<iMatrix<iMatrix<vtype, Dimension>, Ns> >;
+//    template <typename vtype> using iImplHalfSpinor        = iScalar<iVector<iVector<vtype, Dimension>, Nhs> >;
+//    template <typename vtype> using iImplHalfCommSpinor    = iScalar<iVector<iVector<vtype, Dimension>, Nhcs> >;
+//    template <typename vtype> using iImplDoubledGaugeField = iVector<iScalar<iMatrix<vtype, Dimension> >, Nds>;
     
     typedef iImplSpinor<Simd>            SiteSpinor;
     typedef iImplPropagator<Simd>        SitePropagator;

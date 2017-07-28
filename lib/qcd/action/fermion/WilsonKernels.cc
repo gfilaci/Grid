@@ -284,6 +284,8 @@ void WilsonKernels<Impl>::DhopDir( StencilImpl &st, DoubledGaugeField &U,SiteHal
 FermOpTemplateInstantiate(WilsonKernels);
 AdjointFermOpTemplateInstantiate(WilsonKernels);
 TwoIndexFermOpTemplateInstantiate(WilsonKernels);
+template class WilsonKernels<QCDpt::PWilsonSmellImplF>;
+template class WilsonKernels<QCDpt::PWilsonSmellImplD>;
 
 }}
 

@@ -36,22 +36,6 @@ directory
 namespace Grid {
 namespace QCD {
 namespace QCDpt {
-  
-#define INHERIT_FIMPL_TYPES(Impl)\
-  typedef typename Impl::FermionField           FermionField;		\
-  typedef typename Impl::PropagatorField     PropagatorField;		\
-  typedef typename Impl::DoubledGaugeField DoubledGaugeField;		\
-  typedef typename Impl::SiteSpinor               SiteSpinor;		\
-  typedef typename Impl::SitePropagator       SitePropagator;		\
-  typedef typename Impl::SiteHalfSpinor       SiteHalfSpinor;		\
-  typedef typename Impl::Compressor               Compressor;		\
-  typedef typename Impl::StencilImpl             StencilImpl;		\
-  typedef typename Impl::ImplParams               ImplParams;	        \
-  typedef typename Impl::Coeff_t                     Coeff_t;           \
-  
-#define INHERIT_IMPL_TYPES(Base) \
-  INHERIT_GIMPL_TYPES(Base)      \
-  INHERIT_FIMPL_TYPES(Base)
 
   /////////////////////////////////////////////////////////////////////////////
   // Perturbative fermion with smell
@@ -99,6 +83,8 @@ namespace QCDpt {
     typedef WilsonCompressor<SiteHalfCommSpinor,SiteHalfSpinor, SiteSpinor> Compressor;
     typedef WilsonImplParams ImplParams;
     typedef WilsonStencil<SiteSpinor, SiteHalfSpinor> StencilImpl;
+    
+    typedef Lattice<QCDpt::iSinglet<typename FermionField::vector_type> > LatticeSinglet;
     
     ImplParams Params;
     

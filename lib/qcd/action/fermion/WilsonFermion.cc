@@ -140,7 +140,7 @@ void WilsonFermion<Impl>::MomentumSpacePropagator(FermionField &out, const Fermi
 {  
   typedef typename FermionField::vector_type vector_type;
   typedef typename FermionField::scalar_type ScalComplex;
-  typedef Lattice<iSinglet<vector_type> > LatComplex;
+  typedef LatticeSinglet LatComplex;
   
   // what type LatticeComplex 
   conformable(_grid,out._grid);

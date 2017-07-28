@@ -349,5 +349,7 @@ FermOpTemplateInstantiate(WilsonFermion);
 AdjointFermOpTemplateInstantiate(WilsonFermion);
 TwoIndexFermOpTemplateInstantiate(WilsonFermion);
 GparityFermOpTemplateInstantiate(WilsonFermion);
+template class WilsonFermion<QCDpt::PWilsonSmellImplF>;
+template class WilsonFermion<QCDpt::PWilsonSmellImplD>;
 }
 }

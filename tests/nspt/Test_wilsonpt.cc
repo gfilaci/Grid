@@ -50,8 +50,8 @@ int main(int argc, char *argv[]) {
     GridParallelRNG pRNG(&Grid);
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
     
-    QCD::LatticeGaugeField U(&Grid);
-    QCD::LatticeFermion psi(&Grid),psi2(&Grid);
+    QCDpt::LatticeGaugeField U(&Grid);
+    QCDpt::LatticeFermion psi(&Grid),psi2(&Grid);
     
     gaussian(pRNG,U);
     gaussian(pRNG,psi);

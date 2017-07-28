@@ -381,6 +381,15 @@ namespace QCDpt {
 
 }   //namespace QCDpt
 }   //namespace QCD
+
+    // specialisation of matchGridTensorIndex in the perturbative case and for Level=SpinorIndex
+    // this must be in the Grid namespace, where the struct is originally defined
+    template<typename vtype,int M, int N>
+    struct matchGridTensorIndex<iVector<iPert<vtype,M>,N>,QCD::SpinorIndex> {
+        static const bool value = ((QCD::SpinorIndex+1)==iVector<iPert<vtype,M>,N>::TensorLevel);
+        static const bool notvalue = ((QCD::SpinorIndex+1)!=iVector<iPert<vtype,M>,N>::TensorLevel);
+    };
+
 } // Grid
 
 #endif

@@ -650,6 +650,8 @@ void WilsonKernels<Impl>::HandDhopSiteDagExt(StencilImpl &st,LebesgueOrder &lo,D
   HAND_SPECIALISE_EMPTY(GparityWilsonImplD);
   HAND_SPECIALISE_EMPTY(GparityWilsonImplFH);
   HAND_SPECIALISE_EMPTY(GparityWilsonImplDF);
+  HAND_SPECIALISE_EMPTY(QCDpt::PWilsonSmellImplF);
+  HAND_SPECIALISE_EMPTY(QCDpt::PWilsonSmellImplD);
 
 ////////////// Wilson ; uses this implementation /////////////////////
 
@@ -669,8 +671,6 @@ template void WilsonKernels<A>::HandDhopSiteDagExt(StencilImpl &st,LebesgueOrder
 
 INSTANTIATE_THEM(WilsonImplF);
 INSTANTIATE_THEM(WilsonImplD);
-INSTANTIATE_THEM(QCDpt::PWilsonSmellImplF);
-INSTANTIATE_THEM(QCDpt::PWilsonSmellImplD);
 INSTANTIATE_THEM(ZWilsonImplF);
 INSTANTIATE_THEM(ZWilsonImplD);
 INSTANTIATE_THEM(GparityWilsonImplF);

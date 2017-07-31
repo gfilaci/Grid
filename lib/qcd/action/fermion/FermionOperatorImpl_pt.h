@@ -141,10 +141,12 @@ namespace QCDpt {
     }
 
     inline void InsertForce4D(GaugeField &mat, FermionField &Btilde, FermionField &A,int mu){
-      GaugeLinkField link(mat._grid);
-      link = TraceIndex<SpinIndex>(outerProduct(Btilde,A)); 
-      PokeIndex<LorentzIndex>(mat,link,mu);
-    }   
+      //$// physical meaning?
+//      GaugeLinkField link(mat._grid);
+//      link = TraceIndex<SpinIndex>(outerProduct(Btilde,A));
+//      PokeIndex<LorentzIndex>(mat,link,mu);
+        assert(0);
+    }
       
     inline void InsertForce5D(GaugeField &mat, FermionField &Btilde, FermionField &Atilde,int mu){
       

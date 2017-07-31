@@ -49,24 +49,89 @@ int main(int argc, char *argv[]) {
     
     GridParallelRNG pRNG(&Grid);
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
-    
-    QCDpt::LatticeGaugeField U(&Grid);
-    QCDpt::LatticeFermion psi(&Grid),psi2(&Grid);
-    
-    gaussian(pRNG,U);
-    gaussian(pRNG,psi);
-    
     RealD mass=-4.0;
-//    WilsonFermionR Dw(U,Grid,RBGrid,mass);
-//    WilsonFermion<WilsonImplR> Dw(U,Grid,RBGrid,mass);
+    
+    
+    // standard gauge field, set to identity
+    QCD::LatticeGaugeField Ustd(&Grid);
+    parallel_for(int ss=0;ss<Grid.oSites();ss++){
+        for (int alpha=0; alpha<Ns; alpha++) {
+            for (int mu=0; mu<Nd; mu++) {
+                for (int nn=0; nn<Nc; nn++) {
+                    Ustd._odata[ss](mu)()(nn,nn) = 1.;
+                }
+            }
+        }
+    }
+    // standard fermion fields, vectors in colour space
+    QCD::LatticeFermion psistd(&Grid),psi2std(&Grid);
+    // standard Wilson Dirac operator
+    WilsonFermion<QCD::WilsonImpl<vComplex,FundamentalRepresentation,CoeffReal>> Dwstd(Ustd,Grid,RBGrid,mass);
+    
+    
+    // perturbative gauge field, all matrices set to the identity (-> TBC are irrelevant)
+    QCDpt::LatticeGaugeField U(&Grid);
+    zeroit(U);
+    parallel_for(int ss=0;ss<Grid.oSites();ss++){
+        for (int mu=0; mu<Nd; mu++) {
+            for (int kk=0; kk<Np; kk++) {
+                for (int nn=0; nn<Nc; nn++) {
+                    (U._odata[ss])(mu)()(kk)(nn,nn) = 1.0;
+                }
+            }
+        }
+    }
+    // perturbative fermion fields, matrices in colour space
+    QCDpt::LatticeFermion psi(&Grid),psi2(&Grid),psicmp(&Grid);
+    // perturbative Wilson Dirac operator
     WilsonFermion<QCDpt::PWilsonSmellImpl<vComplex,FundamentalRepresentation,CoeffReal>> Dw(U,Grid,RBGrid,mass);
     
     
+    // random field
+    random(pRNG,psi);
+    
+    // apply M
     Dw.M(psi,psi2);
     
+    for (int kk=0; kk<Np; kk++) {
+        for (int ncol=0; ncol<Nc; ncol++) {
+            
+            // load ncol column of the smell matrix onto psistd
+            parallel_for(int ss=0;ss<Grid.oSites();ss++){
+                for (int alpha=0; alpha<Ns; alpha++) {
+                    for (int nn=0; nn<Nc; nn++) {
+                        (psistd._odata[ss])()(alpha)(nn) = (psi._odata[ss])()(alpha)(kk)(nn,ncol);
+                    }
+                }
+            }
+            
+            // apply M
+            Dwstd.M(psistd,psi2std);
+            
+            // load psi2std onto ncol column of the smell matrix
+            parallel_for(int ss=0;ss<Grid.oSites();ss++){
+                for (int alpha=0; alpha<Ns; alpha++) {
+                    for (int nn=0; nn<Nc; nn++) {
+                        (psicmp._odata[ss])()(alpha)(kk)(nn,ncol) = (psi2std._odata[ss])()(alpha)(nn);
+                    }
+                }
+            }
+            
+        }
+    }
     
-    cout<<psi<<endl;
-    cout<<psi2<<endl;
+    // keep into account perturbative structure of Dirac operator
+    for (int kk=0; kk<Np; kk++) {
+        parallel_for(int ss=0;ss<Grid.oSites();ss++){
+            for (int alpha=0; alpha<Ns; alpha++) {
+                for (int ord=0; ord<=kk; ord++) {
+                    (psi2._odata[ss])()(alpha)(kk) -= (psi2._odata[ss])()(alpha)(ord);
+                }
+            }
+        }
+    }
+    
+    cout<<Pnorm2(psi2)<<endl;
     
     
     Grid_finalize();

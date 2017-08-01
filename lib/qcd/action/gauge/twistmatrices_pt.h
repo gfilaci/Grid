@@ -54,12 +54,18 @@ public:
   {
       initialisetwist();
 
-#define istwisted(mu) (mu==0 || mu==1)
-      
-      omega[0] = omega1;
-      omega[1] = omega2;
+#define istwisted(mu) false
+//#define istwisted(mu) (mu==0 || mu==1)
+
+      omega[0] = identity;
+      omega[1] = identity;
       omega[2] = identity;
       omega[3] = identity;
+      
+//      omega[0] = omega1;
+//      omega[1] = omega2;
+//      omega[2] = identity;
+//      omega[3] = identity;
 
 //      omega[0] = identity;
 //      omega[1] = omega1;

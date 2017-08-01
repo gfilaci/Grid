@@ -52,7 +52,7 @@ namespace QCDpt {
     INHERIT_GIMPL_TYPES(Gimpl);
       
     //Necessary?
-    constexpr bool is_fundamental() const{return Dimension == Nc ? 1 : 0;}//$//
+    constexpr bool is_fundamental() const{return Dimension == Nc ? 1 : 0;}
     
     typedef typename Options::_Coeff_t Coeff_t;
     typedef typename Options::template PrecisionMapper<Simd>::LowerPrecVector SimdL;
@@ -63,12 +63,6 @@ namespace QCDpt {
     template <typename vtype> using iImplHalfSpinor        = iScalar<iVector<iPert<iMatrix<vtype, Dimension>, Np>, Nhs> >;
     template <typename vtype> using iImplHalfCommSpinor    = iScalar<iVector<iPert<iMatrix<vtype, Dimension>, Np>, Nhcs> >;
     template <typename vtype> using iImplDoubledGaugeField = iVector<iScalar<iPert<iMatrix<vtype, Dimension>, Np> >, Nds>;
-      
-//    template <typename vtype> using iImplSpinor            = iScalar<iVector<iVector<vtype, Dimension>, Ns> >;
-//    template <typename vtype> using iImplPropagator        = iScalar<iMatrix<iMatrix<vtype, Dimension>, Ns> >;
-//    template <typename vtype> using iImplHalfSpinor        = iScalar<iVector<iVector<vtype, Dimension>, Nhs> >;
-//    template <typename vtype> using iImplHalfCommSpinor    = iScalar<iVector<iVector<vtype, Dimension>, Nhcs> >;
-//    template <typename vtype> using iImplDoubledGaugeField = iVector<iScalar<iMatrix<vtype, Dimension> >, Nds>;
     
     typedef iImplSpinor<Simd>            SiteSpinor;
     typedef iImplPropagator<Simd>        SitePropagator;
@@ -141,10 +135,6 @@ namespace QCDpt {
     }
 
     inline void InsertForce4D(GaugeField &mat, FermionField &Btilde, FermionField &A,int mu){
-      //$// physical meaning?
-//      GaugeLinkField link(mat._grid);
-//      link = TraceIndex<SpinIndex>(outerProduct(Btilde,A));
-//      PokeIndex<LorentzIndex>(mat,link,mu);
         assert(0);
     }
       

@@ -50,6 +50,8 @@ class WilsonFermion : public WilsonKernels<Impl>, public WilsonFermionStatic {
   INHERIT_IMPL_TYPES(Impl);
   typedef WilsonKernels<Impl> Kernels;
 
+  typedef typename std::conditional<isPerturbative<typename Impl::GaugeField>::value, QCDpt::PRealD, RealD>::type MassType;
+
   ///////////////////////////////////////////////////////////////
   // Implement the abstract base
   ///////////////////////////////////////////////////////////////
@@ -117,7 +119,7 @@ class WilsonFermion : public WilsonKernels<Impl>, public WilsonFermionStatic {
 
   // Constructor
   WilsonFermion(GaugeField &_Umu, GridCartesian &Fgrid,
-                GridRedBlackCartesian &Hgrid, RealD _mass,
+                GridRedBlackCartesian &Hgrid, MassType _mass,
                 const ImplParams &p = ImplParams());
 
   // DoubleStore impl dependent
@@ -129,7 +131,7 @@ class WilsonFermion : public WilsonKernels<Impl>, public WilsonFermionStatic {
 
   //    protected:
  public:
-  RealD mass;
+  MassType mass;
 
   GridBase *_grid;
   GridBase *_cbgrid;

@@ -46,7 +46,7 @@ int WilsonFermionStatic::HandOptDslash;
 
 template <class Impl>
 WilsonFermion<Impl>::WilsonFermion(GaugeField &_Umu, GridCartesian &Fgrid,
-                                   GridRedBlackCartesian &Hgrid, RealD _mass,
+                                   GridRedBlackCartesian &Hgrid, MassType _mass,
                                    const ImplParams &p)
     : Kernels(p),
       _grid(&Fgrid),
@@ -83,14 +83,14 @@ template <class Impl>
 RealD WilsonFermion<Impl>::M(const FermionField &in, FermionField &out) {
   out.checkerboard = in.checkerboard;
   Dhop(in, out, DaggerNo);
-  return axpy_norm(out, 4 + mass, in, out);
+  return axpy_norm(out, 4. + mass, in, out);
 }
 
 template <class Impl>
 RealD WilsonFermion<Impl>::Mdag(const FermionField &in, FermionField &out) {
   out.checkerboard = in.checkerboard;
   Dhop(in, out, DaggerYes);
-  return axpy_norm(out, 4 + mass, in, out);
+  return axpy_norm(out, 4. + mass, in, out);
 }
 
 template <class Impl>
@@ -110,12 +110,22 @@ void WilsonFermion<Impl>::MeooeDag(const FermionField &in, FermionField &out) {
     DhopOE(in, out, DaggerYes);
   }
 }
-  
+
 template <class Impl>
 void WilsonFermion<Impl>::Mooee(const FermionField &in, FermionField &out) {
   out.checkerboard = in.checkerboard;
   typename FermionField::scalar_type scal(4.0 + mass);
   out = scal * in;
+}
+
+// Mooee is disabled in the perturbative case
+template <>
+void WilsonFermion<QCDpt::PWilsonSmellImplF>::Mooee(const FermionField &in, FermionField &out) {
+  assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::PWilsonSmellImplD>::Mooee(const FermionField &in, FermionField &out) {
+  assert(0);
 }
 
 template <class Impl>
@@ -129,7 +139,17 @@ void WilsonFermion<Impl>::MooeeInv(const FermionField &in, FermionField &out) {
   out.checkerboard = in.checkerboard;
   out = (1.0/(4.0+mass))*in;
 }
-  
+
+// MooeeInv is disabled in the perturbative case
+template <>
+void WilsonFermion<QCDpt::PWilsonSmellImplF>::MooeeInv(const FermionField &in, FermionField &out) {
+  assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::PWilsonSmellImplD>::MooeeInv(const FermionField &in, FermionField &out) {
+  assert(0);
+}
+
 template<class Impl>
 void WilsonFermion<Impl>::MooeeInvDag(const FermionField &in, FermionField &out) {
   out.checkerboard = in.checkerboard;

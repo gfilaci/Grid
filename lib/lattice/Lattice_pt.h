@@ -116,6 +116,36 @@ template<class vobj>
         return sum(Pnorm2_internal(lhs)) / (double)lhs._grid->gSites();
     }
     
+    // specialisation needed for the critical mass
+template<class sobj,class vobj, int N, int M> strong_inline
+  void axpy(Lattice<iScalar<iVector<iPert<vobj,M>,N>>> &ret,iPert<sobj,M> a,const Lattice<iScalar<iVector<iPert<vobj,M>,N>>> &x,const Lattice<iScalar<iVector<iPert<vobj,M>,N>>> &y){
+    ret.checkerboard = x.checkerboard;
+    conformable(ret,x);
+    conformable(x,y);
+    parallel_for(int ss=0;ss<x._grid->oSites();ss++){
+#ifdef STREAMING_STORES
+        iScalar<iVector<iPert<vobj,M>,N>> tmp = zero;
+        for (int alpha=0; alpha<N; alpha++) {
+            for(int c1=0;c1<M;c1++){
+                for(int c2=0;c2<=c1;c2++){
+                    tmp._internal._internal[alpha]._internal[c1]+=a._internal[c2]*(x._odata[ss]._internal._internal[alpha]._internal[c1-c2]);
+                }}
+            tmp._internal._internal[alpha]+=y._odata[ss]._internal._internal[alpha];
+        }
+        vstream(ret._odata[ss],tmp);
+#else
+        ret._odata[ss] = zero;
+        for (int alpha=0; alpha<N; alpha++) {
+            for(int c1=0;c1<M;c1++){
+                for(int c2=0;c2<=c1;c2++){
+                    ret._odata[ss]._internal._internal[alpha]._internal[c1]+=a._internal[c2]*(x._odata[ss]._internal._internal[alpha]._internal[c1-c2]);
+                }}
+            ret._odata[ss]._internal._internal[alpha]+=y._odata[ss]._internal._internal[alpha];
+        }
+#endif
+    }
+  }
+    
 }
 #endif
 

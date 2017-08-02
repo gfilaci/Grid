@@ -48,8 +48,12 @@ int main(int argc, char *argv[]) {
     
     GridParallelRNG pRNG(&Grid);
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
-    RealD mass=0.0;
-    
+    RealD massstd=0;
+    PRealD mass;
+    zeroit(mass);
+    mass(2) = -1.;
+    mass(4) = -5.;
+    mass(6) = -10.;
     
     // standard gauge field, set to identity
     QCD::LatticeGaugeField Ustd(&Grid);
@@ -65,7 +69,7 @@ int main(int argc, char *argv[]) {
     // standard fermion fields, vectors in colour space
     QCD::LatticeFermion psistd(&Grid),psi2std(&Grid);
     // standard Wilson Dirac operator
-    WilsonFermion<QCD::WilsonImpl<vComplex,FundamentalRepresentation,CoeffReal>> Dwstd(Ustd,Grid,RBGrid,mass);
+    WilsonFermion<QCD::WilsonImpl<vComplex,FundamentalRepresentation,CoeffReal>> Dwstd(Ustd,Grid,RBGrid,massstd);
     
     
     // perturbative gauge field, all matrices set to the identity (-> TBC are irrelevant)
@@ -192,8 +196,8 @@ int main(int argc, char *argv[]) {
     }
     
     Dw.M(psi,psi2);
-    cout<<psi2<<endl;
-    
+//    cout<<psi2<<endl;
+    cout<<Dw.mass<<endl;
     Grid_finalize();
     return EXIT_SUCCESS;
     

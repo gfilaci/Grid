@@ -36,37 +36,36 @@ directory
 namespace Grid {
 namespace QCD {
 namespace QCDpt {
+
+
+template <class GimplTypes> class TwistedGaugeImpl : public GimplTypes {
+public:
+  INHERIT_GIMPL_TYPES(GimplTypes);
   
-  // this is allocated even if tbc are not used...
-  // ~3kB
-  static twistmatrices<Nc> twist;
+  static twistmatrices<Nc,typename Simd::scalar_type> twist;
   
-namespace TwistedBC {
-
-  template<class covariant,class gauge> Lattice<covariant> CovShiftForward(const Lattice<gauge> &Link, 
-									    int mu,
-									    const Lattice<covariant> &field)
-  {
-    GridBase * grid = Link._grid;
-
-    int Lmu = grid->GlobalDimensions()[mu]-1;
-
-    conformable(field,Link);
-
-    Lattice<iScalar<vInteger> > coor(grid);    LatticeCoordinate(coor,mu);
-
-    Lattice<covariant> field_bc = Cshift(field,mu,1);
-
-    if(istwisted(mu))
-    field_bc = where(coor==Lmu,twist.forward(field_bc,mu),field_bc);
-    
-    return Link*field_bc;
+  template <class covariant>
+  static Lattice<covariant> CovShiftForward(const GaugeLinkField &Link, int mu,
+                                            const Lattice<covariant> &field) {
+      GridBase * grid = Link._grid;
+      
+      int Lmu = grid->GlobalDimensions()[mu]-1;
+      
+      conformable(field,Link);
+      
+      Lattice<iScalar<vInteger> > coor(grid);    LatticeCoordinate(coor,mu);
+      
+      Lattice<covariant> field_bc = Cshift(field,mu,1);
+      
+      if(istwisted(mu))
+          field_bc = where(coor==Lmu,twist.forward(field_bc,mu),field_bc);
+      
+      return Link*field_bc;
   }
 
-  template<class covariant,class gauge> Lattice<covariant> CovShiftBackward(const Lattice<gauge> &Link, 
-									    int mu,
-									    const Lattice<covariant> &field)
-  {
+  template <class covariant>
+  static Lattice<covariant> CovShiftBackward(const GaugeLinkField &Link, int mu,
+                                             const Lattice<covariant> &field) {
     GridBase * grid = field._grid;
 
     int Lmu = grid->GlobalDimensions()[mu]-1;
@@ -83,28 +82,6 @@ namespace TwistedBC {
     tmp = where(coor==Lmu,twist.backward(tmp,mu),tmp);
     
     return Cshift(tmp,mu,-1);
-  }
-
-
-}
-
-
-
-
-template <class GimplTypes> class TwistedGaugeImpl : public GimplTypes {
-public:
-  INHERIT_GIMPL_TYPES(GimplTypes);
-  
-  template <class covariant>
-  static Lattice<covariant> CovShiftForward(const GaugeLinkField &Link, int mu,
-                                            const Lattice<covariant> &field) {
-    return TwistedBC::CovShiftForward(Link, mu, field);
-  }
-
-  template <class covariant>
-  static Lattice<covariant> CovShiftBackward(const GaugeLinkField &Link, int mu,
-                                             const Lattice<covariant> &field) {
-    return TwistedBC::CovShiftBackward(Link, mu, field);
   }
 
   static inline GaugeLinkField
@@ -165,6 +142,9 @@ public:
   
   static inline bool isPeriodicGaugeField(void) { return false; }
 };
+
+template <class GimplTypes>
+twistmatrices<Nc,typename GimplTypes::Simd::scalar_type> TwistedGaugeImpl<GimplTypes>::twist;
 
 typedef TwistedGaugeImpl<GimplTypes_ptR> TwistedGimpl_ptR;
 typedef PeriodicGaugeImpl<GimplTypes_ptR> PeriodicGimpl_ptR;

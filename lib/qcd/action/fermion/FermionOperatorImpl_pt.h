@@ -94,7 +94,71 @@ namespace QCDpt {
                          int mu,
                          StencilEntry *SE,
                          StencilImpl &St) {
-      mult(&phi(), &U(mu), &chi());
+        
+        typedef SiteHalfSpinor vobj;
+        typedef typename SiteHalfSpinor::scalar_object sobj;
+        
+        vobj vtmp;
+        
+        GridBase *grid = St._grid;
+        
+        const int Nsimd = grid->Nsimd();
+        
+        int direction = St._directions[mu];
+        int distance = St._distances[mu];
+        int ptype = St._permute_type[mu];
+        int sl = St._grid->_simd_layout[direction];
+        
+        // Fixme X.Y.Z.T hardcode in stencil
+        int mmu = mu % Nd;
+        
+        // assert our assumptions
+        assert((distance == 1) || (distance == -1));  // nearest neighbour stencil hard code
+        assert((sl == 1) || (sl == 2));
+        
+        std::vector<int> icoor;
+        
+        if ( SE->_around_the_world && istwisted(mmu) ) {
+            
+            if ( sl == 2 ) {
+                
+                std::vector<sobj> vals(Nsimd);
+                
+                extract(chi,vals);
+                for(int s=0;s<Nsimd;s++){
+                    
+                    grid->iCoorFromIindex(icoor,s);
+                    
+                    assert((icoor[direction]==0)||(icoor[direction]==1));
+                    
+                    int permute_lane;
+                    if ( distance == 1) {
+                        permute_lane = icoor[direction]?1:0;
+                    } else {
+                        permute_lane = icoor[direction]?0:1;
+                    }
+                    
+                    if ( permute_lane ) {
+                        // distance = +1  -->  (U*omega) (psi*omegadag)
+                        // distance = -1  -->  (omegadag*U) (psi*omega)
+                        if(distance == 1) vals[s] = vals[s]*Gimpl::twist.adjomega[mmu];
+                        else vals[s] = vals[s]*Gimpl::twist.omega[mmu];
+                    }
+                }
+                merge(vtmp,vals);
+                
+            } else {
+                // distance = +1  -->  (U*omega) (psi*omegadag)
+                // distance = -1  -->  (omegadag*U) (psi*omega)
+                if(distance == 1) vtmp = chi*Gimpl::twist.adjomega[mmu];
+                else vtmp = chi*Gimpl::twist.omega[mmu];
+            }
+            mult(&phi(), &U(mu), &vtmp());
+            
+        } else { 
+            mult(&phi(), &U(mu), &chi());
+        }
+        
     }
       
     template <class ref>
@@ -125,11 +189,13 @@ namespace QCDpt {
         LatticeCoordinate(coor, mu);
 
         U = PeekIndex<LorentzIndex>(Umu, mu);
-        tmp = where(coor == Lmu, phase * U, U);
+        if(istwisted(mu)) tmp = where(coor == Lmu, phase * U * Gimpl::twist.omega[mu], U);
+        else tmp = where(coor == Lmu, phase * U, U);
         PokeIndex<LorentzIndex>(Uds, tmp, mu);
 
         U = adj(Cshift(U, mu, -1));
-        U = where(coor == 0, conjugate(phase) * U, U); 
+        if(istwisted(mu)) U = where(coor == 0, conjugate(phase) * Gimpl::twist.adjomega[mu] * U, U);
+        else U = where(coor == 0, conjugate(phase) * U, U);
         PokeIndex<LorentzIndex>(Uds, U, mu + 4);
       }
     }

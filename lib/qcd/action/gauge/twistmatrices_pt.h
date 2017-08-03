@@ -33,20 +33,19 @@ namespace Grid {
 namespace QCD {
 namespace QCDpt {
   
-template <int ncolour>
+template <int ncolour, class S>
 class twistmatrices {
 
 public:
     template <typename vtype>
     using iTwistMatrix = iScalar<iScalar<iScalar<iMatrix<vtype, ncolour> > > >;
     
-    typedef iTwistMatrix<vComplex>  vMatrix;
-    typedef iTwistMatrix<vComplexF> vMatrixF;
-    typedef iTwistMatrix<vComplexD> vMatrixD;
+    typedef iTwistMatrix<S>  Matrix;
+    
+    Matrix omega[Nd], adjomega[Nd];
     
 private:
-    vMatrix omega1, omega2, identity;
-    vMatrix omega[Nd], adjomega[Nd];
+    Matrix omega1, omega2, identity;
     
 public:
   
@@ -54,23 +53,12 @@ public:
   {
       initialisetwist();
 
-#define istwisted(mu) false
-//#define istwisted(mu) (mu==0 || mu==1)
-
-      omega[0] = identity;
-      omega[1] = identity;
-      omega[2] = identity;
-      omega[3] = identity;
+#define istwisted(mu) (mu==1 || mu==2)
       
-//      omega[0] = omega1;
-//      omega[1] = omega2;
-//      omega[2] = identity;
-//      omega[3] = identity;
-
-//      omega[0] = identity;
-//      omega[1] = omega1;
-//      omega[2] = omega2;
-//      omega[3] = identity;
+      omega[0] = identity;
+      omega[1] = omega1;
+      omega[2] = omega2;
+      omega[3] = identity;
       
       for (int i=0; i<Nd; i++) {
           adjomega[i] = adj(omega[i]);
@@ -139,15 +127,12 @@ public:
       }
   }
   
-  // manually taking the first complex object from SIMD vector... (portable?)
   iMatrix<Complex,Nd> twist_tensor(){
-      iMatrix<Complex,Nd> eta;
-      zeroit(eta);
+      iMatrix<S,Nd> eta;
       Complex im(0.,1.);
       for (int mu=0; mu<Nd; mu++) {
           for (int nu=0; nu<Nd; nu++) {
-              eta(mu,nu) = TensorRemove(trace(omega[nu]*omega[mu]*adjomega[nu]*adjomega[mu])).v[0] / (double)ncolour;
-              eta(mu,nu) += im * TensorRemove(trace(omega[nu]*omega[mu]*adj(omega[nu])*adj(omega[mu]))).v[1] / (double)ncolour;
+              eta(mu,nu) = TensorRemove(trace(omega[nu]*omega[mu]*adjomega[nu]*adjomega[mu])) / (double)ncolour;
               eta(mu,nu) = -im * (double)ncolour / (2*M_PI) * std::log(eta(mu,nu));
           }
       }

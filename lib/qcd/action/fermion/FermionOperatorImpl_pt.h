@@ -201,24 +201,22 @@ namespace QCDpt {
     }
 
     inline void InsertForce4D(GaugeField &mat, FermionField &Btilde, FermionField &A,int mu){
-        assert(0);
+        GaugeLinkField link(mat._grid);
+         // matrix product automatically performs the sum over smells
+         // and gives a matrix in colour space
+         //$// A is the noise, so it should not be perturbative...
+         //$// need to resolve nesting because mult(iVector,iVector) is not defined...
+        FermionField tmp = adj(A);
+        parallel_for(int ss=0;ss<mat._grid->oSites();ss++){
+            for (int alpha=0; alpha<Ns; alpha++)
+                tmp._odata[ss]._internal._internal[alpha] = Btilde._odata[ss]._internal._internal[alpha] * tmp._odata[ss]._internal._internal[alpha];
+        }
+        link = TraceIndex<SpinIndex>(tmp);
+        PokeIndex<LorentzIndex>(mat,link,mu);
     }
       
     inline void InsertForce5D(GaugeField &mat, FermionField &Btilde, FermionField &Atilde,int mu){
-      
-      int Ls=Btilde._grid->_fdimensions[0];
-      GaugeLinkField tmp(mat._grid);
-      tmp = zero;
-      
-      parallel_for(int sss=0;sss<tmp._grid->oSites();sss++){
-	    int sU=sss;
-	    for(int s=0;s<Ls;s++){
-	        int sF = s+Ls*sU;
-	        tmp[sU] = tmp[sU]+ traceIndex<SpinIndex>(outerProduct(Btilde[sF],Atilde[sF])); // ordering here
-	    }
-      }
-      PokeIndex<LorentzIndex>(mat,tmp,mu);
-      
+        assert(0);
     }
   };
 

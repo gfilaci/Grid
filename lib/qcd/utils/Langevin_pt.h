@@ -109,8 +109,6 @@ public:
 //        noise *= stau;
     }
     
-    
-    // twisted BC
     void StochasticGF(FieldType &U) {
         zeroit(gt);
         for (int mu=0; mu<Nd; mu++) {
@@ -127,18 +125,6 @@ public:
             PokeIndex<LorentzIndex>(U,div,mu);
         }
     }
-    
-    // only periodic BC - use this when GaugeTransform will be generalised to other BC
-//    void StochasticGF(FieldType &U) {
-//        zeroit(gt);
-//        for (int mu=0; mu<Nd; mu++) {
-//            div = peekLorentz(U,mu);
-//            gt += div - Cshift(div,mu,-1);
-//        }
-//        gt = alpha * Ta(gt);
-//        gt = Exponentiate(gt);
-//        SU<Nc>::GaugeTransform(U,gt);
-//    }
 
     void QuenchEulerStep(FieldType &U) {
         GenerateNoise();
@@ -165,7 +151,6 @@ public:
         StochasticGF(U);
     }
     
-    // twisted BC
     void LandauGF(FieldType &U, const double gftolerance) {
         PComplexD residualdiv;
         do{

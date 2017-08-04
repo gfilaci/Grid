@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     GridParallelRNG pRNG(&Grid);
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
     
-    cout<<twist.twist_tensor()<<endl;
+    cout<<TwistedGimpl_ptR::twist.twist_tensor()<<endl;
     
     double tau = 0.01;
     double alpha = -0.5*tau;

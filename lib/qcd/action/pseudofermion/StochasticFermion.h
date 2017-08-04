@@ -36,15 +36,15 @@ namespace QCDpt {
 ////////////////////////////////////////////////////////////////////////
 // Stochastic fermion action for any dop
 ////////////////////////////////////////////////////////////////////////
-template <class Impl, int Nf>
+template <class Impl>
 class StochasticFermionAction : public Action<typename Impl::GaugeField> {
  public:
   INHERIT_IMPL_TYPES(Impl);
 
  private:
   FermionOperator<Impl> &FermOp;  // the basic operator
-  const double invNf = 1. / (double)Nf;
-
+  GridParallelRNG pRNG;
+  
 //  OperatorFunction<FermionField> &DerivativeSolver;//$//
 
   FermionField Phi;
@@ -53,9 +53,10 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   /////////////////////////////////////////////////
   // Pass in required objects.
   /////////////////////////////////////////////////
-  StochasticFermionAction(FermionOperator<Impl> &Op/*,
+  StochasticFermionAction(FermionOperator<Impl> &Op, GridParallelRNG pRNG_/*,
                                 OperatorFunction<FermionField> &DS*/)
       : FermOp(Op),
+        pRNG(pRNG_),
         //DerivativeSolver(DS),
         Phi(Op.FermionGrid()){};
 
@@ -82,19 +83,28 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   virtual void deriv(const GaugeField &U, GaugeField &dSdU) {
       FermOp.ImportGauge(U);
       
+      //$// the noise should not be perturbative...
       FermionField Xi(FermOp.FermionGrid());
       FermionField invMXi(FermOp.FermionGrid());
+      decltype(peekPert(Xi,0)) tmp(FermOp.FermionGrid());
       
-      // generate random Xi
-      // ...
+      // Real part of Xi is gaussian with sigma = 1/sqrt(2),
+      // same for imaginary part.
+      // In this way < Xi^dag_a Xi_b > = delta_ab
+      gaussian(pRNG,tmp);
+      tmp *= M_SQRT1_2;
+      pokePert(Xi,tmp,0);
+      // (is it sure that gaussian generates real and imaginary parts independently?) //$//
       
       // compute invMXi = (M)^-1 Xi
 //      invMXi = zero;
 //      DerivativeSolver(M, Xi, invMXi);
       
+      invMXi = Xi; //$// just to have something, waiting to be able to compute the inverse...
+      
       // compute force
-//      FermOp.MDeriv(dSdU, Xi, invMXi, DaggerNo);
-//      dSdU *= invNf;
+      FermOp.MDeriv(dSdU, Xi, invMXi, DaggerNo);
+      //$// remember algebra projection
       
       // ********************************** //
       // CHECK CONVENTIONS AND OVERALL SIGN //

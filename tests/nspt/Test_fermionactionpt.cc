@@ -49,7 +49,6 @@ int main(int argc, char *argv[]) {
     GridParallelRNG pRNG(&Grid);
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
     
-    const int Nf = 2;
     PRealD mass = zero;
     WilsonImplParams Params;
     Params.boundary_phases = {-1.,1.,1.,1};
@@ -58,7 +57,7 @@ int main(int argc, char *argv[]) {
     
     WilsonFermion<PWilsonSmellImplR> Dw(U,Grid,RBGrid,mass,Params);
     
-    StochasticFermionAction<PWilsonSmellImplR,Nf> ActionFermion(Dw);
+    StochasticFermionAction<PWilsonSmellImplR> ActionFermion(Dw,pRNG);
     
     ActionFermion.deriv(U,U);
     

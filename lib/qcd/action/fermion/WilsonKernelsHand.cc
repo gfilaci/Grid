@@ -652,6 +652,8 @@ void WilsonKernels<Impl>::HandDhopSiteDagExt(StencilImpl &st,LebesgueOrder &lo,D
   HAND_SPECIALISE_EMPTY(GparityWilsonImplDF);
   HAND_SPECIALISE_EMPTY(QCDpt::PWilsonSmellImplF);
   HAND_SPECIALISE_EMPTY(QCDpt::PWilsonSmellImplD);
+  HAND_SPECIALISE_EMPTY(QCDpt::WilsonSmellImplF);
+  HAND_SPECIALISE_EMPTY(QCDpt::WilsonSmellImplD);
 
 ////////////// Wilson ; uses this implementation /////////////////////
 

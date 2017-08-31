@@ -286,6 +286,7 @@ AdjointFermOpTemplateInstantiate(WilsonKernels);
 TwoIndexFermOpTemplateInstantiate(WilsonKernels);
 template class WilsonKernels<QCDpt::PWilsonSmellImplF>;
 template class WilsonKernels<QCDpt::PWilsonSmellImplD>;
-
+template class WilsonKernels<QCDpt::WilsonSmellImplF>;
+template class WilsonKernels<QCDpt::WilsonSmellImplD>;
 }}
 

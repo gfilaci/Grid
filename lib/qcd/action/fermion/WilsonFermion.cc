@@ -127,6 +127,14 @@ template <>
 void WilsonFermion<QCDpt::PWilsonSmellImplD>::Mooee(const FermionField &in, FermionField &out) {
   assert(0);
 }
+template <>
+void WilsonFermion<QCDpt::WilsonSmellImplF>::Mooee(const FermionField &in, FermionField &out) {
+  assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::WilsonSmellImplD>::Mooee(const FermionField &in, FermionField &out) {
+  assert(0);
+}
 
 template <class Impl>
 void WilsonFermion<Impl>::MooeeDag(const FermionField &in, FermionField &out) {
@@ -147,6 +155,14 @@ void WilsonFermion<QCDpt::PWilsonSmellImplF>::MooeeInv(const FermionField &in, F
 }
 template <>
 void WilsonFermion<QCDpt::PWilsonSmellImplD>::MooeeInv(const FermionField &in, FermionField &out) {
+  assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::WilsonSmellImplF>::MooeeInv(const FermionField &in, FermionField &out) {
+  assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::WilsonSmellImplD>::MooeeInv(const FermionField &in, FermionField &out) {
   assert(0);
 }
 
@@ -371,5 +387,7 @@ TwoIndexFermOpTemplateInstantiate(WilsonFermion);
 GparityFermOpTemplateInstantiate(WilsonFermion);
 template class WilsonFermion<QCDpt::PWilsonSmellImplF>;
 template class WilsonFermion<QCDpt::PWilsonSmellImplD>;
+template class WilsonFermion<QCDpt::WilsonSmellImplF>;
+template class WilsonFermion<QCDpt::WilsonSmellImplD>;
 }
 }

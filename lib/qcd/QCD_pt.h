@@ -389,7 +389,16 @@ namespace QCDpt {
         static const bool value = ((QCD::SpinorIndex+1)==iVector<iPert<vtype,M>,N>::TensorLevel);
         static const bool notvalue = ((QCD::SpinorIndex+1)!=iVector<iPert<vtype,M>,N>::TensorLevel);
     };
-
+    template<int M, int N>
+    struct matchGridTensorIndex<iVector<iScalar<iMatrix<vComplexF,M>>,N>,QCD::SpinorIndex> {
+        static const bool value = ((QCD::SpinorIndex+1)==iVector<iScalar<iMatrix<vComplexF,M>>,N>::TensorLevel);
+        static const bool notvalue = ((QCD::SpinorIndex+1)!=iVector<iScalar<iMatrix<vComplexF,M>>,N>::TensorLevel);
+    };
+    template<int M, int N>
+    struct matchGridTensorIndex<iVector<iScalar<iMatrix<vComplexD,M>>,N>,QCD::SpinorIndex> {
+        static const bool value = ((QCD::SpinorIndex+1)==iVector<iScalar<iMatrix<vComplexD,M>>,N>::TensorLevel);
+        static const bool notvalue = ((QCD::SpinorIndex+1)!=iVector<iScalar<iMatrix<vComplexD,M>>,N>::TensorLevel);
+    };
 } // Grid
 
 #endif

@@ -125,8 +125,82 @@ public:
   
 };
 
+
+template <class S, int Nrepresentation = Nc> class GaugeImplTypes_ptscalar {
+public:
+  typedef S Simd;
+
+  template <typename vtype> using iImplScalar     = iScalar<iScalar<iScalar<iScalar<vtype> > > >;
+  template <typename vtype> using iImplGaugeLink  = iScalar<iScalar<iScalar<iMatrix<vtype, Nrepresentation> > > >;
+  template <typename vtype> using iImplGaugeField = iVector<iScalar<iScalar<iMatrix<vtype, Nrepresentation> > >, Nd>;
+
+  typedef iImplScalar<Simd>     SiteComplex;
+  typedef iImplGaugeLink<Simd>  SiteLink;
+  typedef iImplGaugeField<Simd> SiteField;
+
+  typedef Lattice<SiteComplex> ComplexField;
+  typedef Lattice<SiteLink>    LinkField; 
+  typedef Lattice<SiteField>   Field;
+
+  // Guido: we can probably separate the types from the HMC functions
+  // this will create 2 kind of implementations
+  // probably confusing the users
+  // Now keeping only one class
+
+
+  // Move this elsewhere? FIXME
+  static inline void AddLink(Field &U, LinkField &W,
+                                  int mu) { // U[mu] += W
+    PARALLEL_FOR_LOOP
+    for (auto ss = 0; ss < U._grid->oSites(); ss++) {
+      U._odata[ss]._internal[mu] =
+          U._odata[ss]._internal[mu] + W._odata[ss]._internal;
+    }
+  }
+
+  ///////////////////////////////////////////////////////////
+  // Move these to another class
+  // HMC auxiliary functions
+  static inline void generate_momenta(Field &P, GridParallelRNG &pRNG) {
+    // specific for SU gauge fields
+    LinkField Pmu(P._grid);
+    Pmu = zero;
+    for (int mu = 0; mu < Nd; mu++) {
+      SU<Nrepresentation>::GaussianFundamentalLieAlgebraMatrix(pRNG, Pmu);
+      PokeIndex<LorentzIndex>(P, Pmu, mu);
+    }
+  }
+
+  static inline Field projectForce(Field &P) { return Ta(P); }
+  
+  static inline RealD FieldSquareNorm(Field& U){
+    LatticeComplex Hloc(U._grid);
+    Hloc = zero;
+    for (int mu = 0; mu < Nd; mu++) {
+      auto Umu = PeekIndex<LorentzIndex>(U, mu);
+      Hloc += trace(Umu * Umu);
+    }
+    Complex Hsum = sum(Hloc);
+    return Hsum.real();
+  }
+
+  static inline void HotConfiguration(GridParallelRNG &pRNG, Field &U) {
+    SU<Nc>::HotConfiguration(pRNG, U);
+  }
+
+  static inline void TepidConfiguration(GridParallelRNG &pRNG, Field &U) {
+    SU<Nc>::TepidConfiguration(pRNG, U);
+  }
+
+  static inline void ColdConfiguration(GridParallelRNG &pRNG, Field &U) {
+    SU<Nc>::ColdConfiguration(pRNG, U);
+  }
+  
+};
+
 // perturbative implementation types
 typedef GaugeImplTypes_pt<vComplex, Nc> GimplTypes_ptR;
+typedef GaugeImplTypes_pt<vComplex, Nc> GimplTypes_ptscalarR;
 
 } // QCDpt
 

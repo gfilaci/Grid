@@ -81,6 +81,12 @@ namespace QCD {
     template<typename vtype, int N, int M> struct isSpinor<iVector<iPert<vtype,M>,N>> {
       static const bool value = (SpinorIndex==iPert<vtype,M>::TensorLevel);
     };
+    template<int N, int M> struct isSpinor<iVector<iScalar<iMatrix<vComplexF,M>>,N>> {
+      static const bool value = (SpinorIndex==iScalar<iMatrix<ComplexF,M>>::TensorLevel);
+    };
+    template<int N, int M> struct isSpinor<iVector<iScalar<iMatrix<vComplexD,M>>,N>> {
+      static const bool value = (SpinorIndex==iScalar<iMatrix<ComplexD,M>>::TensorLevel);
+    };
     
     template <typename T> using IfSpinor    = Invoke<std::enable_if< isSpinor<T>::value,int> > ;
     template <typename T> using IfNotSpinor = Invoke<std::enable_if<!isSpinor<T>::value,int> > ;

@@ -53,13 +53,20 @@ int main(int argc, char *argv[]) {
     WilsonImplParams Params;
     Params.boundary_phases = {-1.,1.,1.,1};
     
+    
     QCDpt::LatticeGaugeField U(&Grid);
-    
-    WilsonFermion<PWilsonSmellImplR> Dw(U,Grid,RBGrid,mass,Params);
-    
-    StochasticFermionAction<PWilsonSmellImplR> ActionFermion(Dw,pRNG);
-    
+    StochasticFermionAction<PWilsonSmellImplR> ActionFermion(pRNG,&Grid,&RBGrid,mass,Params);
     ActionFermion.deriv(U,U);
+
+//    FFT theFFT(&Grid);
+//    
+//    QCDpt::LatticeGaugeField Ucopy(&Grid);
+//    random(pRNG,U);
+//    Ucopy = U;
+//    theFFT.FFT_all_dim(U,U,FFT::backward);
+//    theFFT.FFT_all_dim(U,U,FFT::forward);
+//    U-=Ucopy;
+//    cout<<U<<endl;
     
     Grid_finalize();
     return EXIT_SUCCESS;

@@ -52,22 +52,29 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   SOFermionField psitmp;
   GridParallelRNG pRNG;
   GridCartesian* grid;
-  // check this number... //$//
+  
+  // we can work at lower perturabtive order, because
+  // there is a factor 1/beta in front of the fermion drift.
+  // it arises from rescaling tau = beta * epsilon
   int Npf = Np - 2;
   
+  int Nf; // number of flavours
+  double Nf_over_Nc;  // 1/Nc is the factor due to the smell
 
  public:
   
   /////////////////////////////////////////////////
   // Pass in required objects.
   /////////////////////////////////////////////////
-  StochasticFermionAction(GridParallelRNG pRNG_, GridCartesian* grid_, GridRedBlackCartesian* rbgrid_, PRealD mass_, WilsonImplParams Params_)
+  StochasticFermionAction(GridParallelRNG pRNG_, GridCartesian* grid_, GridRedBlackCartesian* rbgrid_, PRealD mass_, WilsonImplParams Params_, int Nf_)
       : pRNG(pRNG_),
         Uso(grid_),
         psitmp(grid_),
         Uforce(grid_),
-        grid(grid_)
+        grid(grid_),
+        Nf(Nf_)
         {
+            Nf_over_Nc = (double)Nf / (double)Nc;
             Dw.reserve(Npf);
             psi.reserve(Npf);
             for (int i=0; i<Npf; i++) {
@@ -93,7 +100,7 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   };
 
   //////////////////////////////////////////////////////
-  // dS/du = - Xi^dag  dM (M)^-1 Xi
+  // return dSdU = i nabla S = -i Xi^dag  dM (M)^-1 Xi
   //////////////////////////////////////////////////////
   virtual void deriv(const GaugeField &U, GaugeField &dSdU) {
       for (int k=0; k<Npf; k++) {
@@ -111,8 +118,8 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
       Xi *= M_SQRT1_2;
       // (are we sure that 'gaussian' generates real and imaginary parts independently?) //$//
       
+      // compute perturbatively psi = (M)^-1 Xi
       psi[0] = Xi; // here I have to apply M0^-1...//$//
-      
       for (int n=1; n<Npf; n++) {
           psi[n] = zero;
           for (int j=0; j<n; j++) {
@@ -122,23 +129,22 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
           // apply M0^-1 to psi[n] //$//
       }
       
+      // compute force
+      dSdU = zero;
       for (int n=0; n<Npf; n++) {
           Uforce = zero;
           for (int j=0; j<=n; j++) {
               Dw[n-j].MDeriv(Uso, Xi, psi[j], DaggerNo);
               Uforce += Uso;
           }
-          //$// remember algebra projection
-          //$// remember to set dSdU to zero and shift the orders
-          pokePert(dSdU,Uforce,n);
+          // the "+2" shift is due to the 1/beta factor in front of the fermion drift.
+          // the first two orders are already set to zero.
+          pokePert(dSdU,Uforce,n+2);
       }
       
-      // ********************************** //
-      // CHECK CONVENTIONS AND OVERALL SIGN //
-      // ********************************** //
-      // Our conventions really make this UdSdU; We do not differentiate wrt Udag here.
-      // So must take dSdU - adj(dSdU) and left multiply by mom to get dS/dt.
-      // not taking here the traceless antihermitian component*/
+      dSdU = Ta(dSdU);
+      dSdU *= Nf_over_Nc;
+      
   };
 };
 }

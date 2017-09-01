@@ -86,7 +86,11 @@ public:
         stau = std::sqrt(tau);
         mtau = - tau;
         halftau = 0.5 * tau;
+        // - tau^2 * C_A/6
         RKtau = - (double)Nc * tau * tau / 6.;
+        // the noise has to be normalised such that
+        // < eta^a eta^b > = 2 delta^{ab}
+        // therefore I need devstd = sqrt(2)
         ci *= stau * M_SQRT2;
     };
 

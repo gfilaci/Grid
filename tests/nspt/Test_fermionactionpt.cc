@@ -50,12 +50,13 @@ int main(int argc, char *argv[]) {
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
     
     PRealD mass = zero;
+    int Nf = 2;
     WilsonImplParams Params;
     Params.boundary_phases = {-1.,1.,1.,1};
     
     
     QCDpt::LatticeGaugeField U(&Grid);
-    StochasticFermionAction<PWilsonSmellImplR> ActionFermion(pRNG,&Grid,&RBGrid,mass,Params);
+    StochasticFermionAction<PWilsonSmellImplR> ActionFermion(pRNG,&Grid,&RBGrid,mass,Params,Nf);
     ActionFermion.deriv(U,U);
 
 //    FFT theFFT(&Grid);

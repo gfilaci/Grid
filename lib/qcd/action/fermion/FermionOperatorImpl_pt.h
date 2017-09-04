@@ -203,9 +203,8 @@ namespace QCDpt {
     inline void InsertForce4D(GaugeField &mat, FermionField &Btilde, FermionField &A,int mu){
         GaugeLinkField link(mat._grid);
          // matrix product automatically performs the sum over smells
-         // and gives a matrix in colour space
-         //$// A is the noise, so it should not be perturbative...
-         //$// need to resolve nesting because mult(iVector,iVector) is not defined...
+         // and gives a matrix in colour space.
+         // Need to resolve nesting because mult(iVector,iVector) is not defined...
         FermionField tmp = adj(A);
         parallel_for(int ss=0;ss<mat._grid->oSites();ss++){
             for (int alpha=0; alpha<Ns; alpha++)

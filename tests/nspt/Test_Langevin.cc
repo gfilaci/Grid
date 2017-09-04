@@ -61,7 +61,12 @@ int main(int argc, char *argv[]) {
 //    pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
 //    PertRandom(pRNG,U);
 
-    PertLangevin<WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>>> L(&Grid,pRNG,tau,alpha);
+    WilsonGaugeAction<PeriodicGaugeImpl<GimplTypes_ptR>> GaugeAction;
+    ActionLevel<PeriodicGaugeImpl<GimplTypes_ptR>::GaugeField,PNoHirep> GaugeLevel;
+    GaugeLevel.push_back(&GaugeAction);
+
+    PertLangevin<PeriodicGaugeImpl<GimplTypes_ptR>> L(&Grid,pRNG,tau,alpha);
+    L.TheActions.push_back(GaugeLevel);
     
     for (int i=0; i<10000; i++) {
 //        std::cout<<GridLogMessage << "start step"<<std::endl;

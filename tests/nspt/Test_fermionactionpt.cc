@@ -78,6 +78,9 @@ int main(int argc, char *argv[]) {
     L.TheActions.push_back(FermionLevel);
     
     
+    FermionAction.deriv(U,U);
+    
+    
 //    FFT theFFT(&Grid);
 //    
 //    QCDpt::LatticeGaugeField Ucopy(&Grid);

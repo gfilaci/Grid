@@ -56,20 +56,38 @@ int main(int argc, char *argv[]) {
     
     
     QCDpt::LatticeGaugeField U(&Grid);
-    StochasticFermionAction<PWilsonSmellImplR> FermionAction(pRNG,&Grid,&RBGrid,mass,Params,Nf);
-    FermionAction.deriv(U,U);
+    
+//    FermionAction.deriv(U,U);
     
     
 //    AccessTypes<Action, Representations<FundamentalRep_pt<Nc>>>::VectorCollection actions_hirep;
 //    vector<Action<PWilsonSmellImplR::GaugeField>*>& actions(std::get<0>(actions_hirep));
     
     
-    ActionLevel<PWilsonSmellImplR::GaugeField,PNoHirep> Level0;
-    Level0.push_back(&FermionAction);
-    ActionSet<PWilsonSmellImplR::GaugeField,PNoHirep> TheActions;
+    
 //    TheActions.push_back(Level0);
 //    for(int i=0; i<TheActions.size(); i++) TheActions[i].actions[0]->deriv(U,U);
     
+    typedef TwistedGimpl_ptR   gimpl;
+    typedef PWilsonSmellImplR  fimpl;
+    double tau = 0.01;
+    double alpha = -0.5*tau;
+    
+    WilsonGaugeAction<gimpl> GaugeAction;
+    ActionLevel<gimpl::GaugeField,PNoHirep> GaugeLevel;
+    GaugeLevel.push_back(&GaugeAction);
+    
+    
+    StochasticFermionAction<fimpl> FermionAction(pRNG,&Grid,&RBGrid,mass,Params,Nf);
+    ActionLevel<fimpl::GaugeField,PNoHirep> FermionLevel;
+    FermionLevel.push_back(&FermionAction);
+        
+    
+    PertLangevin<gimpl> L(&Grid,pRNG,tau,alpha);
+    L.TheActions.push_back(GaugeLevel);
+    L.TheActions.push_back(FermionLevel);
+    
+//    PertLangevin<WilsonGaugeAction<TwistedGimpl_ptR>> L(&Grid,pRNG,tau,alpha);
     
     
 //    FFT theFFT(&Grid);

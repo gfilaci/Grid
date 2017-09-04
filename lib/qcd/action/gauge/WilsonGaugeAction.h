@@ -48,7 +48,7 @@ class WilsonGaugeAction : public Action<typename Gimpl::GaugeField> {
   typedef Gimpl Gimplementation; // it allows to export Gimpl type elsewhere
   
   /////////////////////////// constructors
-  explicit WilsonGaugeAction(RealD beta_):beta(beta_){};
+  explicit WilsonGaugeAction(RealD beta_ = 1.):beta(beta_){};
 
   virtual std::string action_name() {return "WilsonGaugeAction";}
 

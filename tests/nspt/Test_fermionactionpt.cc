@@ -56,9 +56,22 @@ int main(int argc, char *argv[]) {
     
     
     QCDpt::LatticeGaugeField U(&Grid);
-    StochasticFermionAction<PWilsonSmellImplR> ActionFermion(pRNG,&Grid,&RBGrid,mass,Params,Nf);
-    ActionFermion.deriv(U,U);
-
+    StochasticFermionAction<PWilsonSmellImplR> FermionAction(pRNG,&Grid,&RBGrid,mass,Params,Nf);
+    FermionAction.deriv(U,U);
+    
+    
+//    AccessTypes<Action, Representations<FundamentalRep_pt<Nc>>>::VectorCollection actions_hirep;
+//    vector<Action<PWilsonSmellImplR::GaugeField>*>& actions(std::get<0>(actions_hirep));
+    
+    
+    ActionLevel<PWilsonSmellImplR::GaugeField,PNoHirep> Level0;
+    Level0.push_back(&FermionAction);
+    ActionSet<PWilsonSmellImplR::GaugeField,PNoHirep> TheActions;
+//    TheActions.push_back(Level0);
+//    for(int i=0; i<TheActions.size(); i++) TheActions[i].actions[0]->deriv(U,U);
+    
+    
+    
 //    FFT theFFT(&Grid);
 //    
 //    QCDpt::LatticeGaugeField Ucopy(&Grid);

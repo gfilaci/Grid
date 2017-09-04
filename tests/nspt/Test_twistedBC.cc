@@ -57,14 +57,19 @@ int main(int argc, char *argv[]) {
     QCDpt::LatticeGaugeField U(&Grid);
     PertVacuum(U);
     
-    PertLangevin<WilsonGaugeAction<TwistedGimpl_ptR>> L(&Grid,pRNG,tau,alpha);
     
+    WilsonGaugeAction<TwistedGimpl_ptR> GaugeAction;
+    ActionLevel<TwistedGimpl_ptR::GaugeField,PNoHirep> GaugeLevel;
+    GaugeLevel.push_back(&GaugeAction);
+    
+    PertLangevin<TwistedGimpl_ptR> L(&Grid,pRNG,tau,alpha);
+    L.TheActions.push_back(GaugeLevel);
     
     // checkpointer
     CheckpointerParameters CPparams;
     CPparams.config_prefix = "NSPTckpoint_lat";
     CPparams.rng_prefix = "NSPTckpoint_rng";
-    CPparams.saveInterval = 25;
+    CPparams.saveInterval = 5000;
     CPparams.format = "IEEE64BIG";
     BinaryHmcCheckpointer<TwistedGimpl_ptR> CP(CPparams);
     // is it needed?
@@ -79,7 +84,7 @@ int main(int argc, char *argv[]) {
     plaqfile << scientific;
     
     PRealD plaq;
-    for (int i=0; i<25; i++) {
+    for (int i=0; i<5000; i++) {
         L.QuenchRKStep(U);
         plaq = WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U);
         for (int k=0; k<Np; k++) plaqfile << plaq(k) << endl;

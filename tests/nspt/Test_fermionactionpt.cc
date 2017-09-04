@@ -49,45 +49,33 @@ int main(int argc, char *argv[]) {
     GridParallelRNG pRNG(&Grid);
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
     
-    PRealD mass = zero;
-    int Nf = 2;
-    WilsonImplParams Params;
-    Params.boundary_phases = {-1.,1.,1.,1};
-    
-    
-    QCDpt::LatticeGaugeField U(&Grid);
-    
-//    FermionAction.deriv(U,U);
-    
-    
-//    AccessTypes<Action, Representations<FundamentalRep_pt<Nc>>>::VectorCollection actions_hirep;
-//    vector<Action<PWilsonSmellImplR::GaugeField>*>& actions(std::get<0>(actions_hirep));
-    
-    
-    
-//    TheActions.push_back(Level0);
-//    for(int i=0; i<TheActions.size(); i++) TheActions[i].actions[0]->deriv(U,U);
     
     typedef TwistedGimpl_ptR   gimpl;
     typedef PWilsonSmellImplR  fimpl;
-    double tau = 0.01;
-    double alpha = -0.5*tau;
+    gimpl::GaugeField U(&Grid);
+    PertVacuum(U);
+    
     
     WilsonGaugeAction<gimpl> GaugeAction;
     ActionLevel<gimpl::GaugeField,PNoHirep> GaugeLevel;
     GaugeLevel.push_back(&GaugeAction);
     
     
-    StochasticFermionAction<fimpl> FermionAction(pRNG,&Grid,&RBGrid,mass,Params,Nf);
+    PRealD mass = zero;
+    int Nf = 2;
+    WilsonImplParams Params;
+    Params.boundary_phases = {-1.,1.,1.,1};
+    
+    StochasticFermionAction<fimpl> FermionAction(&pRNG,&Grid,&RBGrid,mass,Params,Nf);
     ActionLevel<fimpl::GaugeField,PNoHirep> FermionLevel;
     FermionLevel.push_back(&FermionAction);
-        
     
-    PertLangevin<gimpl> L(&Grid,pRNG,tau,alpha);
+    
+    double tau = 0.01;
+    double alpha = -0.5*tau;
+    PertLangevin<gimpl> L(&Grid,&pRNG,tau,alpha);
     L.TheActions.push_back(GaugeLevel);
     L.TheActions.push_back(FermionLevel);
-    
-//    PertLangevin<WilsonGaugeAction<TwistedGimpl_ptR>> L(&Grid,pRNG,tau,alpha);
     
     
 //    FFT theFFT(&Grid);

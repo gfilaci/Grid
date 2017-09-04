@@ -43,7 +43,7 @@ class PertLangevin {
 protected:
     
     GridBase* grid;
-    GridParallelRNG pRNG;
+    GridParallelRNG *pRNG;
     
     RealD tau;
     RealD alpha;
@@ -66,7 +66,7 @@ protected:
 public:
     ActionSet<typename Gimpl::GaugeField,PNoHirep> TheActions;
     
-    explicit PertLangevin(GridBase* grid_, GridParallelRNG pRNG_, RealD tau_, RealD alpha_):
+    explicit PertLangevin(GridBase* grid_, GridParallelRNG *pRNG_, RealD tau_, RealD alpha_):
     pRNG(pRNG_),
     tau(tau_),
     alpha(alpha_),
@@ -96,7 +96,7 @@ public:
     void GenerateNoise() {
         zeroit(noise);
         for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
-            gaussian(pRNG, ca);
+            gaussian(*pRNG, ca);
             SU<Nc>::generator(a, ta);
             noise += toComplex(ca) * ta;
         }

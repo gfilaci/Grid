@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
     ActionLevel<TwistedGimpl_ptR::GaugeField,PNoHirep> GaugeLevel;
     GaugeLevel.push_back(&GaugeAction);
     
-    PertLangevin<TwistedGimpl_ptR> L(&Grid,pRNG,tau,alpha);
+    PertLangevin<TwistedGimpl_ptR> L(&Grid,&pRNG,tau,alpha);
     L.TheActions.push_back(GaugeLevel);
     
     // checkpointer

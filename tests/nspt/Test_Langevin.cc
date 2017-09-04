@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     ActionLevel<PeriodicGaugeImpl<GimplTypes_ptR>::GaugeField,PNoHirep> GaugeLevel;
     GaugeLevel.push_back(&GaugeAction);
 
-    PertLangevin<PeriodicGaugeImpl<GimplTypes_ptR>> L(&Grid,pRNG,tau,alpha);
+    PertLangevin<PeriodicGaugeImpl<GimplTypes_ptR>> L(&Grid,&pRNG,tau,alpha);
     L.TheActions.push_back(GaugeLevel);
     
     for (int i=0; i<10000; i++) {

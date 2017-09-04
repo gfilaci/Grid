@@ -50,7 +50,7 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   SOGaugeField Uso, Uforce;
   std::vector<SOFermionField> psi;
   SOFermionField psitmp;
-  GridParallelRNG pRNG;
+  GridParallelRNG *pRNG;
   GridCartesian* grid;
   
   // we can work at lower perturabtive order, because
@@ -66,7 +66,7 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   /////////////////////////////////////////////////
   // Pass in required objects.
   /////////////////////////////////////////////////
-  StochasticFermionAction(GridParallelRNG pRNG_, GridCartesian* grid_, GridRedBlackCartesian* rbgrid_, PRealD mass_, WilsonImplParams Params_, int Nf_)
+  StochasticFermionAction(GridParallelRNG *pRNG_, GridCartesian* grid_, GridRedBlackCartesian* rbgrid_, PRealD mass_, WilsonImplParams Params_, int Nf_)
       : pRNG(pRNG_),
         Uso(grid_),
         psitmp(grid_),
@@ -114,7 +114,7 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
       // Real part of Xi is gaussian with sigma = 1/sqrt(2),
       // same for imaginary part.
       // In this way < Xi^dag_a Xi_b > = delta_ab
-      gaussian(pRNG,Xi);
+      gaussian(*pRNG,Xi);
       Xi *= M_SQRT1_2;
       // (are we sure that 'gaussian' generates real and imaginary parts independently?) //$//
       

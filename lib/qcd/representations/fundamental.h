@@ -34,6 +34,25 @@ class FundamentalRep {
 
 };
 
+template <int ncolour>
+class PFundamentalRep {
+ public:
+  static const int Dimension = ncolour;
+
+  // typdef to be used by the Representations class in HMC to get the
+  // types for the higher representation fields
+  typedef typename QCDpt::SU<ncolour>::LatticeMatrix LatticeMatrix;
+  typedef QCDpt::LatticeGaugeField LatticeField;
+  
+  explicit PFundamentalRep(GridBase* grid) {} //do nothing
+  void update_representation(const LatticeGaugeField& Uin) {} // do nothing
+
+  LatticeField RtoFundamentalProject(const LatticeField& in, Real scale = 1.0) const{
+    return (scale * in);
+  }
+
+};
+
   template<class Field> 
   class EmptyRep {
   public:
@@ -47,7 +66,7 @@ class FundamentalRep {
 
   
 typedef	 FundamentalRep<Nc> FundamentalRepresentation;
-
+typedef	 PFundamentalRep<Nc> PFundamentalRepresentation;
   
 }
 }

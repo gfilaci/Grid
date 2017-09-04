@@ -61,6 +61,7 @@ class Representations {
 };
 
 typedef Representations<FundamentalRepresentation> NoHirep;
+typedef Representations<PFundamentalRepresentation> PNoHirep;
 typedef Representations<EmptyRep<typename ScalarImplR::Field> > ScalarFields;
 typedef Representations<EmptyRep<typename ScalarAdjImplR::Field> > ScalarMatrixFields;
 

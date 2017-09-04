@@ -45,5 +45,6 @@ Author: paboyle <paboyle@ph.ed.ac.uk>
 #include <Grid/qcd/smearing/Smearing.h>
 #include <Grid/parallelIO/MetaData.h>
 #include <Grid/qcd/hmc/HMC_aggregate.h>
+#include <Grid/qcd/langevin/Langevin_pt.h>
 
 #endif

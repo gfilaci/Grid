@@ -31,7 +31,7 @@ directory
 
 #include "../action/gauge/twistmatrices_pt.h"
 
-#define pperploop(n1,n2) for(int n1=0; n1<Nc; n1++) for(int n2=0; n2<Nc; n2++)
+#define pPerpLoop(n1,n2) for(int n1=0; n1<Nc; n1++) for(int n2=0; n2<Nc; n2++)
 
 namespace Grid {
 namespace QCD {
@@ -40,14 +40,24 @@ namespace QCDpt {
 template <class Gimpl>
 class TwistedFFT {
 
-public:
-    
     typedef typename std::remove_reference<decltype(Gimpl::twist.omega[0])>::type TwistBase;
+    typedef typename Gimpl::ScalarField LatticeScalar;
+    typedef typename Gimpl::MatrixField LatticeMatrix;
+    
+private:
     iMatrix<TwistBase, Nc> Gamma, adjGamma;
     int t1,t2;
-    std::vector<Complex> boundary_phases;
+    std::vector<Real> boundary_exp;
+    GridCartesian* grid;
+    FFT theFFT;
+    LatticeMatrix pPerpPhase;
     
-    TwistedFFT()
+public:
+    
+    TwistedFFT(GridCartesian* grid_, std::vector<Complex> boundary_phases_):
+    grid(grid_),
+    theFFT(grid_),
+    pPerpPhase(grid_)
     {
         // This TwistedFFT is tailored for twist on a plane
         // with generic orientation.
@@ -61,13 +71,37 @@ public:
         }
         assert(ntwisteddir==2);
         
+        // initialise boundary exponents
+        for (int d=0; d<Nd; d++) {
+            boundary_exp.push_back(log(boundary_phases_[d]).imag());
+        }
+        
         // initialise Fourier twist base
-        pperploop(n1,n2) {
+        pPerpLoop(n1,n2) {
             Gamma(n1,n2) = BuildGamma(n1,n2);
             adjGamma(n1,n2) = adj(Gamma(n1,n2));
             Gamma(n1,n2) = (1./(double)Nc)*Gamma(n1,n2);
         }
         
+        // initialise phases for pPerp projection
+        LatticeScalar xmu(grid), tmp(grid);
+        pPerpLoop(n1,n2) {
+            tmp = zero;
+            for (int mu=0; mu<Nd; mu++) {
+                Real pPerp = boundary_exp[mu] / (double)(grid->_fdimensions[mu]);
+                if(mu==t1) pPerp +=  (double)n1 * 2. * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                if(mu==t2) pPerp +=  (double)n2 * 2. * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                LatticeCoordinate(xmu,mu);
+                tmp = tmp + pPerp*xmu;
+            }
+            Complex ci(0.,1.);
+            tmp = exp(ci*tmp);
+            pokeColour(pPerpPhase,tmp,n1,n2);
+        }
+        // The FFTW library has FFTW_FORWARD = -1 by default.
+        // The following if statement is needed when
+        // somehow a different convention is used (hopefully never...).
+        if(FFTW_FORWARD==+1) pPerpPhase = conjugate(pPerpPhase);
         
     }
 
@@ -83,8 +117,8 @@ TwistBase BuildGamma(int n1, int n2){
 void OrthonormalityTest(){
     bool testpassed = true;
     double precision = 1e-13;
-    pperploop(n1,n2){
-        pperploop(m1,m2){
+    pPerpLoop(n1,n2){
+        pPerpLoop(m1,m2){
             double tmp = abs(TensorRemove(trace(adjGamma(m1,m2)*Gamma(n1,n2))));
             if(m1==n1 && m2==n2) tmp -= 1.;
             if(std::abs(tmp)>precision) testpassed = false;
@@ -94,6 +128,37 @@ void OrthonormalityTest(){
     if(testpassed) std::cout << GridLogMessage << "Orthonormality test PASSED" << std::endl;
     else std::cout << GridLogMessage << "Orthonormality test FAILED" << std::endl;
 }
+
+template<class vobj>
+void pPerpProjectionForward(Lattice<vobj> &result,const Lattice<vobj> &source){
+
+}
+
+template<class vobj>
+void pPerpProjectionBackward(Lattice<vobj> &result,const Lattice<vobj> &source){
+
+}
+
+template<class vobj>
+void FFTforward(Lattice<vobj> &result,const Lattice<vobj> &source){
+    conformable(result._grid,grid);
+    conformable(source._grid,grid);
+    
+    Lattice<vobj> tmp(grid);
+    pPerpProjectionForward(tmp,source);
+    theFFT.FFT_all_dim(result,tmp,FFT::forward);
+}
+
+template<class vobj>
+void FFTbackward(Lattice<vobj> &result,const Lattice<vobj> &source){
+    conformable(result._grid,grid);
+    conformable(source._grid,grid);
+    
+    Lattice<vobj> tmp(grid);
+    theFFT.FFT_all_dim(tmp,source,FFT::backward);
+    pPerpProjectionBackward(result,tmp);
+}
+
 
 };
 

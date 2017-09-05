@@ -81,18 +81,8 @@ int main(int argc, char *argv[]) {
     FermionAction.deriv(U,U);
     
     
-    TwistedFFT<gimpl> TheFFT;
-    
-    
-//    FFT theFFT(&Grid);
-//    
-//    QCDpt::LatticeGaugeField Ucopy(&Grid);
-//    random(pRNG,U);
-//    Ucopy = U;
-//    theFFT.FFT_all_dim(U,U,FFT::backward);
-//    theFFT.FFT_all_dim(U,U,FFT::forward);
-//    U-=Ucopy;
-//    cout<<U<<endl;
+    TwistedFFT<gimpl> TheFFT(&Grid,Params.boundary_phases);
+    TheFFT.FFTforward(U,U);
     
     Grid_finalize();
     return EXIT_SUCCESS;

@@ -69,6 +69,9 @@ public:
   typedef Lattice<SiteLink>    LinkField; 
   typedef Lattice<SiteField>   Field;
 
+  typedef Lattice<iScalar<iScalar<iScalar<iScalar<Simd> > > > >                   ScalarField;
+  typedef Lattice<iScalar<iScalar<iScalar<iMatrix<Simd, Nrepresentation> > > > >  MatrixField;
+  
   // Guido: we can probably separate the types from the HMC functions
   // this will create 2 kind of implementations
   // probably confusing the users
@@ -141,6 +144,9 @@ public:
   typedef Lattice<SiteComplex> ComplexField;
   typedef Lattice<SiteLink>    LinkField; 
   typedef Lattice<SiteField>   Field;
+
+  typedef ComplexField  ScalarField;
+  typedef LinkField     MatrixField;
 
   // Guido: we can probably separate the types from the HMC functions
   // this will create 2 kind of implementations

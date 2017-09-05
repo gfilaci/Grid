@@ -3,6 +3,7 @@
 #include <Grid/qcd/utils/SpaceTimeGrid.h>
 #include <Grid/qcd/utils/LinalgUtils.h>
 #include <Grid/qcd/utils/CovariantCshift.h>
+#include <Grid/qcd/utils/TwistedFFT.h>
 
 // Scalar field
 #include <Grid/qcd/utils/ScalarObjs.h>

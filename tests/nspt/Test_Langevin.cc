@@ -2,7 +2,7 @@
 
 Grid physics library, www.github.com/paboyle/Grid 
 
-Source file: ./tests/Test_Langevin.cc
+Source file: ./tests/nspt/Test_Langevin.cc
 
 Copyright (C) 2015-2017
 

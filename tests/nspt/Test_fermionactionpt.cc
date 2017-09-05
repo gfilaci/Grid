@@ -2,7 +2,7 @@
 
 Grid physics library, www.github.com/paboyle/Grid 
 
-Source file: ./tests/Test_fermionactionpt.cc
+Source file: ./tests/nspt/Test_fermionactionpt.cc
 
 Copyright (C) 2015-2017
 
@@ -79,6 +79,9 @@ int main(int argc, char *argv[]) {
     
     
     FermionAction.deriv(U,U);
+    
+    
+    TwistedFFT<gimpl> TheFFT;
     
     
 //    FFT theFFT(&Grid);

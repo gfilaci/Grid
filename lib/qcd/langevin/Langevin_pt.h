@@ -2,7 +2,7 @@
 
 Grid physics library, www.github.com/paboyle/Grid
 
-Source file: ./lib/qcd/utils/Langevin_pt.h
+Source file: ./lib/qcd/langevin/Langevin_pt.h
 
 Copyright (C) 2015
 

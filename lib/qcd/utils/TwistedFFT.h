@@ -34,6 +34,79 @@ directory
 #define pPerpLoop(n1,n2) for(int n1=0; n1<Nc; n1++) for(int n2=0; n2<Nc; n2++)
 
 namespace Grid {
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  //  TwistMult is a multiplication.
+  //  The only difference bewteen mult and TwistMult is that here a matrix is supposed to collect
+  //  the fine momentum (pperp) degree of freedom.
+  //  Therefore a matrix multiplication has to be done 'element by element' and not 'row by column'.
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<class rtype,class vtype,class mtype>
+strong_inline void TwistMult(iScalar<rtype> * __restrict__ ret,
+                       const iScalar<vtype> * __restrict__ lhs,
+                       const iScalar<mtype> * __restrict__ rhs){
+    TwistMult(&ret->_internal,&lhs->_internal,&rhs->_internal);
+}
+template<class rrtype,class ltype,class rtype,int N>
+strong_inline void TwistMult(iMatrix<rrtype,N>* __restrict__ ret,
+                       const iMatrix<ltype,N> * __restrict__ lhs,
+                       const iMatrix<rtype,N> * __restrict__ rhs){
+  for(int c1=0;c1<N;c1++){
+    for(int c2=0;c2<N;c2++){
+        mult(&ret->_internal[c1][c2],&lhs->_internal[c1][c2],&rhs->_internal[c1][c2]);
+    }
+  }
+  return;
+}
+template<class rtype,class vtype,class mtype,int N>
+strong_inline void TwistMult(iVector<rtype,N> * __restrict__ ret,
+                       const iScalar<vtype>   * __restrict__ lhs,
+                       const iVector<mtype,N> * __restrict__ rhs){
+    for(int c1=0;c1<N;c1++){
+        TwistMult(&ret->_internal[c1],&lhs->_internal,&rhs->_internal[c1]);
+    }
+}
+template<class rtype,class vtype,class mtype,int N>
+strong_inline void TwistMult(iVector<rtype,N> * __restrict__ ret,
+                       const iVector<vtype,N> * __restrict__ lhs,
+                       const iScalar<mtype>   * __restrict__ rhs){
+    for(int c1=0;c1<N;c1++){
+        TwistMult(&ret->_internal[c1],&lhs->_internal[c1],&rhs->_internal);
+    }
+}
+template<class rtype,class vtype,class mtype,int N>
+strong_inline void TwistMult(iPert<rtype,N> * __restrict__ ret,
+                       const iScalar<vtype> * __restrict__ lhs,
+                       const iPert<mtype,N> * __restrict__ rhs){
+    for(int c1=0;c1<N;c1++){
+        TwistMult(&ret->_internal[c1],&lhs->_internal,&rhs->_internal[c1]);
+    }
+}
+template<class rtype,class vtype,class mtype,int N>
+strong_inline void TwistMult(iPert<rtype,N> * __restrict__ ret,
+                       const iPert<vtype,N> * __restrict__ lhs,
+                       const iScalar<mtype> * __restrict__ rhs){
+    for(int c1=0;c1<N;c1++){
+        TwistMult(&ret->_internal[c1],&lhs->_internal[c1],&rhs->_internal);
+    }
+}
+template<class obj1,class obj2,class obj3>
+strong_inline void TwistMult(Lattice<obj1> &ret,const Lattice<obj2> &lhs,const Lattice<obj3> &rhs){
+    ret.checkerboard = lhs.checkerboard;
+    conformable(ret,rhs);
+    conformable(lhs,rhs);
+    parallel_for(int ss=0;ss<lhs._grid->oSites();ss++){
+#ifdef STREAMING_STORES
+      obj1 tmp;
+      TwistMult(&tmp,&lhs._odata[ss],&rhs._odata[ss]);
+      vstream(ret._odata[ss],tmp);
+#else
+      TwistMult(&ret._odata[ss],&lhs._odata[ss],&rhs._odata[ss]);
+#endif
+    }
+  }
+
 namespace QCD {
 namespace QCDpt {
 
@@ -138,12 +211,19 @@ void pPerpProjectionForward(Lattice<vobj> &result, const Lattice<vobj> &source){
         tmp = trace(adjGamma(n1,n2)*source);
         pokeColour(result,tmp,n1,n2);
     }
-//    result = adj(pPerpPhase) * result;//$//need the other product
+    TwistMult(result,adj(pPerpPhase),result);
 }
 
 template<class vobj>
 void pPerpProjectionBackward(Lattice<vobj> &result,const Lattice<vobj> &source){
-
+    
+    Lattice<vobj> tmp(grid);
+    TwistMult(tmp,pPerpPhase,source);
+    
+    result = zero;
+    pPerpLoop(n1,n2){
+        result = result + Gamma(n1,n2) * peekColour(tmp,n1,n2);
+    }
 }
 
 template<class vobj>

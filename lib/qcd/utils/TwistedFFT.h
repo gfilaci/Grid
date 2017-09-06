@@ -118,14 +118,16 @@ class TwistedFFT {
     typedef typename Gimpl::MatrixField LatticeMatrix;
     
 private:
-    iMatrix<TwistBase, Nc> Gamma, adjGamma;
-    int t1,t2;
-    std::vector<Real> boundary_exp;
+    
     GridCartesian* grid;
     FFT theFFT;
     LatticeMatrix pPerpPhase;
     
 public:
+    
+    iMatrix<TwistBase, Nc> Gamma, adjGamma;
+    std::vector<Real> boundary_exp;
+    int t1,t2;
     
     TwistedFFT(GridCartesian* grid_, std::vector<Complex> boundary_phases_):
     grid(grid_),
@@ -143,6 +145,10 @@ public:
             }
         }
         assert(ntwisteddir==2);
+        
+        // The FFTW library has FFTW_FORWARD = -1 by default.
+        // Here the same convention is assumed.
+        if(FFTW_FORWARD==+1) assert(0);
         
         // initialise boundary exponents
         for (int d=0; d<Nd; d++) {
@@ -171,11 +177,6 @@ public:
             tmp = exp(ci*tmp);
             pokeColour(pPerpPhase,tmp,n1,n2);
         }
-        // The FFTW library has FFTW_FORWARD = -1 by default.
-        // The following if statement is needed when
-        // somehow a different convention is used (hopefully never...).
-        if(FFTW_FORWARD==+1) pPerpPhase = conjugate(pPerpPhase);
-        
     }
 
 
@@ -198,7 +199,7 @@ void OrthonormalityTest(){
         }
     }
     
-    if(testpassed) std::cout << GridLogMessage << "Orthonormality test PASSED" << std::endl;
+    if(testpassed) std::cout << GridLogMessage << "Orthonormality test SUCCEEDED" << std::endl;
     else std::cout << GridLogMessage << "Orthonormality test FAILED" << std::endl;
 }
 
@@ -211,7 +212,7 @@ void pPerpProjectionForward(Lattice<vobj> &result, const Lattice<vobj> &source){
         tmp = trace(adjGamma(n1,n2)*source);
         pokeColour(result,tmp,n1,n2);
     }
-    TwistMult(result,adj(pPerpPhase),result);
+    TwistMult(result,conjugate(pPerpPhase),result);
 }
 
 template<class vobj>

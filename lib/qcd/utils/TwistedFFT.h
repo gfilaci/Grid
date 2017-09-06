@@ -130,8 +130,15 @@ void OrthonormalityTest(){
 }
 
 template<class vobj>
-void pPerpProjectionForward(Lattice<vobj> &result,const Lattice<vobj> &source){
-
+void pPerpProjectionForward(Lattice<vobj> &result, const Lattice<vobj> &source){
+    
+    decltype(peekColour(source,0,0)) tmp(grid);
+    
+    pPerpLoop(n1,n2){
+        tmp = trace(adjGamma(n1,n2)*source);
+        pokeColour(result,tmp,n1,n2);
+    }
+//    result = adj(pPerpPhase) * result;//$//need the other product
 }
 
 template<class vobj>

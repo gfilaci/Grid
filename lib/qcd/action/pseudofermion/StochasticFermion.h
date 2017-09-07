@@ -52,6 +52,7 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   SOFermionField psitmp;
   GridParallelRNG *pRNG;
   GridCartesian* grid;
+  TwistedFFT<Impl> TheFFT;
   
   // we can work at lower perturabtive order, because
   // there is a factor 1/beta in front of the fermion drift.
@@ -72,7 +73,8 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
         psitmp(grid_),
         Uforce(grid_),
         grid(grid_),
-        Nf(Nf_)
+        Nf(Nf_),
+        TheFFT(grid_,Params_.boundary_phases)
         {
             Nf_over_Nc = (double)Nf / (double)Nc;
             Dw.reserve(Npf);
@@ -118,15 +120,17 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
       Xi *= M_SQRT1_2;
       // (are we sure that 'gaussian' generates real and imaginary parts independently?) //$//
       
-      // compute perturbatively psi = (M)^-1 Xi
-      psi[0] = Xi; // here I have to apply M0^-1...//$//
+      // COMPUTE PERTURBATIVELY psi = (M)^-1 Xi
+      // apply M0^-1 to Xi
+      TheFFT.FreeWilsonOperatorInverse(psi[0],Xi);
       for (int n=1; n<Npf; n++) {
           psi[n] = zero;
           for (int j=0; j<n; j++) {
               Dw[n-j].M(psi[j],psitmp);
               psi[n] -= psitmp;
           }
-          // apply M0^-1 to psi[n] //$//
+          // apply M0^-1 to psi[n]
+          TheFFT.FreeWilsonOperatorInverse(psi[n],psi[n]);
       }
       
       // compute force
@@ -145,8 +149,11 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
       dSdU = Ta(dSdU);
       dSdU *= Nf_over_Nc;
       
-  };
+  }
+  
 };
+
+
 }
 }
 }

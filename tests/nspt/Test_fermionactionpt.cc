@@ -78,11 +78,18 @@ int main(int argc, char *argv[]) {
     L.TheActions.push_back(FermionLevel);
     
     
-    FermionAction.deriv(U,U);
+    // gnuplot:
+    // plot for [i=0:6] "plaquette.txt" every 7::i u 1
+    ofstream plaqfile("plaquette.txt");
+    plaqfile.precision(30);
+    plaqfile << scientific;
     
-    
-    TwistedFFT<gimpl> TheFFT(&Grid,Params.boundary_phases);
-    TheFFT.FFTforward(U,U);
+    PRealD plaq;
+    for (int i=0; i<5000; i++) {
+        L.QuenchRKStep(U);
+        plaq = WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U);
+        for (int k=0; k<Np; k++) plaqfile << plaq(k) << endl;
+    }
     
     Grid_finalize();
     return EXIT_SUCCESS;

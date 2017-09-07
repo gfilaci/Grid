@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     
     for (int i=0; i<10000; i++) {
 //        std::cout<<GridLogMessage << "start step"<<std::endl;
-        L.QuenchEulerStep(U);
+        L.EulerStep(U);
 //        std::cout<<GridLogMessage << "end step"<<std::endl;
 //        cout<<Action.S(U)<<endl;
 //        if (i%25==0) {cout<<Pnorm2(U)<<endl;}

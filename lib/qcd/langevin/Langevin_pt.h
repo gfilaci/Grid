@@ -129,7 +129,7 @@ public:
         }
     }
 
-    void QuenchEulerStep(FieldType &U) {
+    void EulerStep(FieldType &U) {
         GenerateNoise();
         // compute drift for all actions and put it into F
         F = zero;
@@ -143,7 +143,7 @@ public:
         StochasticGF(U);
     }
     
-    void QuenchRKStep(FieldType &U) {
+    void RKStep(FieldType &U) {
         GenerateNoise();
         // compute drift for all actions and put it into F
         F = zero;

@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
     
     PRealD plaq;
     for (int i=0; i<5000; i++) {
-        L.QuenchRKStep(U);
+        L.RKStep(U);
         plaq = WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U);
         for (int k=0; k<Np; k++) plaqfile << plaq(k) << endl;
     }

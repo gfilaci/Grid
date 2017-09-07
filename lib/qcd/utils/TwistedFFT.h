@@ -105,8 +105,82 @@ strong_inline void TwistMult(Lattice<obj1> &ret,const Lattice<obj2> &lhs,const L
       TwistMult(&ret._odata[ss],&lhs._odata[ss],&rhs._odata[ss]);
 #endif
     }
-  }
+}
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  //  TwistDivide is a division.
+  //  Here a matrix is supposed to collect the fine momentum (pperp) degree of freedom.
+  //  Therefore a division has to be done 'element by element'.
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<class rtype,class vtype,class mtype>
+strong_inline void TwistDivide(iScalar<rtype> * __restrict__ ret,
+                       const iScalar<vtype> * __restrict__ lhs,
+                       const iScalar<mtype> * __restrict__ rhs){
+    TwistDivide(&ret->_internal,&lhs->_internal,&rhs->_internal);
+}
+template<class rrtype,class ltype,class rtype,int N>
+strong_inline void TwistDivide(iMatrix<rrtype,N>* __restrict__ ret,
+                       const iMatrix<ltype,N> * __restrict__ lhs,
+                       const iMatrix<rtype,N> * __restrict__ rhs){
+  for(int c1=0;c1<N;c1++){
+    for(int c2=0;c2<N;c2++){
+        ret->_internal[c1][c2] = lhs->_internal[c1][c2] / rhs->_internal[c1][c2];
+    }
+  }
+  return;
+}
+template<class rtype,class vtype,class mtype,int N>
+strong_inline void TwistDivide(iVector<rtype,N> * __restrict__ ret,
+                       const iScalar<vtype>   * __restrict__ lhs,
+                       const iVector<mtype,N> * __restrict__ rhs){
+    for(int c1=0;c1<N;c1++){
+        TwistDivide(&ret->_internal[c1],&lhs->_internal,&rhs->_internal[c1]);
+    }
+}
+template<class rtype,class vtype,class mtype,int N>
+strong_inline void TwistDivide(iVector<rtype,N> * __restrict__ ret,
+                       const iVector<vtype,N> * __restrict__ lhs,
+                       const iScalar<mtype>   * __restrict__ rhs){
+    for(int c1=0;c1<N;c1++){
+        TwistDivide(&ret->_internal[c1],&lhs->_internal[c1],&rhs->_internal);
+    }
+}
+template<class rtype,class vtype,class mtype,int N>
+strong_inline void TwistDivide(iPert<rtype,N> * __restrict__ ret,
+                       const iScalar<vtype> * __restrict__ lhs,
+                       const iPert<mtype,N> * __restrict__ rhs){
+    for(int c1=0;c1<N;c1++){
+        TwistDivide(&ret->_internal[c1],&lhs->_internal,&rhs->_internal[c1]);
+    }
+}
+template<class rtype,class vtype,class mtype,int N>
+strong_inline void TwistDivide(iPert<rtype,N> * __restrict__ ret,
+                       const iPert<vtype,N> * __restrict__ lhs,
+                       const iScalar<mtype> * __restrict__ rhs){
+    for(int c1=0;c1<N;c1++){
+        TwistDivide(&ret->_internal[c1],&lhs->_internal[c1],&rhs->_internal);
+    }
+}
+template<class obj1,class obj2,class obj3>
+strong_inline void TwistDivide(Lattice<obj1> &ret,const Lattice<obj2> &lhs,const Lattice<obj3> &rhs){
+    ret.checkerboard = lhs.checkerboard;
+    conformable(ret,rhs);
+    conformable(lhs,rhs);
+    parallel_for(int ss=0;ss<lhs._grid->oSites();ss++){
+#ifdef STREAMING_STORES
+      obj1 tmp;
+      TwistDivide(&tmp,&lhs._odata[ss],&rhs._odata[ss]);
+      vstream(ret._odata[ss],tmp);
+#else
+      TwistDivide(&ret._odata[ss],&lhs._odata[ss],&rhs._odata[ss]);
+#endif
+    }
+}
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  //  TWISTED FAST FOURIER TRANSFORM
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace QCD {
 namespace QCDpt {
 
@@ -121,7 +195,10 @@ private:
     
     GridCartesian* grid;
     FFT theFFT;
-    LatticeMatrix pPerpPhase;
+    LatticeMatrix pPerpPhase;            // exp(i (p_perp + theta/L ) * x)
+    LatticeMatrix halfphatsq;            // 2 * sum_mu sin^2(p_mu/2) / den
+    std::vector<LatticeMatrix> pbarmu;   // sin(p_mu) / den
+    // den = halfphatsq^2 + sum_mu pbarmu^2
     
 public:
     
@@ -132,7 +209,8 @@ public:
     TwistedFFT(GridCartesian* grid_, std::vector<Complex> boundary_phases_):
     grid(grid_),
     theFFT(grid_),
-    pPerpPhase(grid_)
+    pPerpPhase(grid_),
+    halfphatsq(grid_)
     {
         // This TwistedFFT is tailored for twist on a plane
         // with generic orientation.
@@ -150,20 +228,67 @@ public:
         // Here the same convention is assumed.
         if(FFTW_FORWARD==+1) assert(0);
         
-        // initialise boundary exponents
+        
+        
+        // INITIALISE boundary exponents
         for (int d=0; d<Nd; d++) {
             boundary_exp.push_back(log(boundary_phases_[d]).imag());
         }
         
-        // initialise Fourier twist base
+        // INITIALISE Fourier twist base
         pPerpLoop(n1,n2) {
             Gamma(n1,n2) = BuildGamma(n1,n2);
             adjGamma(n1,n2) = adj(Gamma(n1,n2));
             Gamma(n1,n2) = (1./(double)Nc)*Gamma(n1,n2);
         }
         
-        // initialise phases for pPerp projection
+        // INITIALISE momenta for Wilson propagator
         LatticeScalar xmu(grid), tmp(grid);
+        // --- pbar ---
+        pbarmu.reserve(Nd);
+        for (int mu=0; mu<Nd; mu++) {
+            pbarmu.push_back(LatticeMatrix(grid_));
+            LatticeCoordinate(xmu,mu);
+            xmu *= 2. * M_PI / (double)(grid->_fdimensions[mu]);
+            xmu += boundary_exp[mu] / (double)(grid->_fdimensions[mu]);
+            pPerpLoop(n1,n2) {
+                tmp = xmu;
+                if(mu==t1) tmp +=  (double)n1 * 2. * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                if(mu==t2) tmp +=  (double)n2 * 2. * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                pokeColour(pbarmu[mu],sin(tmp),n1,n2);
+            }
+        }
+        // --- khatsq ---
+        pPerpLoop(n1,n2) {
+            tmp = zero;
+            for (int mu=0; mu<Nd; mu++) {
+                LatticeCoordinate(xmu,mu);
+                xmu *= M_PI / (double)(grid->_fdimensions[mu]);
+                xmu += 0.5 * boundary_exp[mu] / (double)(grid->_fdimensions[mu]);
+                if(mu==t1) xmu +=  (double)n1 * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                if(mu==t2) xmu +=  (double)n2 * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                tmp = tmp + 2.*sin(xmu)*sin(xmu);
+            }
+            pokeColour(halfphatsq,tmp,n1,n2);
+        }
+        
+        // compute denominator, use pPerpPhase for its temporary storage
+        LatticeMatrix tmpMatrix(grid);
+        pPerpPhase = zero;
+        for (int mu=0; mu<Nd; mu++) {
+            TwistMult(tmpMatrix,pbarmu[mu],pbarmu[mu]);
+            pPerpPhase += tmpMatrix;
+        }
+        TwistMult(tmpMatrix,halfphatsq,halfphatsq);
+        pPerpPhase += tmpMatrix;
+        
+        TwistDivide(halfphatsq,halfphatsq,pPerpPhase);
+        for (int mu=0; mu<Nd; mu++){
+            TwistDivide(pbarmu[mu],pbarmu[mu],pPerpPhase);
+        }
+        
+        
+        // INITIALISE phases for pPerp projection
         pPerpLoop(n1,n2) {
             tmp = zero;
             for (int mu=0; mu<Nd; mu++) {
@@ -232,9 +357,8 @@ void FFTforward(Lattice<vobj> &result,const Lattice<vobj> &source){
     conformable(result._grid,grid);
     conformable(source._grid,grid);
     
-    Lattice<vobj> tmp(grid);
-    pPerpProjectionForward(tmp,source);
-    theFFT.FFT_all_dim(result,tmp,FFT::forward);
+    pPerpProjectionForward(result,source);
+    theFFT.FFT_all_dim(result,result,FFT::forward);
 }
 
 template<class vobj>
@@ -242,11 +366,44 @@ void FFTbackward(Lattice<vobj> &result,const Lattice<vobj> &source){
     conformable(result._grid,grid);
     conformable(source._grid,grid);
     
-    Lattice<vobj> tmp(grid);
-    theFFT.FFT_all_dim(tmp,source,FFT::backward);
-    pPerpProjectionBackward(result,tmp);
+    theFFT.FFT_all_dim(result,source,FFT::backward);
+    pPerpProjectionBackward(result,result);
 }
 
+template<class vobj>
+void FreeWilsonOperatorInverse(Lattice<vobj> &result,const Lattice<vobj> &source){
+    FFTforward(result,source);
+    TwistedWilsonPropagator(result,result);
+    FFTbackward(result,result);
+}
+
+template<class vobj>
+void TwistedWilsonPropagator(Lattice<vobj> &result,const Lattice<vobj> &source){
+    
+    Complex mci(0.,-1.);
+    Lattice<vobj> tmp(grid);
+    
+    Gamma::Algebra Gmu [] = {
+        Gamma::Algebra::GammaX,
+        Gamma::Algebra::GammaY,
+        Gamma::Algebra::GammaZ,
+        Gamma::Algebra::GammaT
+    };
+    
+    result = zero;
+    
+    for (int mu=0; mu<Nd; mu++) {
+        tmp = QCD::Gamma(Gmu[mu])*source;
+        TwistMult(tmp,pbarmu[mu],tmp);
+        result += tmp;
+    }
+    
+    result *= mci;
+    
+    TwistMult(tmp,halfphatsq,source);
+    
+    result += tmp;
+}
 
 };
 

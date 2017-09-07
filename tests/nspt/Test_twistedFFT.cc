@@ -57,6 +57,10 @@ int main(int argc, char *argv[]) {
     
     TwistedFFT<gimpl> TheFFT(&Grid,boundary_phases);
     
+    int volume = 1;
+    for (int d=0; d<Nd; d++) {
+        volume *= Grid._fdimensions[d];
+    }
     
     cout << GridLogMessage << "Testing the twisted FFT";
     
@@ -91,20 +95,10 @@ int main(int argc, char *argv[]) {
     TheFFT.FFTforward(Mtilde,M);
     TheFFT.FFTbackward(Mnew,Mtilde);
     
-    int volume = 1;
-    for (int d=0; d<Nd; d++) {
-        volume *= Grid._fdimensions[d];
-    }
-    vector<int> gcoor;
     typename gimpl::MatrixField::vector_object::scalar_object ss;
-    for(int g=0; g<Grid._gsites; g++){
-        Grid.GlobalIndexToGlobalCoor(g,gcoor);
-        peekSite(ss,Mtilde,gcoor);
-        if(gcoor==n){
-            ss()()()(n1tilde,n2tilde) -= (double)volume*(double)Nc;
-            pokeSite(ss,Mtilde,gcoor);
-        }
-    }
+    peekSite(ss,Mtilde,n);
+    ss()()()(n1tilde,n2tilde) -= (double)volume*(double)Nc;
+    pokeSite(ss,Mtilde,n);
     
     Mnew -= M;
     

@@ -228,13 +228,6 @@ public:
         // Here the same convention is assumed.
         if(FFTW_FORWARD==+1) assert(0);
         
-        
-        
-        // INITIALISE boundary exponents
-        for (int d=0; d<Nd; d++) {
-            boundary_exp.push_back(log(boundary_phases_[d]).imag());
-        }
-        
         // INITIALISE Fourier twist base
         pPerpLoop(n1,n2) {
             Gamma(n1,n2) = BuildGamma(n1,n2);
@@ -242,12 +235,28 @@ public:
             Gamma(n1,n2) = (1./(double)Nc)*Gamma(n1,n2);
         }
         
+        for (int mu=0; mu<Nd; mu++) {
+            pbarmu.push_back(LatticeMatrix(grid_));
+            boundary_exp.push_back(0.);
+        }
+        
+        FFTinitialisation(boundary_phases_);
+        
+    }
+    
+    
+    void FFTinitialisation(std::vector<Complex> boundary_phases_){
+        
+        // INITIALISE boundary exponents
+        for (int d=0; d<Nd; d++) {
+            boundary_exp[d] = log(boundary_phases_[d]).imag();
+        }
+        
         // INITIALISE momenta for Wilson propagator
         LatticeScalar xmu(grid), tmp(grid);
         // --- pbar ---
         pbarmu.reserve(Nd);
         for (int mu=0; mu<Nd; mu++) {
-            pbarmu.push_back(LatticeMatrix(grid_));
             LatticeCoordinate(xmu,mu);
             xmu *= 2. * M_PI / (double)(grid->_fdimensions[mu]);
             xmu += boundary_exp[mu] / (double)(grid->_fdimensions[mu]);

@@ -49,7 +49,7 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   std::vector<WilsonFermion<SOImpl>> Dw;
   SOGaugeField Uso, Uforce;
   std::vector<SOFermionField> psi;
-  SOFermionField psitmp;
+  SOFermionField Xi, psitmp;
   GridParallelRNG *pRNG;
   GridCartesian* grid;
   TwistedFFT<Impl> TheFFT;
@@ -70,6 +70,7 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   StochasticFermionAction(GridParallelRNG *pRNG_, GridCartesian* grid_, GridRedBlackCartesian* rbgrid_, PRealD mass_, WilsonImplParams Params_, int Nf_)
       : pRNG(pRNG_),
         Uso(grid_),
+        Xi(grid_),
         psitmp(grid_),
         Uforce(grid_),
         grid(grid_),
@@ -105,13 +106,6 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   // return dSdU = i nabla S = -i Xi^dag  dM (M)^-1 Xi
   //////////////////////////////////////////////////////
   virtual void deriv(const GaugeField &U, GaugeField &dSdU) {
-      for (int k=0; k<Npf; k++) {
-          Uso = peekPert(U,k);
-          Dw[k].ImportGauge(Uso);
-      }
-      
-      SOFermionField Xi(grid);
-      SOFermionField invMXi(grid);
       
       // Real part of Xi is gaussian with sigma = 1/sqrt(2),
       // same for imaginary part.
@@ -120,18 +114,7 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
       Xi *= M_SQRT1_2;
       // (are we sure that 'gaussian' generates real and imaginary parts independently?) //$//
       
-      // COMPUTE PERTURBATIVELY psi = (M)^-1 Xi
-      // apply M0^-1 to Xi
-      TheFFT.FreeWilsonOperatorInverse(psi[0],Xi);
-      for (int n=1; n<Npf; n++) {
-          psi[n] = zero;
-          for (int j=0; j<n; j++) {
-              Dw[n-j].M(psi[j],psitmp);
-              psi[n] -= psitmp;
-          }
-          // apply M0^-1 to psi[n]
-          TheFFT.FreeWilsonOperatorInverse(psi[n],psi[n]);
-      }
+      invM(psi,U,Xi);
       
       // compute force
       dSdU = zero;
@@ -151,6 +134,35 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
       
   }
   
+  
+    // COMPUTE PERTURBATIVELY psi = (M)^-1 Xi
+    void invM(std::vector<SOFermionField>& psi, const GaugeField &U, const SOFermionField &Xi){
+        for (int k=0; k<Npf; k++) {
+            Uso = peekPert(U,k);
+            Dw[k].ImportGauge(Uso);
+        }
+        
+        // apply M0^-1 to Xi
+        TheFFT.FreeWilsonOperatorInverse(psi[0],Xi);
+        for (int n=1; n<Npf; n++) {
+            psi[n] = zero;
+            for (int j=0; j<n; j++) {
+                Dw[n-j].M(psi[j],psitmp);
+                psi[n] -= psitmp;
+            }
+            // apply M0^-1 to psi[n]
+            TheFFT.FreeWilsonOperatorInverse(psi[n],psi[n]);
+        }
+        
+    }
+
+void changeBoundaryPhases(std::vector<Complex> newphases){
+        for (int k=0; k<Npf; k++) {
+            Dw[k].Params.boundary_phases = newphases;
+        }
+        TheFFT.FFTinitialisation(newphases);
+}
+
 };
 
 

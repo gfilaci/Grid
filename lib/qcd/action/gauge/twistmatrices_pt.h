@@ -55,9 +55,13 @@ public:
 
 #define istwisted(mu) (mu==1 || mu==2)
       
-      omega[0] = identity;
-      omega[1] = omega1;
-      omega[2] = omega2;
+//      omega[0] = identity;
+//      omega[1] = omega1;
+//      omega[2] = omega2;
+//      omega[3] = identity;
+      omega[0] = identity;//$//
+      omega[1] = identity;
+      omega[2] = identity;
       omega[3] = identity;
       
       for (int i=0; i<Nd; i++) {

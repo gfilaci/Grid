@@ -44,9 +44,10 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   typedef typename Impl::SOimpl::FermionField SOFermionField;
   typedef typename Impl::SOimpl::Gimpl::Field SOGaugeField;
   
- private:
   // vector of Wilson operators, one for each perturbative order
   std::vector<WilsonFermion<SOImpl>> Dw;
+  
+ private:
   SOGaugeField Uso, Uforce;
   std::vector<SOFermionField> psi;
   SOFermionField Xi, psitmp;
@@ -81,7 +82,11 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
             Dw.reserve(Npf);
             psi.reserve(Npf);
             for (int i=0; i<Npf; i++) {
-                Dw.push_back(WilsonFermion<SOImpl>(Uso,*grid_,*rbgrid_,mass_(i),Params_));
+                if (i==0) {
+                    Dw.push_back(WilsonFermion<SOImpl>(Uso,*grid_,*rbgrid_,mass_(i),Params_));
+                } else{ // there is no diagonal term in the Wilson operator
+                    Dw.push_back(WilsonFermion<SOImpl>(Uso,*grid_,*rbgrid_,mass_(i)-4.,Params_));
+                }
                 psi.push_back(SOFermionField(grid));
             }
         };
@@ -144,6 +149,7 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
         
         // apply M0^-1 to Xi
         TheFFT.FreeWilsonOperatorInverse(psi[0],Xi);
+        
         for (int n=1; n<Npf; n++) {
             psi[n] = zero;
             for (int j=0; j<n; j++) {
@@ -153,7 +159,6 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
             // apply M0^-1 to psi[n]
             TheFFT.FreeWilsonOperatorInverse(psi[n],psi[n]);
         }
-        
     }
 
 void changeBoundaryPhases(std::vector<Complex> newphases){

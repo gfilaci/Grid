@@ -241,7 +241,6 @@ public:
         }
         
         FFTinitialisation(boundary_phases_);
-        
     }
     
     
@@ -340,25 +339,29 @@ void OrthonormalityTest(){
 template<class vobj>
 void pPerpProjectionForward(Lattice<vobj> &result, const Lattice<vobj> &source){
     
+    Lattice<vobj> tmpresult(grid);
     decltype(peekColour(source,0,0)) tmp(grid);
     
     pPerpLoop(n1,n2){
         tmp = trace(adjGamma(n1,n2)*source);
-        pokeColour(result,tmp,n1,n2);
+        pokeColour(tmpresult,tmp,n1,n2);
     }
-    TwistMult(result,conjugate(pPerpPhase),result);
+    
+    TwistMult(result,conjugate(pPerpPhase),tmpresult);
 }
 
 template<class vobj>
 void pPerpProjectionBackward(Lattice<vobj> &result,const Lattice<vobj> &source){
     
-    Lattice<vobj> tmp(grid);
+    Lattice<vobj> tmp(grid), tmpresult(grid);
     TwistMult(tmp,pPerpPhase,source);
     
-    result = zero;
+    tmpresult = zero;
     pPerpLoop(n1,n2){
-        result = result + Gamma(n1,n2) * peekColour(tmp,n1,n2);
+        tmpresult = tmpresult + Gamma(n1,n2) * peekColour(tmp,n1,n2);
     }
+    
+    result = tmpresult;
 }
 
 template<class vobj>
@@ -381,6 +384,7 @@ void FFTbackward(Lattice<vobj> &result,const Lattice<vobj> &source){
 
 template<class vobj>
 void FreeWilsonOperatorInverse(Lattice<vobj> &result,const Lattice<vobj> &source){
+    
     FFTforward(result,source);
     TwistedWilsonPropagator(result,result);
     FFTbackward(result,result);
@@ -390,7 +394,7 @@ template<class vobj>
 void TwistedWilsonPropagator(Lattice<vobj> &result,const Lattice<vobj> &source){
     
     Complex mci(0.,-1.);
-    Lattice<vobj> tmp(grid);
+    Lattice<vobj> tmp(grid), tmpresult(grid);
     
     Gamma::Algebra Gmu [] = {
         Gamma::Algebra::GammaX,
@@ -399,19 +403,18 @@ void TwistedWilsonPropagator(Lattice<vobj> &result,const Lattice<vobj> &source){
         Gamma::Algebra::GammaT
     };
     
-    result = zero;
+    tmpresult = zero;
     
     for (int mu=0; mu<Nd; mu++) {
         tmp = QCD::Gamma(Gmu[mu])*source;
         TwistMult(tmp,pbarmu[mu],tmp);
-        result += tmp;
+        tmpresult += tmp;
     }
     
-    result *= mci;
-    
+    tmpresult *= mci;
     TwistMult(tmp,halfphatsq,source);
     
-    result += tmp;
+    result = tmpresult + tmp;
 }
 
 };

@@ -202,15 +202,15 @@ namespace QCDpt {
 
     inline void InsertForce4D(GaugeField &mat, FermionField &Btilde, FermionField &A,int mu){
         GaugeLinkField link(mat._grid);
-         // matrix product automatically performs the sum over smells
-         // and gives a matrix in colour space.
-         // Need to resolve nesting because mult(iVector,iVector) is not defined...
+        // matrix product automatically performs the sum over smells
+        // and gives a matrix in colour space.
+        // Need to resolve nesting because mult(iVector,iVector) is not defined...
         FermionField tmp = adj(A);
+        link = zero;
         parallel_for(int ss=0;ss<mat._grid->oSites();ss++){
             for (int alpha=0; alpha<Ns; alpha++)
-                tmp._odata[ss]._internal._internal[alpha] = Btilde._odata[ss]._internal._internal[alpha] * tmp._odata[ss]._internal._internal[alpha];
+                link._odata[ss]._internal._internal += Btilde._odata[ss]._internal._internal[alpha] * tmp._odata[ss]._internal._internal[alpha];
         }
-        link = TraceIndex<SpinIndex>(tmp);
         PokeIndex<LorentzIndex>(mat,link,mu);
     }
       

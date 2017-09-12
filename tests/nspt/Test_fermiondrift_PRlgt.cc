@@ -175,7 +175,8 @@ int main(int argc, char *argv[]) {
           Uforce = zero;
         
           for (int j=0; j<=n; j++) {
-              FermionAction.Dw[n-j].MDeriv(Uso, Xi, psi[j], DaggerNo);
+//              FermionAction.Dw[n-j].MDeriv(Uso, Xi, psi[j], DaggerNo);
+              FermionAction.Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerYes);//$//
               Uforce += Uso;
           }
           // the "+2" shift is due to the 1/beta factor in front of the fermion drift.
@@ -184,7 +185,7 @@ int main(int argc, char *argv[]) {
       }
     
       dSdU = Ta(dSdU);
-      dSdU *= 0.005*(double)Nf/(double)Nc;
+      dSdU *= -0.005*(double)Nf/(double)Nc;
     
     ofstream file("Grid_fermiondrift.txt");
     file.precision(10);

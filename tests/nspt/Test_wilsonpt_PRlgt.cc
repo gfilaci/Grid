@@ -199,6 +199,7 @@ That file is produced by the PRlgt code with the following options:
 - antiperiodic bc for fermions in direction X
 - critical masses mcpt[6 + 1] = {4., 0., -1., 0., -5., 0., -10.};
 - perturbative order allocORD = 6
+- volume L^4 = 4^4
 
 The following code performs the application of the Wilson operator.
 It has be compiled and linked to the library prlgt.a.

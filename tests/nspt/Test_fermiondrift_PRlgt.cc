@@ -138,31 +138,6 @@ int main(int argc, char *argv[]) {
         }
     }
     
-//    cout<<Xi<<endl;
-//    std::ofstream file("Grid_fermiondrift.txt");
-//    file.precision(10);
-//    file << std::scientific;
-//    for (int x0=0; x0<4; x0++) {
-//        for (int x1=0; x1<4; x1++) {
-//            for (int x2=0; x2<4; x2++) {
-//                for (int x3=0; x3<4; x3++) {
-//                    QCDpt::SpinColourMatrix ltmpmat;
-//                    peekSite(ltmpmat,Xi,std::vector<int>({x0,x1,x2,x3}));
-//                    for (int alpha=0; alpha<Ns; alpha++) {
-//                            for (int n1=0; n1<Nc; n1++) {
-//                                for (int n2=0; n2<Nc; n2++) {
-//                                    file << real(ltmpmat()(alpha)()(n1,n2)) << std::endl;
-//                                    file << imag(ltmpmat()(alpha)()(n1,n2)) << std::endl;
-//                                }
-//                            }
-//                        
-//                    }
-//                    
-//                }
-//            }
-//        }
-//    }exit(0);
-    
     int Nf = 2;
     StochasticFermionAction<PWilsonSmellImplR> FermionAction(&pRNG,&Grid,&RBGrid,mass,Params,Nf);
     
@@ -170,13 +145,13 @@ int main(int argc, char *argv[]) {
     
     // compute force
     dSdU = zero;
-
+    
     for (int n=0; n<Np-2; n++) {
           Uforce = zero;
-        
           for (int j=0; j<=n; j++) {
 //              FermionAction.Dw[n-j].MDeriv(Uso, Xi, psi[j], DaggerNo);
-              FermionAction.Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerYes);//$//
+//              Uforce += Uso;
+              FermionAction.Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerYes);
               Uforce += Uso;
           }
           // the "+2" shift is due to the 1/beta factor in front of the fermion drift.
@@ -184,8 +159,8 @@ int main(int argc, char *argv[]) {
           pokePert(dSdU,Uforce,n+2);
       }
     
-      dSdU = Ta(dSdU);
-      dSdU *= -0.005*(double)Nf/(double)Nc;
+    dSdU = Ta(dSdU);
+    dSdU *= -0.005*(double)Nf/(double)Nc;
     
     ofstream file("Grid_fermiondrift.txt");
     file.precision(10);
@@ -228,7 +203,7 @@ int main(int argc, char *argv[]) {
     //      |   0    sigma2 |
     /////////////////////////////////////////////
 /*
-The results in Grid_wilson.txt have to be compared with tests/nspt/PRlgt_wilson.txt.
+The results in Grid_fermiondrift.txt have to be compared with tests/nspt/PRlgt_fermiondrift.txt.
 That file is produced by the PRlgt code with the following options:
 
 - gauge group SU(3)
@@ -245,45 +220,22 @@ That file is produced by the PRlgt code with the following options:
 - critical masses mcpt[6 + 1] = {4., 0., -1., 0., -5., 0., -10.};
 - perturbative order allocORD = 6
 - number of flavours NF = 2
+- volume L^4 = 4^4
+- tau_g = 0.005
 
-The following code performs the application of the Wilson operator.
+The following code computes the drift from a given stochastic noise.
 It has be compiled and linked to the library prlgt.a.
-The functions twist_*, invtwist_* and twist_boundary have to be explicitly copied and included.
+The easiest way to reproduce the output is to insert the code in the main function of Unquenched.cc,
+after everything is initialised.
+Then it is important to comment the Xi.gauss random generation in the function fermion_drift of nspt.cc.
+It must also be checked that the zero mode subtraction of the stochastic noise (STOCTRACE_ZEROMOM_SUBTR)
+is NOT activated.
+As of 13/09/17, only the "FermionAction.Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerYes);" term
+is computed by fermion_drift.
 */
 ///////////////////////////////////////////////////////
 /*
 
-#include "smellSU2.h"
-#include "smellSU3.h"
-#include "MassC.h"
-#include "twistmatrices.h"
-
-int main(){
-    
-    cout<<"PTORD "<<PTORD<<endl;
-    cout<<"-----------------------------------------------"<<endl;
-#ifdef TWISTED_BC
-    cout<<"gluon: twisted"<<endl;
-#endif
-#ifdef PERIODIC_BC
-    cout<<"gluon: periodic"<<endl;
-#endif
-#ifdef ABC
-    cout<<"fermion: antiperiodic"<<endl;
-#endif
-#ifdef PBC
-    cout<<"fermion: periodic"<<endl;
-#endif
-    cout<<"-----------------------------------------------"<<endl;
-    
-    int mysize[4]={4,4,4,4};
-    latt LL(mysize);
-    LL.p_init();
-    ptGluon_fld Umu(&LL);
-    
-    ptSpinColorSmell_fld Pmu(&LL);
-    ptSpinColorSmell_fld Pmu_app(&LL);
-    
     SU3 AA,BB,CC;
     Cplx im(0.,1.);
     
@@ -309,111 +261,41 @@ int main(){
     
     CC = AA*BB;
     
-    // initialise Umu
+    // initialise Umu, Fmu
     for(int i = 0; i < Umu.Z->Size; i++)
-        for(int mu = 0; mu < dim; mu++)
+        for(int mu = 0; mu < dim; mu++){
+            Umu.W[i].U[mu].flag = 1.;
+            Fmu.W[i].U[mu].zero();
+            Fmu.W[i].U[mu].flag = 0.;
             for (int k=0; k<PTORD; k++){
                 Umu.W[i].U[mu].ptU[k] = i*CC + mu*AA + k*BB;
             }
+        }
     twist_boundary(Umu);
     
-
-    memset((void*)Pmu.psi, 0, LL.Size*sizeof(ptSpinColorSmell));
-    memset((void*)Pmu_app.psi, 0, LL.Size*sizeof(ptSpinColorSmell));
+    memset((void*)Xi.psi, 0, LL.Size*sizeof(SpinColorSmell));
     
-    // initialise Pmu
+    // initialise Xi
     for (int alpha=0; alpha<dim; alpha++) {
-        for (int k=0; k<=PTORD; k++) {
-            for (int x=0; x<LL.Size; x++) {
-                Pmu.psi[x].psi[alpha].ptCV[k] = x*AA + alpha*BB + k*CC;
-            }
+        for (int x=0; x<LL.Size; x++) {
+            Xi.psi[x].psi[alpha] = x*AA + alpha*BB + (x+alpha)*CC;
         }
     }
     
     // gamma_Franz -> gamma_Peter
     for (int x=0; x<LL.Size; x++) {
-        ptColorSmellMatrix app = Pmu.psi[x].psi[0];
-        Pmu.psi[x].psi[0] = -im*Pmu.psi[x].psi[1];
-        Pmu.psi[x].psi[1] = im*app;
-        app = Pmu.psi[x].psi[2];
-        Pmu.psi[x].psi[2] = -im*Pmu.psi[x].psi[3];
-        Pmu.psi[x].psi[3] = im*app;
+        SUX app = Xi.psi[x].psi[0];
+        Xi.psi[x].psi[0] = -im*Xi.psi[x].psi[1];
+        Xi.psi[x].psi[1] = im*app;
+        app = Xi.psi[x].psi[2];
+        Xi.psi[x].psi[2] = -im*Xi.psi[x].psi[3];
+        Xi.psi[x].psi[3] = im*app;
     }
     
-    for (int k=0; k<=PTORD; k++) {
-        Pmu.twist_order(k);
-    }
-    
-    
-    // M acts on Pmu
-    // the result is Pmu_app
-    
-    int point_up, point_dn;
-    int site_c;
-    SpinColorSmell Xi1, Xi2;
-    
-    for (int jord=0; jord<=PTORD; jord++) {
-    
-        for (int y0 = 0; y0 < Umu.Z->Sz[0]; y0++)
-            for (int y1 = 0; y1 < Umu.Z->Sz[1]; y1++)
-                for (int y2 = 0; y2 < Umu.Z->Sz[2]; y2++)
-                    for (int y3 = 0; y3 < Umu.Z->Sz[3]; y3++){
-                        
-                        site_c = y3 + Umu.Z->Sz[3]*(y2 + Umu.Z->Sz[2]*(y1 + Umu.Z->Sz[1]*y0) );
-                        
-                        // moltiplicazione perturbativa per M
-                        for( int kord = 0; kord <= jord; kord++) {
-                            // massa critica
-                            for (int mu = 0; mu < dim; mu++ ) {
-                                Pmu_app.psi[site_c].psi[mu].ptCV[jord] += mcpt[jord-kord]*Pmu.psi[site_c].psi[mu].ptCV[kord];
-                            }
-                            
-                            for( int mu = 0; mu < dim; mu++) {
-                                point_up = Umu.Z->L[site_c][5+mu];
-                                point_dn = Umu.Z->L[site_c][mu];
-                                
-                                // 1 + \gamma_\mu
-                                Pmu.psi[point_dn].uno_p_gmu(Xi1,mu,kord);
-                                Pmu.psi[point_up].uno_m_gmu(Xi2,mu,kord);
-                                
-#ifdef ABC
-                                if (mu==0){
-                                    if(y0==0) Xi1*=-1;
-                                    if(y0==Umu.Z->Sz[0]-1) Xi2*=-1;
-                                }
-#endif
-                                
-                                for( int nu = 0; nu < dim; nu++ ){
-                                    if (jord==kord) {
-                                        Pmu_app.psi[site_c].psi[nu].ptCV[jord] -= .5*Xi1.psi[nu];
-                                        Pmu_app.psi[site_c].psi[nu].ptCV[jord] -= .5*Xi2.psi[nu];
-                                    }
-                                    else{
-                                        Pmu_app.psi[site_c].psi[nu].ptCV[jord] -= .5*(dag(Umu.W[point_dn].U[mu].ptU[jord-kord-1])*Xi1.psi[nu]);
-                                        Pmu_app.psi[site_c].psi[nu].ptCV[jord] -= .5*(Umu.W[site_c].U[mu].ptU[jord-kord-1])*Xi2.psi[nu];
-                                    }
-                                } //nu
-                            } // mu
-                            
-                        } //kord
-                    } // siti
-
-    }//jord
-
-
-    // gamma_Franz -> gamma_Peter
-    for (int x=0; x<LL.Size; x++) {
-        ptColorSmellMatrix app = Pmu_app.psi[x].psi[0];
-        Pmu_app.psi[x].psi[0] = -im*Pmu_app.psi[x].psi[1];
-        Pmu_app.psi[x].psi[1] = im*app;
-        app = Pmu_app.psi[x].psi[2];
-        Pmu_app.psi[x].psi[2] = -im*Pmu_app.psi[x].psi[3];
-        Pmu_app.psi[x].psi[3] = im*app;
-    }
-    
+    fermion_drift(Umu, Fmu, Pmu, Xi, 1.);
     
     // print Pmu_app
-    ofstream file("PRlgt_wilson.txt");
+    ofstream file("PRlgt_fermiondrift.txt");
     file.precision(10);
     file << scientific;
     for (int y0=0; y0<4; y0++) {
@@ -422,11 +304,11 @@ int main(){
                 for (int y3=0; y3<4; y3++) {
                     int y = y0*4*4*4 + y1*4*4 + y2*4 + y3;
                     for (int alpha=0; alpha<dim; alpha++) {
-                        for (int k=0; k<=PTORD; k++) {
+                        for (int k=0; k<PTORD; k++) {
                             for (int n1=0; n1<NC; n1++) {
                                 for (int n2=0; n2<NC; n2++) {
-                                    file << Pmu_app.psi[y].psi[alpha].ptCV[k].whr[n1*NC+n2].re << endl;
-                                    file << Pmu_app.psi[y].psi[alpha].ptCV[k].whr[n1*NC+n2].im << endl;
+                                    file << Fmu.W[y].U[alpha].ptU[k].whr[n1*NC+n2].re << endl;
+                                    file << Fmu.W[y].U[alpha].ptU[k].whr[n1*NC+n2].im << endl;
                                 }
                             }
                         }
@@ -437,6 +319,7 @@ int main(){
         }
     }
     file.close();
-}
+    
+    exit(0);
 
 */

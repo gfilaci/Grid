@@ -117,8 +117,8 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
       // In this way < Xi^dag_a Xi_b > = delta_ab
       gaussian(*pRNG,Xi);
       Xi *= M_SQRT1_2;
-      // (are we sure that 'gaussian' generates real and imaginary parts independently?) //$//
       
+      // compute psi = (M)^-1 Xi
       invM(psi,U,Xi);
       
       // compute force
@@ -127,6 +127,8 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
           Uforce = zero;
           for (int j=0; j<=n; j++) {
               Dw[n-j].MDeriv(Uso, Xi, psi[j], DaggerNo);
+              Uforce += Uso;
+              Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerYes);
               Uforce += Uso;
           }
           // the "+2" shift is due to the 1/beta factor in front of the fermion drift.

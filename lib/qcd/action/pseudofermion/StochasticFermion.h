@@ -61,7 +61,7 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   int Npf = Np - 2;
   
   int Nf; // number of flavours
-  double Nf_over_Nc;  // 1/Nc is the factor due to the smell
+  double halfNf_over_Nc;  // 1/Nc is the factor due to the smell
 
  public:
   
@@ -78,7 +78,7 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
         Nf(Nf_),
         TheFFT(grid_,Params_.boundary_phases)
         {
-            Nf_over_Nc = (double)Nf / (double)Nc;
+            halfNf_over_Nc = 0.5 * (double)Nf / (double)Nc;
             Dw.reserve(Npf);
             psi.reserve(Npf);
             for (int i=0; i<Npf; i++) {
@@ -137,7 +137,7 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
       }
       
       dSdU = Ta(dSdU);
-      dSdU *= Nf_over_Nc;
+      dSdU *= halfNf_over_Nc;
       
   }
   

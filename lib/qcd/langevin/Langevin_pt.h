@@ -248,7 +248,7 @@ template<class vobj>
   // Read parameters from command line
   ///////////////////////////////////////////////
   
-    void ReadLangevinParams(int argc, char **argv, double tau, double alpha, int sweeps) {
+    void ReadLangevinParams(int argc, char **argv, double &tau, double &alpha, int &sweeps) {
         std::string arg;
         if( GridCmdOptionExists(argv,argv+argc,"--tau") ){
             arg = GridCmdOptionPayload(argv,argv+argc,"--tau");
@@ -258,6 +258,13 @@ template<class vobj>
             std::cout << GridLogError << "Use --tau to set the time step for the Langevin process " << std::endl;
             std::exit(EXIT_FAILURE);
         }
+        
+        if( GridCmdOptionExists(argv,argv+argc,"--alpha") ){
+            arg = GridCmdOptionPayload(argv,argv+argc,"--alpha");
+            std::stringstream ss(arg);
+            ss>>alpha;
+        } else alpha = -0.5*tau;
+        
         if( GridCmdOptionExists(argv,argv+argc,"--sweeps") ){
             arg = GridCmdOptionPayload(argv,argv+argc,"--sweeps");
             std::stringstream ss(arg);
@@ -267,11 +274,10 @@ template<class vobj>
             std::exit(EXIT_FAILURE);
         }
         
-        if( GridCmdOptionExists(argv,argv+argc,"--alpha") ){
-            arg = GridCmdOptionPayload(argv,argv+argc,"--alpha");
-            std::stringstream ss(arg);
-            ss>>alpha;
-        } else alpha = -0.5*tau;
+        std::cout<<GridLogMessage << "Starting run with" << std::endl;
+        std::cout << "\t\t\t\t tau = " << tau << std::endl;
+        std::cout << "\t\t\t\t alpha = " << alpha << std::endl;
+        std::cout << "\t\t\t\t sweeps = " << sweeps << std::endl;
     }
     
 }

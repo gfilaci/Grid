@@ -79,6 +79,15 @@ int main(int argc, char *argv[]) {
     L.TheActions.push_back(GaugeLevel);
     L.TheActions.push_back(FermionLevel);
     
+    // checkpointer
+    CheckpointerParameters CPparams;
+    CPparams.config_prefix = "NSPTckpoint_lat";
+    CPparams.rng_prefix = "NSPTckpoint_rng";
+    CPparams.saveInterval = 1;
+    CPparams.format = "IEEE64BIG";
+    BinaryHmcCheckpointer<TwistedGimpl_ptR> CP(CPparams);
+    GridSerialRNG sRNG;
+    sRNG.SeedFixedIntegers(std::vector<int>({1,2,3,4}));
     
     // gnuplot:
     // plot for [i=0:6] "plaquette.txt" every 7::i u 1
@@ -92,6 +101,8 @@ int main(int argc, char *argv[]) {
         plaq = WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U);
         for (int k=0; k<Np; k++) plaqfile << plaq(k) << endl;
     }
+    
+    CP.TrajectoryComplete(1,U,sRNG,pRNG);
     
     Grid_finalize();
     return EXIT_SUCCESS;

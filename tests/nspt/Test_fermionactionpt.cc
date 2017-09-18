@@ -31,11 +31,12 @@ using namespace std;
 using namespace Grid;
 using namespace QCD;
 using namespace QCDpt;
-
+    
 int main(int argc, char *argv[]) {
     
     Grid_init(&argc,&argv);
     
+  
     std::vector<int> latt_size({4,4,4,4});
     std::vector<int> simd_layout = GridDefaultSimd(Nd,vComplex::Nsimd());
     std::vector<int> mpi_layout  = GridDefaultMpi();
@@ -70,9 +71,10 @@ int main(int argc, char *argv[]) {
     ActionLevel<fimpl::GaugeField,PNoHirep> FermionLevel;
     FermionLevel.push_back(&FermionAction);
     
+    double tau, alpha;
+    int sweeps;
+    ReadLangevinParams(argc,argv,tau,alpha,sweeps);
     
-    double tau = 0.01;
-    double alpha = -0.5*tau;
     PertLangevin<gimpl> L(&Grid,&pRNG,tau,alpha);
     L.TheActions.push_back(GaugeLevel);
     L.TheActions.push_back(FermionLevel);
@@ -85,8 +87,8 @@ int main(int argc, char *argv[]) {
     plaqfile << scientific;
     
     PRealD plaq;
-    for (int i=0; i<5000; i++) {
-        L.RKStep(U);
+    for (int i=0; i<sweeps; i++) {
+        L.EulerStep(U);
         plaq = WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U);
         for (int k=0; k<Np; k++) plaqfile << plaq(k) << endl;
     }

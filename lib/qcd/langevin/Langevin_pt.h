@@ -272,7 +272,6 @@ template<class vobj>
             std::stringstream ss(arg);
             ss>>alpha;
         } else alpha = -0.5*tau;
-        std::cout<<tau<<" "<<alpha<<" "<<sweeps<<std::endl;std::exit(0);
     }
     
 }

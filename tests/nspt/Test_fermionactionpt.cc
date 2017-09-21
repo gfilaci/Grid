@@ -134,8 +134,8 @@ int main(int argc, char *argv[]) {
     
     PRealD plaq;
     for (int i=0; i<sweeps; i++) {
+        if(i%1000==0) cout<<GridLogMessage << "sweep number "<<i<<endl;
         L.EulerStep(U);
-        if(i%5==0) cout<<GridLogMessage << "sweep number "<<i<<endl;
         plaq = WilsonLoops<TwistedGimpl_ptR>::avgPlaquette(U);
         for (int k=0; k<Np; k++) plaqfile << plaq(k) << endl;
     }

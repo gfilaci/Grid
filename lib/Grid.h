@@ -46,5 +46,6 @@ Author: paboyle <paboyle@ph.ed.ac.uk>
 #include <Grid/parallelIO/MetaData.h>
 #include <Grid/qcd/hmc/HMC_aggregate.h>
 #include <Grid/qcd/langevin/Langevin_pt.h>
+#include <Grid/qcd/langevin/LangevinRun.h>
 
 #endif

@@ -149,8 +149,6 @@ int main(int argc, char *argv[]) {
     for (int n=0; n<Np-2; n++) {
           Uforce = zero;
           for (int j=0; j<=n; j++) {
-//              FermionAction.Dw[n-j].MDeriv(Uso, Xi, psi[j], DaggerNo);
-//              Uforce += Uso;
               FermionAction.Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerYes);
               Uforce += Uso;
           }
@@ -230,8 +228,6 @@ after everything is initialised.
 Then it is important to comment the Xi.gauss random generation in the function fermion_drift of nspt.cc.
 It must also be checked that the zero mode subtraction of the stochastic noise (STOCTRACE_ZEROMOM_SUBTR)
 is NOT activated.
-As of 13/09/17, only the "FermionAction.Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerYes);" term
-is computed by fermion_drift.
 */
 ///////////////////////////////////////////////////////
 /*

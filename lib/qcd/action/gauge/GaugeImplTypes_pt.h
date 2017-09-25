@@ -53,13 +53,13 @@ namespace QCDpt{
   typedef typename Impl::Field Field;
 
 // hardcodes the exponential approximation in the template
-template <class S, int Nrepresentation = Nc> class GaugeImplTypes_pt {
+template <class S, int Nrepresentation = Nc, int Norder = Np> class GaugeImplTypes_pt {
 public:
   typedef S Simd;
 
-  template <typename vtype> using iImplScalar     = iScalar<iScalar<iPert<iScalar<vtype>, Np> > >;
-  template <typename vtype> using iImplGaugeLink  = iScalar<iScalar<iPert<iMatrix<vtype, Nrepresentation>, Np> > >;
-  template <typename vtype> using iImplGaugeField = iVector<iScalar<iPert<iMatrix<vtype, Nrepresentation>, Np> >, Nd>;
+  template <typename vtype> using iImplScalar     = iScalar<iScalar<iPert<iScalar<vtype>, Norder> > >;
+  template <typename vtype> using iImplGaugeLink  = iScalar<iScalar<iPert<iMatrix<vtype, Nrepresentation>, Norder> > >;
+  template <typename vtype> using iImplGaugeField = iVector<iScalar<iPert<iMatrix<vtype, Nrepresentation>, Norder> >, Nd>;
 
   typedef iImplScalar<Simd>     SiteComplex;
   typedef iImplGaugeLink<Simd>  SiteLink;

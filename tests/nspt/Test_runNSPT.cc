@@ -2,7 +2,7 @@
 
 Grid physics library, www.github.com/paboyle/Grid 
 
-Source file: ./tests/nspt/Test_fermionactionpt.cc
+Source file: ./tests/nspt/Test_runNSPT.cc
 
 Copyright (C) 2015-2017
 
@@ -37,7 +37,6 @@ int main(int argc, char *argv[]) {
     
     Grid_init(&argc,&argv);
     
-  
     std::vector<int> latt_size = GridDefaultLatt();
     std::vector<int> simd_layout = GridDefaultSimd(Nd,vComplex::Nsimd());
     std::vector<int> mpi_layout  = GridDefaultMpi();
@@ -45,14 +44,11 @@ int main(int argc, char *argv[]) {
     GridCartesian               Grid(latt_size,simd_layout,mpi_layout);
     GridRedBlackCartesian     RBGrid(latt_size,simd_layout,mpi_layout);
     
-    int threads = GridThread::GetThreads();
-    std::cout<<GridLogMessage << "Grid is setup to use "<<threads<<" threads"<<std::endl;
-    
     GridParallelRNG pRNG(&Grid);
-    pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
     
-    
-    
+    ///////////////
+    //  ACTIONS  //
+    ///////////////
     
     typedef TwistedGimpl_ptR   gimpl;
     typedef PWilsonSmellImplR  fimpl;
@@ -71,11 +67,17 @@ int main(int argc, char *argv[]) {
     FermionLevel.push_back(&FermionAction);
     
     
+    ////////////////
+    //  LANGEVIN  //
+    ////////////////
     
-    LangevinParams LP(argc,argv);
-    LangevinRun<gimpl> MyRun(&Grid, &pRNG,LP);
-    MyRun.push_back(GaugeLevel);
-    MyRun.push_back(FermionLevel);
+    LangevinParams LP(argc,argv,Nf,mass,Params.boundary_phases);
+    LangevinRun<gimpl> TheRun(&Grid, &pRNG, LP);
+    
+    TheRun.push_back(GaugeLevel);
+    TheRun.push_back(FermionLevel);
+    
+    TheRun.Run();
     
     
     Grid_finalize();

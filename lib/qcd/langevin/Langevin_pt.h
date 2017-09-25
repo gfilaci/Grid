@@ -42,7 +42,7 @@ class PertLangevin {
 
 protected:
     
-    GridBase* grid;
+    GridCartesian* grid;
     GridParallelRNG *pRNG;
     
     RealD tau;
@@ -66,7 +66,7 @@ protected:
 public:
     ActionSet<typename Gimpl::GaugeField,PNoHirep> TheActions;
     
-    explicit PertLangevin(GridBase* grid_, GridParallelRNG *pRNG_, RealD tau_, RealD alpha_):
+    explicit PertLangevin(GridCartesian* grid_, GridParallelRNG *pRNG_, RealD tau_, RealD alpha_):
     pRNG(pRNG_),
     tau(tau_),
     alpha(alpha_),

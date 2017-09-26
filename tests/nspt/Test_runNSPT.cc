@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
     TheRun.push_back(GaugeLevel);
     TheRun.push_back(FermionLevel);
     
-    TheRun.Run();
+    TheRun.Run_autocm();
     
     
     Grid_finalize();

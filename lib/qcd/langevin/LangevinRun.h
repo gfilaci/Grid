@@ -218,7 +218,7 @@ class LangevinRun {
 
 private:
     
-    std::ofstream log, plaqfile;
+    std::ofstream log, plaqfile, massfile;
     
     PRealD plaq;
     
@@ -247,7 +247,7 @@ public:
     Params(Params_),
     L(grid_,pRNG_,Params_.tau,Params_.alpha),
     CP(Params_.CPparams),
-    TVP(1000,grid_,Params_.FA,Params_.prop_phases1,Params_.prop_phases1)
+    TVP(1000,grid_,Params_.FA,Params_.prop_phases1,Params_.prop_phases2)
     {
     
         if(Params.StartingType=="LowerOrderStart"){
@@ -269,6 +269,7 @@ public:
         if(grid->_processor==0){
             openLog();
             openPlaq();
+            openMass();
         }
     };
     
@@ -377,11 +378,38 @@ public:
         
     }
     
+    void openMass(){
+        
+        std::string massname = Params.basename + ".mass";
+        
+        if(Params.StartingType=="CheckpointStart"){
+            if(exists(massname))
+                massfile.open(massname, std::ios::app);
+            else massfile.open(massname.c_str());
+        }
+        else if(!exists(massname)){
+            massfile.open(massname.c_str());
+        } else{
+            std::cout << GridLogError << "There is already a mass file with same parameters: use CheckpointStart to start from a previous checkpoint or move/delete/rename the mass file for a new ColdStart" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        
+        if (!log.is_open()){
+            std::cout << GridLogError << "Unable to open mass file" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        
+        massfile.precision(30);
+        massfile << std::scientific;
+        
+    }
+    
     void FinaliseRun(){
         log << GridLogMessage << "RUN COMPLETED" << std::endl;
         log << now() << std::endl;
         log.close();
         plaqfile.close();
+        massfile.close();
     }
     
     bool exists (const std::string &name) {
@@ -451,6 +479,17 @@ public:
             plaq = WilsonLoops<gimpl>::avgPlaquette(U);
             for (int k=0; k<Np; k++) plaqfile << plaq(k) << std::endl;
             
+            //$// need to do it properly..
+            log << "in" << std::endl;
+            if(Params.save_every!=0 && i%10==9){
+                L.LandauGF(U, Params.gfprecision);
+                log << "gfixed" << std::endl;
+                TVP.measure(U);
+                log << "measured" << std::endl;
+                TVP.feedback_cm(massfile);
+            }
+            log << "out" << std::endl;
+            
             if(Params.save_every!=0 && i%Params.save_every==(Params.save_every-1)){
                 if(Params.gfprecision!=0){
                     log << GridLogMessage << "Landau gauge fixing ..." <<std::endl;
@@ -459,11 +498,7 @@ public:
                 }
                 CP.TrajectoryComplete(Params.StartTrajectory+i+1,U,sRNG,*pRNG);
                 log << GridLogMessage << "Configuration " << Params.StartTrajectory+i+1 << " saved" <<std::endl;
-                
-                TVP.measure();
-                
             }
-            
         }
         
         if(grid->_processor==0) FinaliseRun();

@@ -48,12 +48,13 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   std::vector<WilsonFermion<SOImpl>> Dw;
   std::vector<SOFermionField> psi;
   SOFermionField Xi, psitmp;
+  SOGaugeField Uso, Uforce;
+  TwistedFFT<Impl> TheFFT;
   
  private:
-  SOGaugeField Uso, Uforce;
   GridParallelRNG *pRNG;
   GridCartesian* grid;
-  TwistedFFT<Impl> TheFFT;
+  
   
   // we can work at lower perturabtive order, because
   // there is a factor 1/beta in front of the fermion drift.
@@ -214,12 +215,17 @@ template <class Impl>
 class TwistValencePropagator{
     
     typedef iScalar<iMatrix<iPert<iScalar<Complex>,Np>,Ns>> PropType;
+    typedef iScalar<iMatrix<iScalar<iScalar<Complex>>,Ns>> SOPropType;
     
 private:
     StochasticFermionAction<Impl> *FA;
     TwistedFFT<Impl> TheFFT1,TheFFT2;
     QCDpt::SpinColourMatrix delta;
     GridCartesian* grid;
+    PropType prop1, prop2;
+    PropType invprop1, invprop2;
+    PReal gamma1, gamma2, mc;
+    Real p1sq, p2sq;
     
 public:
     circular_buffer<PropType> bufprop1;
@@ -232,13 +238,29 @@ public:
     FA(FA_),
     TheFFT1(grid_,phases1),
     TheFFT2(grid_,phases2)
-    {};
+    {
+        // odd powers will be discarded,
+        // the series must be in "1/beta"
+        assert(Np%2==1);
+        
+        initialiseInverseProp(invprop1,phases1);
+        initialiseInverseProp(invprop2,phases2);
+        
+        p1sq = 0.;
+        p2sq = 0.;
+        for (int d=0; d<Nd; d++) {
+            p1sq += (log(phases1[d]).imag()/(double)grid->_fdimensions[d])*(log(phases1[d]).imag()/(double)grid->_fdimensions[d]);
+            p2sq += (log(phases2[d]).imag()/(double)grid->_fdimensions[d])*(log(phases2[d]).imag()/(double)grid->_fdimensions[d]);
+        }
+    };
     
-    void measurePropagator(TwistedFFT<Impl> *myFFT, PropType &propagator){
+    template <class gaugefield>
+    void measurePropagator(TwistedFFT<Impl> *myFFT, PropType &propagator, const gaugefield &U){
+        propagator = zero;
         
         for (int k=0; k<Np; k++) {
             FA->Dw[k].Params.boundary_phases = myFFT->boundary_phases;
-            FA->Uso = peekPert(FA->U,k);
+            FA->Uso = peekPert(U,k);
             FA->Dw[k].ImportGauge(FA->Uso);
         }
         
@@ -265,7 +287,8 @@ public:
             }
             
             // back to momentum space
-            for (int n=0; n<Np; n++){
+            // save only "1/beta orders"
+            for (int n=0; n<Np; n+=2){
                 myFFT->FFTforward(FA->psi[n],FA->psi[n]);
                 
                 // put measure into proapgator
@@ -278,21 +301,130 @@ public:
         } // source Dirac index loop
     }
     
-    void measure(){
+    template <class gaugefield>
+    void measure(const gaugefield &U){
         
-        PropType prop1, prop2;
-        measurePropagator(TheFFT1,prop1);
+        measurePropagator(&TheFFT1,prop1,U);
         bufprop1.push(prop1);
-        measurePropagator(TheFFT2,prop2);
+        measurePropagator(&TheFFT2,prop2,U);
         bufprop2.push(prop2);
         
         // restore original phases in Dirac operators
         for (int k=0; k<Np; k++) {
-            FA->Dw[k].Params.boundary_phases = FA->TheFFT->boundary_phases;
+            FA->Dw[k].Params.boundary_phases = FA->TheFFT.boundary_phases;
         }
         
     }
     
+    void feedback_cm(std::ofstream &massfile){
+        prop1 = bufprop1.average();
+        prop2 = bufprop2.average();
+        invertpropagator(invprop1,prop1);
+        invertpropagator(invprop2,prop2);
+        
+        gamma1 = (1./(double)Nd) * TensorRemove(traceIndex<SpinIndex>(invprop1)).real();
+        gamma2 = (1./(double)Nd) * TensorRemove(traceIndex<SpinIndex>(invprop2)).real();
+        
+        mc = (1./(p2sq-p1sq))*(p2sq*gamma1-p1sq*gamma2);
+        
+        // higher orders had mass-4 to kill the Wilson diagonal term
+        // feedback only on "1/beta" components
+        for (int i=2; i<Np; i+=2) {
+            FA->Dw[i].mass -= mc(i);
+            massfile << FA->Dw[i].mass+4. << std::endl;
+        }
+    }
+    
+    void invertpropagator(PropType &invprop, PropType &prop){
+        std::vector<SOPropType> inp(Np), outp(Np);
+        for (int k=0; k<Np; k++) {
+            inp[k] = peekIndex<PertIndex>(prop,k);
+        }
+        outp[0] = peekIndex<PertIndex>(invprop,0);
+        for (int k=1; k<Np; k++) {
+            outp[k] = zero;
+            for (int j=0; j<k; j++) {
+                outp[k] += inp[k-j]*outp[j];
+            }
+            outp[k] = -outp[0]*outp[k];
+        }
+        for (int k=1; k<Np; k++) {
+            pokePert(invprop,outp[k],k);
+        }
+        /******************/
+//        //test...
+//        SOPropType test;
+//        for (int i=0; i<Np; i++) {
+//            test = zero;
+//            for (int j=0; j<=i; j++) {
+//                test += inp[j]*outp[i-j];
+//            }
+//            if(i==0) std::cout << GridLogMessage << "inversion order " << i << " good within " << norm2(test)-4. << std::endl;
+//            else std::cout << GridLogMessage << "inversion order " << i << " good within " << norm2(test) << std::endl;
+//        }
+        /******************/
+    }
+    
+    void initialiseInverseProp(PropType &invprop, const std::vector<Complex> &phases){
+        
+        Complex im(0.,1.);
+        std::vector<Real> mom({0,0,0,0});
+        for (int d=0; d<Nd; d++) {
+            mom[d] = log(phases[d]).imag()/(double)grid->_fdimensions[d];
+        }
+        // sum_mu sin^2(p_mu/2)
+        Real mompr = 0.;
+        for (int mu=0; mu<Nd; mu++) {
+            mompr += std::sin(0.5*mom[mu])*std::sin(0.5*mom[mu]);
+        }
+        
+        
+        Gamma::Algebra Gmu [] = {
+            Gamma::Algebra::GammaX,
+            Gamma::Algebra::GammaY,
+            Gamma::Algebra::GammaZ,
+            Gamma::Algebra::GammaT
+        };
+        
+        iScalar<iMatrix<iScalar<Complex>,Nd>> mygamma[Nd];
+        for (int mu=0; mu<Nd; mu++) {
+            mygamma[mu] = zero;
+            for (int i=0; i<Nd; i++) {
+                mygamma[mu]()(i,i)() = 1.0;
+            }
+            mygamma[mu] = QCD::Gamma(Gmu[mu])*mygamma[mu];
+        }
+        
+        SOPropType Pmygamma[Nd];
+        for (int mu=0; mu<Nd; mu++) {
+            for (int i=0; i<Nd; i++) {
+                for (int j=0; j<Nd; j++) {
+                    Pmygamma[mu]()(i,j)()() = mygamma[mu]()(i,j)();
+                }
+            }
+        }
+        
+        SOPropType SOprop = zero;
+        
+        // Fill order 0 with
+        // i ( gamma_mu sin(p_mu) ) + ...
+        for (int mu=0; mu<Nd; mu++) {
+            SOprop += im * std::sin(mom[mu]) * Pmygamma[mu];
+        }
+        
+        // ... + 2 * sum_mu sin^2(p_mu/2)
+        for (int i=0; i<Nd; i++) {
+            SOprop()(i,i)()() += 2*mompr;
+        }
+        
+        
+        invprop = zero;
+        for (int i=0; i<Nd; i++) {
+            for (int j=0; j<Nd; j++) {
+                invprop()(i,j)(0)() = SOprop()(i,j)()();
+            }
+        }
+    }
 };
 
 

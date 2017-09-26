@@ -204,13 +204,15 @@ public:
     
     iMatrix<TwistBase, Nc> Gamma, adjGamma;
     std::vector<Real> boundary_exp;
+    std::vector<Complex> boundary_phases;
     int t1,t2;
     
     TwistedFFT(GridCartesian* grid_, std::vector<Complex> boundary_phases_):
     grid(grid_),
     theFFT(grid_),
     pPerpPhase(grid_),
-    halfphatsq(grid_)
+    halfphatsq(grid_),
+    boundary_phases(boundary_phases_)
     {
         // This TwistedFFT is tailored for twist on a plane
         // with generic orientation.

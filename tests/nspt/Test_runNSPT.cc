@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
     //  LANGEVIN  //
     ////////////////
     
-    LangevinParams LP(argc,argv,Nf,mass,Params.boundary_phases);
+    LangevinParams LP(argc,argv,Nf,mass,Params.boundary_phases,&FermionAction);
     LangevinRun<gimpl> TheRun(&Grid, &pRNG, LP);
     
     TheRun.push_back(GaugeLevel);

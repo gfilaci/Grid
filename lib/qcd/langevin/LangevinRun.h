@@ -31,6 +31,7 @@ directory
 
 #define load_Nplow 3
 
+
 namespace Grid {
 namespace QCD {
 namespace QCDpt {
@@ -48,6 +49,8 @@ public:
     int Nf;
     PRealD mass;
     std::vector<Complex> boundary_phases;
+    std::vector<Complex> prop_phases1;
+    std::vector<Complex> prop_phases2;
     
     bool rk;
     std::string StartingType;
@@ -56,9 +59,12 @@ public:
     std::string basename;
     CheckpointerParameters CPparams;
     
+    StochasticFermionAction<PWilsonSmellImplR> *FA;
     
     // in the quenched case, the parameters Nf, mass and boundary_phases can be omitted
-    LangevinParams(int argc, char **argv, int Nf_=0, PRealD mass_=zero, std::vector<Complex> boundary_phases_={0.}) {
+    LangevinParams(int argc, char **argv, int Nf_=0, PRealD mass_=zero, std::vector<Complex> boundary_phases_={0.}, StochasticFermionAction<PWilsonSmellImplR> *FA_ = NULL):
+    FA(FA_)
+    {
     
         std::string arg;
         
@@ -66,6 +72,16 @@ public:
         if(Nf_!=0){
             mass = mass_;
             boundary_phases = boundary_phases_;
+            prop_phases1 = boundary_phases_;
+            prop_phases2 = boundary_phases_;
+            
+            Complex im(0.,1.);
+            Real phase_exp;
+            // reference momenta for L=32, L=24
+            phase_exp = M_PI*((double)GridDefaultLatt()[0])/32.;
+            prop_phases1[0] = exp(im*phase_exp);
+            phase_exp = M_PI*((double)GridDefaultLatt()[0])/24.;
+            prop_phases2[0] = exp(im*phase_exp);
         }
         
         if( GridCmdOptionExists(argv,argv+argc,"--tau") ){
@@ -208,6 +224,8 @@ private:
     
     GridSerialRNG sRNG;
     
+    TwistValencePropagator<PWilsonSmellImplR> TVP;
+    
 protected:
     
     GridCartesian *grid;
@@ -228,7 +246,8 @@ public:
     U(grid_),
     Params(Params_),
     L(grid_,pRNG_,Params_.tau,Params_.alpha),
-    CP(Params_.CPparams)
+    CP(Params_.CPparams),
+    TVP(1000,grid_,Params_.FA,Params_.prop_phases1,Params_.prop_phases1)
     {
     
         if(Params.StartingType=="LowerOrderStart"){
@@ -405,6 +424,44 @@ public:
                 }
                 CP.TrajectoryComplete(Params.StartTrajectory+i+1,U,sRNG,*pRNG);
                 log << GridLogMessage << "Configuration " << Params.StartTrajectory+i+1 << " saved" <<std::endl;
+            }
+            
+        }
+        
+        if(grid->_processor==0) FinaliseRun();
+    }
+    
+    void Run_autocm(){
+        
+        // print status from time to time
+        // e.g. 1000 times per run
+        int pp = Params.sweeps/1000;
+        if(pp==0) pp = 1;
+        
+        log << std::endl << now() << std::endl;
+        log << GridLogMessage << "RUN STARTED" << std::endl;
+        
+        for (int i=0; i<Params.sweeps; i++) {
+            
+            if(i%pp==0) log << GridLogMessage << "Starting sweep number "<< i+1 << " (" << now() << ")" << std::endl;
+            
+            if(Params.rk==false) L.EulerStep(U);
+            else L.RKStep(U);
+            
+            plaq = WilsonLoops<gimpl>::avgPlaquette(U);
+            for (int k=0; k<Np; k++) plaqfile << plaq(k) << std::endl;
+            
+            if(Params.save_every!=0 && i%Params.save_every==(Params.save_every-1)){
+                if(Params.gfprecision!=0){
+                    log << GridLogMessage << "Landau gauge fixing ..." <<std::endl;
+                    L.LandauGF(U, Params.gfprecision);
+                    log << GridLogMessage << "... completed" <<std::endl;
+                }
+                CP.TrajectoryComplete(Params.StartTrajectory+i+1,U,sRNG,*pRNG);
+                log << GridLogMessage << "Configuration " << Params.StartTrajectory+i+1 << " saved" <<std::endl;
+                
+                TVP.measure();
+                
             }
             
         }

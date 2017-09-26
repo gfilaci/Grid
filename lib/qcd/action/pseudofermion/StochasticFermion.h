@@ -46,11 +46,11 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
   
   // vector of Wilson operators, one for each perturbative order
   std::vector<WilsonFermion<SOImpl>> Dw;
+  std::vector<SOFermionField> psi;
+  SOFermionField Xi, psitmp;
   
  private:
   SOGaugeField Uso, Uforce;
-  std::vector<SOFermionField> psi;
-  SOFermionField Xi, psitmp;
   GridParallelRNG *pRNG;
   GridCartesian* grid;
   TwistedFFT<Impl> TheFFT;
@@ -79,9 +79,9 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
         TheFFT(grid_,Params_.boundary_phases)
         {
             Nf_over_Nc = (double)Nf / (double)Nc;
-            Dw.reserve(Npf);
-            psi.reserve(Npf);
-            for (int i=0; i<Npf; i++) {
+            Dw.reserve(Np); //$// reserving Np, needed in measuring propagator
+            psi.reserve(Np); //$// reserving Np, needed in measuring propagator
+            for (int i=0; i<Np; i++) { //$// reserving Np, needed in measuring propagator
                 if (i==0) {
                     Dw.push_back(WilsonFermion<SOImpl>(Uso,*grid_,*rbgrid_,mass_(i),Params_));
                 } else{ // there is no diagonal term in the Wilson operator
@@ -150,7 +150,7 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
         // apply M0^-1 to Xi
         TheFFT.FreeWilsonOperatorInverse(psi[0],Xi);
         
-        for (int n=1; n<Npf; n++) {
+        for (int n=1; n<Npf; n++){
             psi[n] = zero;
             for (int j=0; j<n; j++) {
                 Dw[n-j].M(psi[j],psitmp);
@@ -161,13 +161,138 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
         }
     }
 
-void changeBoundaryPhases(std::vector<Complex> newphases){
-        for (int k=0; k<Npf; k++) {
-            Dw[k].Params.boundary_phases = newphases;
-        }
-        TheFFT.FFTinitialisation(newphases);
-}
+};
 
+
+
+template <class T>
+class circular_buffer{
+
+private:
+    T *buf;
+    int index = 0;
+    int bufsize;
+    bool full = false;
+    double div;
+    
+public:
+    circular_buffer(int bufsize_):
+    bufsize(bufsize_)
+    {
+        buf = new T[bufsize_];
+        div = 1./(double)bufsize;
+    }
+    
+    void push(T elm){
+        if(index==bufsize) full = true;
+        index = index % bufsize;
+        buf[index++] = elm;
+    }
+    
+    T pull(int i){
+        return buf[(index+i)%bufsize];
+    }
+    
+    T average(){
+        T tmp = zero;
+        if(full){
+            for (int i=0; i<bufsize; i++) {
+                tmp += buf[i];
+            }
+            return div*tmp;
+        } else{
+            for (int i=0; i<index; i++) {
+                tmp += buf[i];
+            }
+            return (1./(double)index)*tmp;
+        }
+    }
+};
+
+
+template <class Impl>
+class TwistValencePropagator{
+    
+    typedef iScalar<iMatrix<iPert<iScalar<Complex>,Np>,Ns>> PropType;
+    
+private:
+    StochasticFermionAction<Impl> *FA;
+    TwistedFFT<Impl> TheFFT1,TheFFT2;
+    QCDpt::SpinColourMatrix delta;
+    GridCartesian* grid;
+    
+public:
+    circular_buffer<PropType> bufprop1;
+    circular_buffer<PropType> bufprop2;
+    
+    TwistValencePropagator(int bufsize, GridCartesian* grid_, StochasticFermionAction<Impl> *FA_,std::vector<Complex> phases1, std::vector<Complex> phases2):
+    grid(grid_),
+    bufprop1(bufsize),
+    bufprop2(bufsize),
+    FA(FA_),
+    TheFFT1(grid_,phases1),
+    TheFFT2(grid_,phases2)
+    {};
+    
+    void measurePropagator(TwistedFFT<Impl> *myFFT, PropType &propagator){
+        
+        for (int k=0; k<Np; k++) {
+            FA->Dw[k].Params.boundary_phases = myFFT->boundary_phases;
+            FA->Uso = peekPert(FA->U,k);
+            FA->Dw[k].ImportGauge(FA->Uso);
+        }
+        
+        for (int beta=0; beta<Ns; beta++){
+            FA->Xi = zero;
+            delta = zero;
+            delta()(beta)()(0,0) = 1.0;
+            pokeSite(delta,FA->Xi,std::vector<int>({0,0,0,0}));
+            
+            // apply M0^-1 to Xi
+            // Xi is already in momentum space,
+            // no need for an FFT forward
+            myFFT->TwistedWilsonPropagator(FA->psi[0],FA->Xi);
+            myFFT->FFTbackward(FA->psi[0],FA->psi[0]);
+            
+            for (int n=1; n<Np; n++){
+                FA->psi[n] = zero;
+                for (int j=0; j<n; j++) {
+                    FA->Dw[n-j].M(FA->psi[j],FA->psitmp);
+                    FA->psi[n] -= FA->psitmp;
+                }
+                // apply M0^-1 to psi[n]
+                myFFT->FreeWilsonOperatorInverse(FA->psi[n],FA->psi[n]);
+            }
+            
+            // back to momentum space
+            for (int n=0; n<Np; n++){
+                myFFT->FFTforward(FA->psi[n],FA->psi[n]);
+                
+                // put measure into proapgator
+                peekSite(delta,FA->psi[n],std::vector<int>({0,0,0,0}));
+                for (int alpha=0; alpha<Ns; alpha++){
+                    propagator()(alpha,beta)(n)() = delta()(alpha)()(0,0);
+                }
+            }
+            
+        } // source Dirac index loop
+    }
+    
+    void measure(){
+        
+        PropType prop1, prop2;
+        measurePropagator(TheFFT1,prop1);
+        bufprop1.push(prop1);
+        measurePropagator(TheFFT2,prop2);
+        bufprop2.push(prop2);
+        
+        // restore original phases in Dirac operators
+        for (int k=0; k<Np; k++) {
+            FA->Dw[k].Params.boundary_phases = FA->TheFFT->boundary_phases;
+        }
+        
+    }
+    
 };
 
 

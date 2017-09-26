@@ -184,7 +184,9 @@ public:
                 div = gt * div * Gimpl::MoveForward(agt,mu);
                 PokeIndex<LorentzIndex>(U,div,mu);
             }
+            std::cout<<residualdiv(Np-1).real()<<std::endl;//$//
         } while (residualdiv(Np-1).real() > gftolerance);
+        std::cout<<"-------------------"<<std::endl;//$//
     }
     
     void SetParams(double tau_, double alpha_){

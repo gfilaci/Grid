@@ -480,15 +480,11 @@ public:
             for (int k=0; k<Np; k++) plaqfile << plaq(k) << std::endl;
             
             //$// need to do it properly..
-            log << "in" << std::endl;
             if(Params.save_every!=0 && i%10==9){
                 L.LandauGF(U, Params.gfprecision);
-                log << "gfixed" << std::endl;
                 TVP.measure(U);
-                log << "measured" << std::endl;
                 TVP.feedback_cm(massfile);
             }
-            log << "out" << std::endl;
             
             if(Params.save_every!=0 && i%Params.save_every==(Params.save_every-1)){
                 if(Params.gfprecision!=0){

@@ -123,6 +123,7 @@ public:
 
     void EulerStep(FieldType &U) {
         GenerateNoise();
+	std::cout<<noise<<std::endl;exit(1);//$//
         // compute drift for all actions and put it into F
         F = zero;
         for(int i=0; i<TheActions.size(); i++) {

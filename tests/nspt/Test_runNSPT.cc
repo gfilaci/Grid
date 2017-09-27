@@ -46,6 +46,14 @@ int main(int argc, char *argv[]) {
     
     GridParallelRNG pRNG(&Grid);
     
+    //$//
+    pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
+    Lattice<iVector<iScalar<iScalar<iScalar<vReal>>>,Nd>> field(&Grid);
+    gaussian(pRNG,field);
+    std::cout<<field<<std::endl;
+    std::exit(1);
+    //$//
+
     ///////////////
     //  ACTIONS  //
     ///////////////

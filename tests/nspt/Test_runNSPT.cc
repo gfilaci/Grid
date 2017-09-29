@@ -46,14 +46,6 @@ int main(int argc, char *argv[]) {
     
     GridParallelRNG pRNG(&Grid);
     
-    //$//
-    pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
-    Lattice<iVector<iScalar<iScalar<iScalar<vReal>>>,Nd>> field(&Grid);
-    gaussian(pRNG,field);
-    std::cout<<field<<std::endl;
-    std::exit(1);
-    //$//
-
     ///////////////
     //  ACTIONS  //
     ///////////////
@@ -85,8 +77,7 @@ int main(int argc, char *argv[]) {
     TheRun.push_back(GaugeLevel);
     TheRun.push_back(FermionLevel);
     
-    //TheRun.Run_autocm();
-    TheRun.Run();
+    TheRun.Run_autocm();
     
     Grid_finalize();
     return EXIT_SUCCESS;

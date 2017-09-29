@@ -480,7 +480,7 @@ public:
             for (int k=0; k<Np; k++) plaqfile << plaq(k) << std::endl;
             
             //$// need to do it properly..
-            if(Params.save_every!=0 && i%10==9){
+            if(i%100==0){
                 L.LandauGF(U, Params.gfprecision);
                 TVP.measure(U);
                 TVP.feedback_cm(massfile);

@@ -29,6 +29,8 @@ directory
 #ifndef QCD_LANGEVIN_PT_H
 #define QCD_LANGEVIN_PT_H
 
+//#define OSX_TO_STD_RNG//$//
+
 namespace Grid {
 namespace QCD {
 namespace QCDpt {
@@ -89,6 +91,16 @@ public:
         zeroit(noise);
         for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
             gaussian(*pRNG, ca);
+#ifdef OSX_TO_STD_RNG
+            auto tmp0 = PeekIndex<LorentzIndex>(ca,0);
+            auto tmp1 = PeekIndex<LorentzIndex>(ca,1);
+            PokeIndex<LorentzIndex>(ca,tmp1,0);
+            PokeIndex<LorentzIndex>(ca,tmp0,1);
+            tmp0 = PeekIndex<LorentzIndex>(ca,2);
+            tmp1 = PeekIndex<LorentzIndex>(ca,3);
+            PokeIndex<LorentzIndex>(ca,tmp1,2);
+            PokeIndex<LorentzIndex>(ca,tmp0,3);
+#endif
             SU<Nc>::generator(a, ta);
             noise += toComplex(ca) * ta;
         }
@@ -123,7 +135,6 @@ public:
 
     void EulerStep(FieldType &U) {
         GenerateNoise();
-	std::cout<<noise<<std::endl;exit(1);//$//
         // compute drift for all actions and put it into F
         F = zero;
         for(int i=0; i<TheActions.size(); i++) {

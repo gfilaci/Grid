@@ -29,6 +29,8 @@ directory
 #ifndef QCD_STOCHASTICFERMION_H
 #define QCD_STOCHASTICFERMION_H
 
+//#define OSX_TO_STD_RNG//$//
+
 namespace Grid {
 namespace QCD {
 namespace QCDpt {
@@ -119,6 +121,11 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
       gaussian(*pRNG,Xi);
       Xi *= M_SQRT1_2;
       
+#ifdef OSX_TO_STD_RNG
+      Complex im(0.,1.);
+      Xi = imag(Xi) + im * real(Xi);
+#endif
+      
       // compute psi = (M)^-1 Xi
       invM(psi,U,Xi);
       
@@ -170,8 +177,8 @@ template <class T>
 class circular_buffer{
 
 private:
-    T *buf;
-    int index = 0;
+    std::vector<T> buf;
+    int index = -1;
     int bufsize;
     bool full = false;
     double div;
@@ -180,14 +187,14 @@ public:
     circular_buffer(int bufsize_):
     bufsize(bufsize_)
     {
-        buf = new T[bufsize_];
-        div = 1./(double)bufsize;
+        buf.reserve(bufsize_);
+        div = 1./(double)bufsize_;
     }
     
     void push(T elm){
-        if(index==bufsize) full = true;
-        index = index % bufsize;
-        buf[index++] = elm;
+        if((index+1)==bufsize) full = true;
+        index = (index+1) % bufsize;
+        buf[index] = elm;
     }
     
     T pull(int i){
@@ -202,10 +209,10 @@ public:
             }
             return div*tmp;
         } else{
-            for (int i=0; i<index; i++) {
+            for (int i=0; i<=index; i++) {
                 tmp += buf[i];
             }
-            return (1./(double)index)*tmp;
+            return (1./(double)(index+1))*tmp;
         }
     }
 };
@@ -290,7 +297,6 @@ public:
             // save only "1/beta orders"
             for (int n=0; n<Np; n+=2){
                 myFFT->FFTforward(FA->psi[n],FA->psi[n]);
-                
                 // put measure into proapgator
                 peekSite(delta,FA->psi[n],std::vector<int>({0,0,0,0}));
                 for (int alpha=0; alpha<Ns; alpha++){
@@ -327,7 +333,7 @@ public:
         
         mc = (1./(p2sq-p1sq))*(p2sq*gamma1-p1sq*gamma2);
         
-        // higher orders had mass-4 to kill the Wilson diagonal term
+        // higher orders had mass-4 to kill the Wilson diagonal term,
         // feedback only on "1/beta" components
         for (int i=2; i<Np; i+=2) {
             FA->Dw[i].mass -= mc(i);

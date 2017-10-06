@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     std::vector<int> mpi_layout  = GridDefaultMpi();
     
     GridCartesian               Grid(latt_size,simd_layout,mpi_layout);
-    GridRedBlackCartesian     RBGrid(latt_size,simd_layout,mpi_layout);
+    GridRedBlackCartesian     RBGrid(&Grid);
     
     GridParallelRNG pRNG(&Grid);
     

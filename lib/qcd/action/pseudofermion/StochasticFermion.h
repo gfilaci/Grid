@@ -295,6 +295,7 @@ public:
             }
             
         } // source Dirac index loop
+        propfile.flush();
     }
     
     template <class gaugefield>

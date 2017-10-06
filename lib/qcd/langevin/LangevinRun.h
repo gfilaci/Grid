@@ -53,6 +53,7 @@ public:
     std::vector<Complex> prop_phases2;
     
     bool rk;
+    bool measureprop;
     std::string StartingType;
     std::vector<int> rngseed;
     
@@ -123,6 +124,10 @@ public:
         if( GridCmdOptionExists(argv,argv+argc,"--enable-rk") ){
             rk = true;
         } else rk = false;
+        
+        if( GridCmdOptionExists(argv,argv+argc,"--enable-propagator") ){
+            measureprop = true;
+        } else measureprop = false;
         
         if( GridCmdOptionExists(argv,argv+argc,"--start-from") ){
             arg = GridCmdOptionPayload(argv,argv+argc,"--start-from");
@@ -218,7 +223,7 @@ class LangevinRun {
 
 private:
     
-    std::ofstream log, plaqfile, massfile;
+    std::ofstream log, plaqfile, propfile;
     
     PRealD plaq;
     
@@ -247,7 +252,7 @@ public:
     Params(Params_),
     L(grid_,pRNG_,Params_.tau,Params_.alpha),
     CP(Params_.CPparams),
-    TVP(1000,grid_,Params_.FA,Params_.prop_phases1,Params_.prop_phases2)
+    TVP(grid_,Params_.FA,Params_.prop_phases1,Params_.prop_phases2)
     {
     
         if(Params.StartingType=="LowerOrderStart"){
@@ -269,7 +274,7 @@ public:
         if(grid->_processor==0){
             openLog();
             openPlaq();
-            openMass();
+            if(Params.measureprop) openProp();
         }
     };
     
@@ -332,6 +337,8 @@ public:
         
         if(Params.rk==true) log << "Integrator:   Runge-Kutta" << std::endl;
         else log << "Integrator:   Euler" << std::endl;
+        if(Params.measureprop==true) log << "Propagator:   enabled" << std::endl;
+        else log << "Propagator:   disabled" << std::endl;
         log << "StartingType: " << Params.StartingType << std::endl;
         if(Params.StartingType=="ColdStart") log << "rng seeds:    " << GridCmdVectorIntToString(Params.rngseed) << std::endl;
         if(Params.StartingType=="LowerOrderStart") log << "lower order:      " << load_Nplow << std::endl;
@@ -368,7 +375,7 @@ public:
             exit(EXIT_FAILURE);
         }
         
-        if (!log.is_open()){
+        if (!plaqfile.is_open()){
             std::cout << GridLogError << "Unable to open plaquette file" << std::endl;
             exit(EXIT_FAILURE);
         }
@@ -378,29 +385,29 @@ public:
         
     }
     
-    void openMass(){
+    void openProp(){
         
-        std::string massname = Params.basename + ".mass";
+        std::string propname = Params.basename + ".prop";
         
         if(Params.StartingType=="CheckpointStart"){
-            if(exists(massname))
-                massfile.open(massname, std::ios::app);
-            else massfile.open(massname.c_str());
+            if(exists(propname))
+                propfile.open(propname, std::ios::app | std::ios::binary);
+            else propfile.open(propname.c_str(), std::ios::binary);
         }
-        else if(!exists(massname)){
-            massfile.open(massname.c_str());
+        else if(!exists(propname)){
+            propfile.open(propname.c_str(), std::ios::binary);
         } else{
-            std::cout << GridLogError << "There is already a mass file with same parameters: use CheckpointStart to start from a previous checkpoint or move/delete/rename the mass file for a new ColdStart" << std::endl;
+            std::cout << GridLogError << "There is already a propagator file with same parameters: use CheckpointStart to start from a previous checkpoint or move/delete/rename the propagator file for a new ColdStart" << std::endl;
             exit(EXIT_FAILURE);
         }
         
-        if (!log.is_open()){
-            std::cout << GridLogError << "Unable to open mass file" << std::endl;
+        if (!propfile.is_open()){
+            std::cout << GridLogError << "Unable to open propagator file" << std::endl;
             exit(EXIT_FAILURE);
         }
         
-        massfile.precision(30);
-        massfile << std::scientific;
+        propfile.precision(30);
+        propfile << std::scientific;
         
     }
     
@@ -409,7 +416,7 @@ public:
         log << now() << std::endl;
         log.close();
         plaqfile.close();
-        massfile.close();
+        if(Params.measureprop) propfile.close();
     }
     
     bool exists (const std::string &name) {
@@ -450,51 +457,13 @@ public:
                     L.LandauGF(U, Params.gfprecision);
                     log << GridLogMessage << "... completed" <<std::endl;
                 }
+                
+                if(Params.measureprop) TVP.measure(propfile, U);
+                
                 CP.TrajectoryComplete(Params.StartTrajectory+i+1,U,sRNG,*pRNG);
                 log << GridLogMessage << "Configuration " << Params.StartTrajectory+i+1 << " saved" <<std::endl;
             }
             
-        }
-        
-        if(grid->_processor==0) FinaliseRun();
-    }
-    
-    void Run_autocm(){
-        
-        // print status from time to time
-        // e.g. 1000 times per run
-        int pp = Params.sweeps/1000;
-        if(pp==0) pp = 1;
-        
-        log << std::endl << now() << std::endl;
-        log << GridLogMessage << "RUN STARTED" << std::endl;
-        
-        for (int i=0; i<Params.sweeps; i++) {
-            
-            if(i%pp==0) log << GridLogMessage << "Starting sweep number "<< i+1 << " (" << now() << ")" << std::endl;
-            
-            if(Params.rk==false) L.EulerStep(U);
-            else L.RKStep(U);
-            
-            plaq = WilsonLoops<gimpl>::avgPlaquette(U);
-            for (int k=0; k<Np; k++) plaqfile << plaq(k) << std::endl;
-            
-            //$// need to do it properly..
-            if(i%100==0){
-                L.LandauGF(U, Params.gfprecision);
-                TVP.measure(U);
-                TVP.feedback_cm(massfile);
-            }
-            
-            if(Params.save_every!=0 && i%Params.save_every==(Params.save_every-1)){
-                if(Params.gfprecision!=0){
-                    log << GridLogMessage << "Landau gauge fixing ..." <<std::endl;
-                    L.LandauGF(U, Params.gfprecision);
-                    log << GridLogMessage << "... completed" <<std::endl;
-                }
-                CP.TrajectoryComplete(Params.StartTrajectory+i+1,U,sRNG,*pRNG);
-                log << GridLogMessage << "Configuration " << Params.StartTrajectory+i+1 << " saved" <<std::endl;
-            }
         }
         
         if(grid->_processor==0) FinaliseRun();

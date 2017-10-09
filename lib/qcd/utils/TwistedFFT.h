@@ -421,6 +421,181 @@ void TwistedWilsonPropagator(Lattice<vobj> &result,const Lattice<vobj> &source){
 
 };
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  //  TWISTED FAST FOURIER TRANSFORM FOR GAUGE FIELD
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+template <class Gimpl>
+class TwistedGaugeFFT {
+
+    typedef typename std::remove_reference<decltype(Gimpl::twist.omega[0])>::type TwistBase;
+    typedef typename Gimpl::ScalarField LatticeScalar;
+    typedef typename Gimpl::MatrixField LatticeMatrix;
+    
+private:
+    
+    GridCartesian* grid;
+    FFT theFFT;
+    LatticeMatrix pPerpPhase;            // exp(i (p_perp) * x)
+    LatticeMatrix phatsq;            // 4 * sum_mu sin^2(p_mu/2) / alpha
+    RealD alpha;
+    
+public:
+    
+    iMatrix<TwistBase, Nc> Gamma, adjGamma;
+    int t1,t2;
+    
+    TwistedGaugeFFT(GridCartesian* grid_, RealD alpha_):
+    grid(grid_),
+    alpha(alpha_),
+    theFFT(grid_),
+    pPerpPhase(grid_),
+    phatsq(grid_)
+    {
+        // This TwistedFFT is tailored for twist on a plane
+        // with generic orientation.
+        int ntwisteddir = 0;
+        for (int mu=0; mu<Nd; mu++) {
+            if(istwisted(mu)) {
+                ntwisteddir++;
+                if (ntwisteddir==1) t1 = mu;
+                if (ntwisteddir==2) t2 = mu;
+            }
+        }
+        assert(ntwisteddir==2);
+        
+        // The FFTW library has FFTW_FORWARD = -1 by default.
+        // Here the same convention is assumed.
+        if(FFTW_FORWARD==+1) assert(0);
+        
+        // INITIALISE Fourier twist base
+        pPerpLoop(n1,n2) {
+            Gamma(n1,n2) = BuildGamma(n1,n2);
+            adjGamma(n1,n2) = adj(Gamma(n1,n2));
+            Gamma(n1,n2) = (1./(double)Nc)*Gamma(n1,n2);
+        }
+        
+        FFTinitialisation(alpha_);
+    }
+    
+    
+    void FFTinitialisation(RealD alpha){
+        
+        LatticeScalar xmu(grid), tmp(grid);
+        
+        // INITIALISE phases for pPerp projection
+        pPerpLoop(n1,n2) {
+            tmp = zero;
+            for (int mu=0; mu<Nd; mu++) {
+                Real pPerp = 0;
+                if(mu==t1) pPerp +=  (double)n1 * 2. * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                if(mu==t2) pPerp +=  (double)n2 * 2. * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                LatticeCoordinate(xmu,mu);
+                tmp = tmp + pPerp*xmu;
+            }
+            Complex ci(0.,1.);
+            tmp = exp(ci*tmp);
+            pokeColour(pPerpPhase,tmp,n1,n2);
+        }
+        
+        // INITIALISE momenta for Fourier acceleration
+        pPerpLoop(n1,n2) {
+            tmp = zero;
+            for (int mu=0; mu<Nd; mu++) {
+                LatticeCoordinate(xmu,mu);
+                xmu *= M_PI / (double)(grid->_fdimensions[mu]);
+                if(mu==t1) xmu +=  (double)n1 * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                if(mu==t2) xmu +=  (double)n2 * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                tmp = tmp + 4.*sin(xmu)*sin(xmu);
+            }
+            tmp = (1./alpha)*tmp;
+            pokeColour(phatsq,tmp,n1,n2);
+        }
+        
+        // give a non-zero value to the zero mode
+        TwistBase tmpmat;
+        peekSite(tmpmat,phatsq,std::vector<int>({0,0,0,0}));
+        tmpmat()()()(0,0) = 1.;
+        pokeSite(tmpmat,phatsq,std::vector<int>({0,0,0,0}));
+    }
+
+
+TwistBase BuildGamma(int n1, int n2){
+    TwistBase tmp(1.0);
+    for (int i=0; i<n1; i++) tmp *= Gimpl::twist.omega[t2];
+    tmp = adj(tmp);
+    for (int i=0; i<n2; i++) tmp = Gimpl::twist.omega[t1]*tmp;
+    return tmp;
+}
+
+void OrthonormalityTest(){
+    bool testpassed = true;
+    double precision = 1e-13;
+    pPerpLoop(n1,n2){
+        pPerpLoop(m1,m2){
+            double tmp = abs(TensorRemove(trace(adjGamma(m1,m2)*Gamma(n1,n2))));
+            if(m1==n1 && m2==n2) tmp -= 1.;
+            if(std::abs(tmp)>precision) testpassed = false;
+        }
+    }
+    
+    if(testpassed) std::cout << GridLogMessage << "Orthonormality test SUCCEEDED" << std::endl;
+    else std::cout << GridLogMessage << "Orthonormality test FAILED" << std::endl;
+}
+
+template<class vobj>
+void pPerpProjectionForward(Lattice<vobj> &result, const Lattice<vobj> &source){
+    
+    Lattice<vobj> tmpresult(grid);
+    decltype(peekColour(source,0,0)) tmp(grid);
+    
+    pPerpLoop(n1,n2){
+        tmp = trace(adjGamma(n1,n2)*source);
+        pokeColour(tmpresult,tmp,n1,n2);
+    }
+    
+    TwistMult(result,conjugate(pPerpPhase),tmpresult);
+}
+
+template<class vobj>
+void pPerpProjectionBackward(Lattice<vobj> &result,const Lattice<vobj> &source){
+    
+    Lattice<vobj> tmp(grid), tmpresult(grid);
+    TwistMult(tmp,pPerpPhase,source);
+    
+    tmpresult = zero;
+    pPerpLoop(n1,n2){
+        tmpresult = tmpresult + Gamma(n1,n2) * peekColour(tmp,n1,n2);
+    }
+    
+    result = tmpresult;
+}
+
+template<class vobj>
+void FFTforward(Lattice<vobj> &result,const Lattice<vobj> &source){
+    conformable(result._grid,grid);
+    conformable(source._grid,grid);
+    
+    pPerpProjectionForward(result,source);
+    theFFT.FFT_all_dim(result,result,FFT::forward);
+}
+
+template<class vobj>
+void FFTbackward(Lattice<vobj> &result,const Lattice<vobj> &source){
+    conformable(result._grid,grid);
+    conformable(source._grid,grid);
+    
+    theFFT.FFT_all_dim(result,source,FFT::backward);
+    pPerpProjectionBackward(result,result);
+}
+
+template<class vobj>
+void mult_invphatsq(Lattice<vobj> &source){
+    TwistDivide(source,source,phatsq);
+}
+
+};
+
 }
 }
 }

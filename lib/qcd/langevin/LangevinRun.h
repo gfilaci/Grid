@@ -54,6 +54,7 @@ public:
     
     bool rk;
     bool measureprop;
+    bool fagf;
     std::string StartingType;
     std::vector<int> rngseed;
     
@@ -120,6 +121,10 @@ public:
             std::stringstream ss(arg);
             ss>>gfprecision;
         } else gfprecision = 0.;
+        
+        if( GridCmdOptionExists(argv,argv+argc,"--fourier-acceleration") ){
+            fagf = true;
+        } else fagf = false;
         
         if( GridCmdOptionExists(argv,argv+argc,"--enable-rk") ){
             rk = true;
@@ -335,14 +340,18 @@ public:
         
         log << std::endl;
         
-        if(Params.rk==true) log << "Integrator:   Runge-Kutta" << std::endl;
-        else log << "Integrator:   Euler" << std::endl;
-        if(Params.measureprop==true) log << "Propagator:   enabled" << std::endl;
-        else log << "Propagator:   disabled" << std::endl;
-        log << "StartingType: " << Params.StartingType << std::endl;
-        if(Params.StartingType=="ColdStart") log << "rng seeds:    " << GridCmdVectorIntToString(Params.rngseed) << std::endl;
-        if(Params.StartingType=="LowerOrderStart") log << "lower order:      " << load_Nplow << std::endl;
-        if(Params.StartingType=="CheckpointStart") log << "starting from:    " << Params.StartTrajectory << std::endl;
+        if(Params.rk==true) log << "Integrator:            Runge-Kutta" << std::endl;
+        else log << "Integrator:            Euler" << std::endl;
+        if(Params.fagf==true) log << "Fourier acceleration:  enabled" << std::endl;
+        else log << "Fourier acceleration:  disabled" << std::endl;
+        if(Params.measureprop==true) log << "Propagator measure:    enabled" << std::endl;
+        else log << "Propagator measure:    disabled" << std::endl;
+        log << "StartingType:          " << Params.StartingType << std::endl;
+        if(Params.StartingType=="ColdStart") log << "rng seeds:             " << GridCmdVectorIntToString(Params.rngseed) << std::endl;
+        if(Params.StartingType=="LowerOrderStart") log << "lower order:               " << load_Nplow << std::endl;
+        if(Params.StartingType=="CheckpointStart") log << "starting from:             " << Params.StartTrajectory << std::endl;
+        if(Params.gfprecision!=0)
+            log << "Saving configurations in Landau gauge with precision " << Params.gfprecision << std::endl;
         
         log << std::endl;
         
@@ -351,9 +360,6 @@ public:
         log << "sweeps     = " << Params.sweeps << std::endl;
         log << "save_every = " << Params.save_every << std::endl;
         log << std::endl;
-        
-        if(Params.gfprecision!=0)
-            log << "Saving configurations in Landau gauge with precision " << Params.gfprecision << std::endl;
         
         log << std::endl;
         
@@ -443,10 +449,13 @@ public:
         
         for (int i=0; i<Params.sweeps; i++) {
             
-            if(i%pp==0) log << GridLogMessage << "Starting sweep number "<< i+1 << " (" << now() << ")" << std::endl;
+            if(i%pp==0) log << GridLogMessage << "Starting sweep number "<< i << " (" << now() << ")" << std::endl;
             
             if(Params.rk==false) L.EulerStep(U);
             else L.RKStep(U);
+            
+            if(Params.fagf==true) L.StochasticGF_FA(U);
+            else L.StochasticGF(U);
             
             plaq = WilsonLoops<gimpl>::avgPlaquette(U);
             for (int k=0; k<Np; k++) plaqfile << plaq(k) << std::endl;
@@ -454,7 +463,8 @@ public:
             if(Params.save_every!=0 && i%Params.save_every==(Params.save_every-1)){
                 if(Params.gfprecision!=0){
                     log << GridLogMessage << "Landau gauge fixing ..." <<std::endl;
-                    L.LandauGF(U, Params.gfprecision);
+                    if(Params.fagf==true) L.LandauGF_FA(U, Params.gfprecision);
+                    else L.LandauGF(U, Params.gfprecision);
                     log << GridLogMessage << "... completed" <<std::endl;
                 }
                 

@@ -55,6 +55,7 @@ protected:
     double RKtau;
     Complex ci;
     ColourMatrix ta;
+    TwistedGaugeFFT<Gimpl> GaugeFFT;
     
     typedef typename Gimpl::GaugeField FieldType;
     FieldType F, F0, Ftmp, U0;
@@ -82,6 +83,7 @@ public:
     agt(grid_),
     div(grid_),
     grid(grid_),
+    GaugeFFT(grid_,alpha_),
     ci(0.,1.)
     {
         SetParams(tau_,alpha_);
@@ -144,7 +146,6 @@ public:
         F = mtau * F;
         AddToOrdVoid(1,F,noise);
         U = Exponentiate(F) * U;
-        StochasticGF(U);
     }
     
     void RKStep(FieldType &U) {
@@ -172,7 +173,6 @@ public:
         F -= halftau * F0;
         ShiftedSumVoid(2,F,F0,RKtau); // multiplication by 1/beta
         U = Exponentiate(F) * U;
-        StochasticGF(U);
     }
     
     void LandauGF(FieldType &U, const double gftolerance) {
@@ -188,6 +188,56 @@ public:
             residualdiv = Pnorm2(gt);
             // Ta(gt) is not needed, gt is already in the algebra
             gt *= alpha;
+            gt = Exponentiate(gt);
+            agt = adj(gt);
+            for(int mu=0;mu<Nd;mu++){
+                // use div as a tmp field
+                div = PeekIndex<LorentzIndex>(U,mu);
+                div = gt * div * Gimpl::MoveForward(agt,mu);
+                PokeIndex<LorentzIndex>(U,div,mu);
+            }
+        } while (residualdiv(Np-1).real() > gftolerance);
+    }
+    
+    void StochasticGF_FA(FieldType &U) {
+        gt = zero;
+        for (int mu=0; mu<Nd; mu++) {
+            div = peekLorentz(U,mu);
+            gt += div - Gimpl::MoveBackward(div,mu);
+        }
+        
+        GaugeFFT.FFTforward(gt,gt);
+        GaugeFFT.mult_invphatsq(gt);
+        GaugeFFT.FFTbackward(gt,gt);
+        
+        gt = Ta(gt);
+        gt = Exponentiate(gt);
+        agt = adj(gt);
+        for(int mu=0;mu<Nd;mu++){
+            // use div as a tmp field
+            div = PeekIndex<LorentzIndex>(U,mu);
+            div = gt * div * Gimpl::MoveForward(agt,mu);
+            PokeIndex<LorentzIndex>(U,div,mu);
+        }
+    }
+    
+    void LandauGF_FA(FieldType &U, const double gftolerance) {
+        PComplexD residualdiv;
+        do{
+            gt = zero;
+            // use F as a tmp field
+            F = Logarithm(U);
+            for (int mu=0; mu<Nd; mu++) {
+                div = peekLorentz(F,mu);
+                gt += div - Gimpl::MoveBackward(div,mu);
+            }
+            residualdiv = Pnorm2(gt);
+            
+            GaugeFFT.FFTforward(gt,gt);
+            GaugeFFT.mult_invphatsq(gt);
+            GaugeFFT.FFTbackward(gt,gt);
+            
+            gt = Ta(gt);
             gt = Exponentiate(gt);
             agt = adj(gt);
             for(int mu=0;mu<Nd;mu++){

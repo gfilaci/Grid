@@ -421,6 +421,7 @@ public:
     void FinaliseRun(){
         log << GridLogMessage << "RUN COMPLETED" << std::endl;
         log << now() << std::endl;
+        log.flush();
         log.close();
         plaqfile.close();
         if(Params.measureprop) propfile.close();
@@ -447,10 +448,12 @@ public:
         
         log << std::endl << now() << std::endl;
         log << GridLogMessage << "RUN STARTED" << std::endl;
+        log.flush();
         
         for (int i=0; i<Params.sweeps; i++) {
             
             if(i%pp==0) log << GridLogMessage << "Starting sweep number "<< i << " (" << now() << ")" << std::endl;
+            log.flush();
             
             if(Params.rk==false) L.EulerStep(U);
             else L.RKStep(U);
@@ -464,15 +467,18 @@ public:
             if(Params.save_every!=0 && i%Params.save_every==(Params.save_every-1)){
                 if(Params.gfprecision!=0){
                     log << GridLogMessage << "Landau gauge fixing ..." <<std::endl;
+                    log.flush();
                     if(Params.fagf==true) L.LandauGF_FA(U, Params.gfprecision);
                     else L.LandauGF(U, Params.gfprecision);
                     log << GridLogMessage << "... completed" <<std::endl;
+                    log.flush();
                 }
                 
                 if(Params.measureprop) TVP->measure(propfile, U);
                 
                 CP.TrajectoryComplete(Params.StartTrajectory+i+1,U,sRNG,*pRNG);
                 log << GridLogMessage << "Configuration " << Params.StartTrajectory+i+1 << " saved" <<std::endl;
+                log.flush();
             }
             
         }

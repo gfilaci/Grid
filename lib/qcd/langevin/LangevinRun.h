@@ -234,7 +234,7 @@ private:
     
     GridSerialRNG sRNG;
     
-    TwistValencePropagator<PWilsonSmellImplR> TVP;
+    TwistValencePropagator<PWilsonSmellImplR> *TVP = NULL;
     
 protected:
     
@@ -256,10 +256,9 @@ public:
     U(grid_),
     Params(Params_),
     L(grid_,pRNG_,Params_.tau,Params_.alpha),
-    CP(Params_.CPparams),
-    TVP(grid_,Params_.FA,Params_.prop_phases1,Params_.prop_phases2)
+    CP(Params_.CPparams)
     {
-    
+        
         if(Params.StartingType=="LowerOrderStart"){
             CheckpointerParameters CPparams_low;
             CPparams_low.config_prefix = Params.initialiseName(load_Nplow) + "_lat";
@@ -281,6 +280,8 @@ public:
             openPlaq();
             if(Params.measureprop) openProp();
         }
+        
+        if(Params.Nf!=0 && Params.measureprop) TVP = new TwistValencePropagator<PWilsonSmellImplR>(grid,Params.FA,Params.prop_phases1,Params.prop_phases2);
     };
     
     template<class Action>
@@ -468,7 +469,7 @@ public:
                     log << GridLogMessage << "... completed" <<std::endl;
                 }
                 
-                if(Params.measureprop) TVP.measure(propfile, U);
+                if(Params.measureprop) TVP->measure(propfile, U);
                 
                 CP.TrajectoryComplete(Params.StartTrajectory+i+1,U,sRNG,*pRNG);
                 log << GridLogMessage << "Configuration " << Params.StartTrajectory+i+1 << " saved" <<std::endl;

@@ -458,8 +458,7 @@ public:
             if(Params.rk==false) L.EulerStep(U);
             else L.RKStep(U);
             
-            if(Params.fagf==true) L.StochasticGF_FA(U);
-            else L.StochasticGF(U);
+            L.StochasticGF(U);
             
             plaq = WilsonLoops<gimpl>::avgPlaquette(U);
             for (int k=0; k<Np; k++) plaqfile << plaq(k) << std::endl;

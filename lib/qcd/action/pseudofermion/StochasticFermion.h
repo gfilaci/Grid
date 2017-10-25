@@ -225,18 +225,19 @@ class TwistValencePropagator{
     
 private:
     StochasticFermionAction<Impl> *FA;
-    TwistedFFT<Impl> TheFFT1,TheFFT2;
+    TwistedFFT<Impl> TheFFT1,TheFFT2,TheFFT3;
     QCDpt::SpinColourMatrix delta;
     GridCartesian* grid;
     PropType prop;
     
 public:
     
-    TwistValencePropagator(GridCartesian* grid_, StochasticFermionAction<Impl> *FA_,std::vector<Complex> phases1, std::vector<Complex> phases2):
+    TwistValencePropagator(GridCartesian* grid_, StochasticFermionAction<Impl> *FA_,std::vector<Complex> phases1, std::vector<Complex> phases2, std::vector<Complex> phases3):
     grid(grid_),
     FA(FA_),
     TheFFT1(grid_,phases1),
-    TheFFT2(grid_,phases2)
+    TheFFT2(grid_,phases2),
+    TheFFT3(grid_,phases3)
     {
         // odd powers will be discarded,
         // the series must be in "1/beta"
@@ -246,7 +247,7 @@ public:
     
     // N.B.: the propagator file must be read with
     // loop #propagators
-    // loop two momenta
+    // loop three momenta
     // loop beta
     // loop orders (in "1/beta")
     // loop alpha
@@ -303,6 +304,7 @@ public:
         
         measurePropagator(&TheFFT1,propfile,U);
         measurePropagator(&TheFFT2,propfile,U);
+        measurePropagator(&TheFFT3,propfile,U);
         
         // restore original phases in Dirac operators
         for (int k=0; k<Np; k++) {

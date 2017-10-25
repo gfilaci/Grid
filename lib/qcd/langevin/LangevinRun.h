@@ -51,6 +51,7 @@ public:
     std::vector<Complex> boundary_phases;
     std::vector<Complex> prop_phases1;
     std::vector<Complex> prop_phases2;
+    std::vector<Complex> prop_phases3;
     
     bool rk;
     bool measureprop;
@@ -76,14 +77,17 @@ public:
             boundary_phases = boundary_phases_;
             prop_phases1 = boundary_phases_;
             prop_phases2 = boundary_phases_;
+            prop_phases3 = boundary_phases_;
             
             Complex im(0.,1.);
             Real phase_exp;
-            // reference momenta for L=32, L=24
+            // reference momenta for L=32, L=24, L=20
             phase_exp = M_PI*((double)GridDefaultLatt()[0])/32.;
             prop_phases1[0] = exp(im*phase_exp);
             phase_exp = M_PI*((double)GridDefaultLatt()[0])/24.;
             prop_phases2[0] = exp(im*phase_exp);
+            phase_exp = M_PI*((double)GridDefaultLatt()[0])/20.;
+            prop_phases3[0] = exp(im*phase_exp);
         }
         
         if( GridCmdOptionExists(argv,argv+argc,"--tau") ){
@@ -281,7 +285,7 @@ public:
             if(Params.measureprop) openProp();
         }
         
-        if(Params.Nf!=0 && Params.measureprop) TVP = new TwistValencePropagator<PWilsonSmellImplR>(grid,Params.FA,Params.prop_phases1,Params.prop_phases2);
+        if(Params.Nf!=0 && Params.measureprop) TVP = new TwistValencePropagator<PWilsonSmellImplR>(grid,Params.FA,Params.prop_phases1,Params.prop_phases2,Params.prop_phases3);
     };
     
     template<class Action>

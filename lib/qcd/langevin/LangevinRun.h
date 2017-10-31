@@ -29,12 +29,14 @@ directory
 #ifndef QCD_LANGEVIN_RUN_H
 #define QCD_LANGEVIN_RUN_H
 
-#define load_Nplow 3
-
-
 namespace Grid {
 namespace QCD {
 namespace QCDpt {
+
+// by default, a configuration with one order less
+// (in beta) than the current one is usually loaded.
+// change if needed
+const int load_Nplow = Np - 2;
 
 class LangevinParams {
 public:

@@ -177,6 +177,7 @@ public:
     
     void LandauGF(FieldType &U, const double gftolerance) {
         PComplexD residualdiv;
+	U = ProjectOnGroup(U);
         do{
             zeroit(gt);
             // use F as a tmp field
@@ -223,6 +224,7 @@ public:
     
     void LandauGF_FA(FieldType &U, const double gftolerance) {
         PComplexD residualdiv;
+	U = ProjectOnGroup(U);
         do{
             gt = zero;
             // use F as a tmp field

@@ -36,7 +36,7 @@ namespace Grid{
 namespace QCD {
 namespace QCDpt {
     
-    static const int Np=5;
+    static const int Np=9;
     
     #define PertIndex      2
     #define ColourIndexPT  3

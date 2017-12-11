@@ -1,4 +1,4 @@
-SUBDIRS = . core forces hmc solver debug smearing IO nspt
+SUBDIRS = . core forces hmc solver debug smearing IO lanczos nspt
 
 if BUILD_CHROMA_REGRESSION
   SUBDIRS+= qdpxx

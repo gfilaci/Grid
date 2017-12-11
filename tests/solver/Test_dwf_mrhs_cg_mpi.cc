@@ -1,4 +1,4 @@
-    /*************************************************************************************
+   /*************************************************************************************
 
     Grid physics library, www.github.com/paboyle/Grid 
 
@@ -47,7 +47,9 @@ int main (int argc, char ** argv)
   std::vector<int> mpi_layout  = GridDefaultMpi();
   std::vector<int> mpi_split (mpi_layout.size(),1);
 
-  GridCartesian         * UGrid   = SpaceTimeGrid::makeFourDimGrid(GridDefaultLatt(), GridDefaultSimd(Nd,vComplex::Nsimd()),GridDefaultMpi());
+  GridCartesian         * UGrid   = SpaceTimeGrid::makeFourDimGrid(GridDefaultLatt(), 
+								   GridDefaultSimd(Nd,vComplex::Nsimd()),
+								   GridDefaultMpi());
   GridCartesian         * FGrid   = SpaceTimeGrid::makeFiveDimGrid(Ls,UGrid);
   GridRedBlackCartesian * rbGrid  = SpaceTimeGrid::makeFourDimRedBlackGrid(UGrid);
   GridRedBlackCartesian * FrbGrid = SpaceTimeGrid::makeFiveDimRedBlackGrid(Ls,UGrid);
@@ -55,6 +57,7 @@ int main (int argc, char ** argv)
   /////////////////////////////////////////////
   // Split into 1^4 mpi communicators
   /////////////////////////////////////////////
+
   for(int i=0;i<argc;i++){
     if(std::string(argv[i]) == "--split"){
       for(int k=0;k<mpi_layout.size();k++){
@@ -78,119 +81,108 @@ int main (int argc, char ** argv)
   GridCartesian         * SFGrid   = SpaceTimeGrid::makeFiveDimGrid(Ls,SGrid);
   GridRedBlackCartesian * SrbGrid  = SpaceTimeGrid::makeFourDimRedBlackGrid(SGrid);
   GridRedBlackCartesian * SFrbGrid = SpaceTimeGrid::makeFiveDimRedBlackGrid(Ls,SGrid);
-
+  std::cout << GridLogMessage << "Made the grids"<<std::endl;
   ///////////////////////////////////////////////
   // Set up the problem as a 4d spreadout job
   ///////////////////////////////////////////////
   std::vector<int> seeds({1,2,3,4});
-  GridParallelRNG pRNG(UGrid );  pRNG.SeedFixedIntegers(seeds);
-  GridParallelRNG pRNG5(FGrid);  pRNG5.SeedFixedIntegers(seeds);
+
   std::vector<FermionField>    src(nrhs,FGrid);
   std::vector<FermionField> src_chk(nrhs,FGrid);
   std::vector<FermionField> result(nrhs,FGrid);
   FermionField tmp(FGrid);
+  std::cout << GridLogMessage << "Made the Fermion Fields"<<std::endl;
 
-  for(int s=0;s<nrhs;s++) random(pRNG5,src[s]);
   for(int s=0;s<nrhs;s++) result[s]=zero;
+#undef LEXICO_TEST
+#ifdef LEXICO_TEST
+  {
+    LatticeFermion lex(FGrid);  lex = zero;
+    LatticeFermion ftmp(FGrid);
+    Integer stride =10000;
+    double nrm;
+    LatticeComplex coor(FGrid);
+    for(int d=0;d<5;d++){
+      LatticeCoordinate(coor,d);
+      ftmp = stride;
+      ftmp = ftmp * coor;
+      lex = lex + ftmp;
+      stride=stride/10;
+    }
+    for(int s=0;s<nrhs;s++) {
+      src[s]=lex;
+      ftmp = 1000*1000*s;
+      src[s] = src[s] + ftmp;
+    }    
+  }
+#else
+  GridParallelRNG pRNG5(FGrid);  pRNG5.SeedFixedIntegers(seeds);
+  for(int s=0;s<nrhs;s++) {
+    random(pRNG5,src[s]);
+    tmp = 100.0*s;
+    src[s] = (src[s] * 0.1) + tmp;
+    std::cout << GridLogMessage << " src ["<<s<<"] "<<norm2(src[s])<<std::endl;
+  }
+#endif
+  std::cout << GridLogMessage << "Intialised the Fermion Fields"<<std::endl;
 
-  LatticeGaugeField Umu(UGrid); SU3::HotConfiguration(pRNG,Umu);
-
-  ///////////////////////////////////////////////////////////////
-  // Bounce these fields to disk
-  ///////////////////////////////////////////////////////////////
-
-  std::cout << GridLogMessage << "****************************************************************** "<<std::endl;
-  std::cout << GridLogMessage << " Writing out in parallel view "<<std::endl;
-  std::cout << GridLogMessage << "****************************************************************** "<<std::endl;
-  emptyUserRecord record;
-  std::string file("./scratch.scidac");
-  std::string filef("./scratch.scidac.ferm");
-
+  LatticeGaugeField Umu(UGrid); 
+  if(1) { 
+    GridParallelRNG pRNG(UGrid );  
+    std::cout << GridLogMessage << "Intialising 4D RNG "<<std::endl;
+    pRNG.SeedFixedIntegers(seeds);
+    std::cout << GridLogMessage << "Intialised 4D RNG "<<std::endl;
+    SU3::HotConfiguration(pRNG,Umu);
+    std::cout << "Intialised the HOT Gauge Field"<<std::endl;
+    //    std::cout << " Site zero "<< Umu._odata[0]   <<std::endl;
+  } else { 
+    SU3::ColdConfiguration(Umu);
+    std::cout << GridLogMessage << "Intialised the COLD Gauge Field"<<std::endl;
+  }
+  /////////////////
+  // MPI only sends
+  /////////////////
   LatticeGaugeField s_Umu(SGrid);
   FermionField s_src(SFGrid);
-  FermionField s_src_split(SFGrid);
   FermionField s_tmp(SFGrid);
   FermionField s_res(SFGrid);
 
-  {
-    FGrid->Barrier();
-    ScidacWriter _ScidacWriter;
-    _ScidacWriter.open(file);
-    std::cout << GridLogMessage << "****************************************************************** "<<std::endl;
-    std::cout << GridLogMessage << " Writing out gauge field "<<std::endl;
-    std::cout << GridLogMessage << "****************************************************************** "<<std::endl;
-    _ScidacWriter.writeScidacFieldRecord(Umu,record);
-    _ScidacWriter.close();
-    FGrid->Barrier();
-    std::cout << GridLogMessage << "****************************************************************** "<<std::endl;
-    std::cout << GridLogMessage << " Reading in gauge field "<<std::endl;
-    std::cout << GridLogMessage << "****************************************************************** "<<std::endl;
-    ScidacReader  _ScidacReader;
-    _ScidacReader.open(file);
-    _ScidacReader.readScidacFieldRecord(s_Umu,record);
-    _ScidacReader.close();
-    FGrid->Barrier();
-    std::cout << GridLogMessage << "****************************************************************** "<<std::endl;
-    std::cout << GridLogMessage << " Read in gauge field "<<std::endl;
-    std::cout << GridLogMessage << "****************************************************************** "<<std::endl;
-  }
-
-
-  {
-    for(int n=0;n<nrhs;n++){
-
-      std::cout << GridLogMessage << "****************************************************************** "<<std::endl;
-      std::cout << GridLogMessage << " Writing out record "<<n<<std::endl;
-      std::cout << GridLogMessage << "****************************************************************** "<<std::endl;
-
-      std::stringstream filefn;      filefn << filef << "."<< n;
-      ScidacWriter _ScidacWriter;
-      _ScidacWriter.open(filefn.str());
-      _ScidacWriter.writeScidacFieldRecord(src[n],record);
-      _ScidacWriter.close();
-    }
-      
-    FGrid->Barrier();
-
-    std::cout << GridLogMessage << "****************************************************************** "<<std::endl;
-    std::cout << GridLogMessage << " Reading back in the single process view "<<std::endl;
-    std::cout << GridLogMessage << "****************************************************************** "<<std::endl;
-      
-    for(int n=0;n<nrhs;n++){
-      if ( n==me ) { 
-	std::stringstream filefn;	filefn << filef << "."<< n;
-	ScidacReader  _ScidacReader;
-	_ScidacReader.open(filefn.str());
-	_ScidacReader.readScidacFieldRecord(s_src,record);
-	_ScidacReader.close();
-      }
-    }
-    FGrid->Barrier();
-  }
-
+  std::cout << GridLogMessage << "Made the split grid fields"<<std::endl;
   ///////////////////////////////////////////////////////////////
   // split the source out using MPI instead of I/O
   ///////////////////////////////////////////////////////////////
-  std::cout << GridLogMessage << " Splitting the grid data "<<std::endl;
-  Grid_split  (src,s_src_split);
-  std::cout << GridLogMessage << " Finished splitting the grid data "<<std::endl;
-  for(int n=0;n<nrhs;n++){
-    std::cout <<GridLogMessage<<"Full "<< n <<" "<< norm2(src[n])<<std::endl;
-  }
-  s_tmp = s_src_split - s_src;
-  for(int n=0;n<nrhs;n++){
-    FGrid->Barrier();
-    if ( n==me ) {
-      std::cout << GridLogMessage<<"Split "<< me << " " << norm2(s_src_split) << " " << norm2(s_src)<< " diff " << norm2(s_tmp)<<std::endl;
-    }
-    FGrid->Barrier();
-  }
+  Grid_split  (Umu,s_Umu);
+  Grid_split  (src,s_src);
+  std::cout << GridLogMessage << " split rank  " <<me << " s_src "<<norm2(s_src)<<std::endl;
 
+#ifdef LEXICO_TEST
+  FermionField s_src_tmp(SFGrid);
+  FermionField s_src_diff(SFGrid);
+  {
+    LatticeFermion lex(SFGrid);  lex = zero;
+    LatticeFermion ftmp(SFGrid);
+    Integer stride =10000;
+    double nrm;
+    LatticeComplex coor(SFGrid);
+    for(int d=0;d<5;d++){
+      LatticeCoordinate(coor,d);
+      ftmp = stride;
+      ftmp = ftmp * coor;
+      lex = lex + ftmp;
+      stride=stride/10;
+    }
+    s_src_tmp=lex;
+    ftmp = 1000*1000*me;
+    s_src_tmp = s_src_tmp + ftmp;
+  }
+  s_src_diff = s_src_tmp - s_src;
+  std::cout << GridLogMessage <<" LEXICO test:  s_src_diff " << norm2(s_src_diff)<<std::endl;
+#endif
 
   ///////////////////////////////////////////////////////////////
   // Set up N-solvers as trivially parallel
   ///////////////////////////////////////////////////////////////
-
+  std::cout << GridLogMessage << " Building the solvers"<<std::endl;
   RealD mass=0.01;
   RealD M5=1.8;
   DomainWallFermionR Dchk(Umu,*FGrid,*FrbGrid,*UGrid,*rbGrid,mass,M5);
@@ -202,10 +194,11 @@ int main (int argc, char ** argv)
 
   MdagMLinearOperator<DomainWallFermionR,FermionField> HermOp(Ddwf);
   MdagMLinearOperator<DomainWallFermionR,FermionField> HermOpCk(Dchk);
-  ConjugateGradient<FermionField> CG((1.0e-5/(me+1)),10000);
+  ConjugateGradient<FermionField> CG((1.0e-2),10000);
   s_res = zero;
   CG(HermOp,s_src,s_res);
 
+  std::cout << GridLogMessage << " split residual norm "<<norm2(s_res)<<std::endl;
   /////////////////////////////////////////////////////////////
   // Report how long they all took
   /////////////////////////////////////////////////////////////
@@ -222,18 +215,13 @@ int main (int argc, char ** argv)
   /////////////////////////////////////////////////////////////
   std::cout << GridLogMessage<< "Unsplitting the result"<<std::endl;
   Grid_unsplit(result,s_res);
-  /*
-  Grid_unsplit(src_chk,s_src);
-  for(int n=0;n<nrhs;n++){
-    tmp = src[n]-src_chk[n];
-    std::cout << " src_chk "<<n<<" "<<norm2(src_chk[n])<<" " <<norm2(src[n])<<" " <<norm2(tmp)<< std::endl;
-    std::cout << " diff " <<tmp<<std::endl;
-  }
-  */
+
+
   std::cout << GridLogMessage<< "Checking the residuals"<<std::endl;
   for(int n=0;n<nrhs;n++){
+    std::cout << GridLogMessage<< " res["<<n<<"] norm "<<norm2(result[n])<<std::endl;
     HermOpCk.HermOp(result[n],tmp); tmp = tmp - src[n];
-    std::cout << GridLogMessage<<" resid["<<n<<"]  "<< norm2(tmp)<<std::endl;
+    std::cout << GridLogMessage<<" resid["<<n<<"]  "<< norm2(tmp)/norm2(src[n])<<std::endl;
   }
 
   Grid_finalize();

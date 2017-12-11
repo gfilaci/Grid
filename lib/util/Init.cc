@@ -208,7 +208,7 @@ static int Grid_is_initialised = 0;
 
 void Grid_init(int *argc,char ***argv)
 {
-  GridLogger::StopWatch.Start();
+  GridLogger::GlobalStopWatch.Start();
 
   std::string arg;
 
@@ -242,6 +242,12 @@ void Grid_init(int *argc,char ***argv)
     fname<<"Grid.stdout.";
     fname<<CartesianCommunicator::RankWorld();
     fp=freopen(fname.str().c_str(),"w",stdout);
+    assert(fp!=(FILE *)NULL);
+
+    std::ostringstream ename;
+    ename<<"Grid.stderr.";
+    ename<<CartesianCommunicator::RankWorld();
+    fp=freopen(ename.str().c_str(),"w",stderr);
     assert(fp!=(FILE *)NULL);
   }
 

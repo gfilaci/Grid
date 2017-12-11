@@ -61,6 +61,9 @@ int main(int argc, char *argv[]) {
     mass(2) = -2.610831799951278;
     mass(4) = -4.32;
     mass(6) = -12.3;
+    mass(8) = -39.;
+    mass(10) = -171.;
+    mass(12) = -507.;
     int Nf = 2;
     WilsonImplParams Params;
     Params.boundary_phases = {-1.,1.,1.,1};

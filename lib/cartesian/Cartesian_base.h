@@ -49,7 +49,6 @@ public:
     template<class object> friend class Lattice;
 
     GridBase(const std::vector<int> & processor_grid) : CartesianCommunicator(processor_grid) {};
-    virtual ~GridBase() = default;
     GridBase(const std::vector<int> & processor_grid,
 	     const CartesianCommunicator &parent,
 	     int &split_rank) 

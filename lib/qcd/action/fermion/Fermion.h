@@ -53,6 +53,7 @@ Author: Peter Boyle <pabobyle@ph.ed.ac.uk>
 #include <Grid/qcd/action/fermion/WilsonTMFermion.h>       // 4d wilson like
 #include <Grid/qcd/action/fermion/WilsonFermion5D.h>     // 5d base used by all 5d overlap types
 //#include <Grid/qcd/action/fermion/CloverFermion.h>
+#include <Grid/qcd/action/fermion/StaggeredFermion.h>
 #include <Grid/qcd/action/fermion/ImprovedStaggeredFermion.h>
 #include <Grid/qcd/action/fermion/ImprovedStaggeredFermion5D.h>
 #include <Grid/qcd/action/fermion/CayleyFermion5D.h>     // Cayley types

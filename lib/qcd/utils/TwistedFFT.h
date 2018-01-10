@@ -178,12 +178,13 @@ strong_inline void TwistDivide(Lattice<obj1> &ret,const Lattice<obj2> &lhs,const
     }
 }
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////
-  //  TWISTED FAST FOURIER TRANSFORM
-  //////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace QCD {
 namespace QCDpt {
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  //  TWISTED FAST FOURIER TRANSFORM FOR WILSON FERMIONS
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  
 template <class Gimpl>
 class TwistedFFT {
 
@@ -417,6 +418,238 @@ void TwistedWilsonPropagator(Lattice<vobj> &result,const Lattice<vobj> &source){
     TwistMult(tmp,halfphatsq,source);
     
     result = tmpresult + tmp;
+}
+
+};
+
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  //  TWISTED FAST FOURIER TRANSFORM FOR STAGGERED FERMIONS
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <class Gimpl>
+class TwistedStaggeredFFT {
+
+    typedef typename std::remove_reference<decltype(Gimpl::twist.omega[0])>::type TwistBase;
+    typedef typename Gimpl::ScalarField LatticeScalar;
+    typedef typename Gimpl::MatrixField LatticeMatrix;
+    
+private:
+    
+    GridCartesian* grid;
+    FFT theFFT;
+    RealD mass;
+    LatticeMatrix pPerpPhase;            // exp(i (p_perp + theta/L ) * x)
+    std::vector<LatticeMatrix> lambda;   // ( m*delta_(mu,0) - i*sin(p_mu) ) / den
+    // den = m^2 + sum_mu sin^2(p_mu)
+    
+public:
+    
+    iMatrix<TwistBase, Nc> Gamma, adjGamma;
+    std::vector<Real> boundary_exp;
+    std::vector<Complex> boundary_phases;
+    int t1,t2;
+    
+    TwistedStaggeredFFT(GridCartesian* grid_, RealD mass_, std::vector<Complex> boundary_phases_):
+    grid(grid_),
+    theFFT(grid_),
+    mass(mass_),
+    pPerpPhase(grid_),
+    boundary_phases(boundary_phases_)
+    {
+        // Lattice dimensions must be even numbers.
+        for (int mu=0; mu<Nd; mu++) {
+            int LL = grid->GlobalDimensions()[mu]+1;
+            assert(LL%2);
+        }
+        
+        // This TwistedFFT is tailored for twist on a plane
+        // with generic orientation.
+        int ntwisteddir = 0;
+        for (int mu=0; mu<Nd; mu++) {
+            if(istwisted(mu)) {
+                ntwisteddir++;
+                if (ntwisteddir==1) t1 = mu;
+                if (ntwisteddir==2) t2 = mu;
+            }
+        }
+        assert(ntwisteddir==2);
+        
+        // The FFTW library has FFTW_FORWARD = -1 by default.
+        // Here the same convention is assumed.
+        if(FFTW_FORWARD==+1) assert(0);
+        
+        // INITIALISE Fourier twist base
+        pPerpLoop(n1,n2) {
+            Gamma(n1,n2) = BuildGamma(n1,n2);
+            adjGamma(n1,n2) = adj(Gamma(n1,n2));
+            Gamma(n1,n2) = (1./(double)Nc)*Gamma(n1,n2);
+        }
+        
+        for (int mu=0; mu<Nd; mu++) {
+            lambda.push_back(LatticeMatrix(grid_));
+            boundary_exp.push_back(0.);
+        }
+        
+        FFTinitialisation(mass_, boundary_phases_);
+    }
+    
+    
+    void FFTinitialisation(RealD mass_, std::vector<Complex> boundary_phases_){
+        
+        Complex mci(0.,-1.);
+        
+        // INITIALISE boundary exponents
+        for (int d=0; d<Nd; d++) {
+            boundary_exp[d] = log(boundary_phases_[d]).imag();
+        }
+        
+        // INITIALISE momenta for staggered propagator
+        LatticeScalar xmu(grid), tmp(grid);
+        // --- m-i*sin(pmu) ---
+        lambda.reserve(Nd);
+        for (int mu=0; mu<Nd; mu++) {
+            LatticeCoordinate(xmu,mu);
+            xmu *= 2. * M_PI / (double)(grid->_fdimensions[mu]);
+            xmu += boundary_exp[mu] / (double)(grid->_fdimensions[mu]);
+            pPerpLoop(n1,n2) {
+                tmp = xmu;
+                if(mu==t1) tmp +=  (double)n1 * 2. * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                if(mu==t2) tmp +=  (double)n2 * 2. * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                if(mu==0) tmp = mass_ + mci*sin(tmp);
+                else tmp = mci*sin(tmp);
+                pokeColour(lambda[mu],tmp,n1,n2);
+            }
+        }
+        // compute denominator, use pPerpPhase for its temporary storage
+        pPerpLoop(n1,n2) {
+            tmp = zero;
+            for (int mu=0; mu<Nd; mu++) {
+                LatticeCoordinate(xmu,mu);
+                xmu *= 2. * M_PI / (double)(grid->_fdimensions[mu]);
+                xmu += boundary_exp[mu] / (double)(grid->_fdimensions[mu]);
+                if(mu==t1) xmu +=  (double)n1 * 2. * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                if(mu==t2) xmu +=  (double)n2 * 2. * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                tmp = tmp + sin(xmu)*sin(xmu);
+            }
+            tmp = tmp + mass_*mass_;
+            pokeColour(pPerpPhase,tmp,n1,n2);
+        }
+        
+        for (int mu=0; mu<Nd; mu++){
+            TwistDivide(lambda[mu],lambda[mu],pPerpPhase);
+        }
+        
+        
+        // INITIALISE phases for pPerp projection
+        pPerpLoop(n1,n2) {
+            tmp = zero;
+            for (int mu=0; mu<Nd; mu++) {
+                Real pPerp = boundary_exp[mu] / (double)(grid->_fdimensions[mu]);
+                if(mu==t1) pPerp +=  (double)n1 * 2. * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                if(mu==t2) pPerp +=  (double)n2 * 2. * M_PI / (double)(grid->_fdimensions[mu]) / (double)Nc;
+                LatticeCoordinate(xmu,mu);
+                tmp = tmp + pPerp*xmu;
+            }
+            Complex ci(0.,1.);
+            tmp = exp(ci*tmp);
+            pokeColour(pPerpPhase,tmp,n1,n2);
+        }
+    }
+
+
+TwistBase BuildGamma(int n1, int n2){
+    TwistBase tmp(1.0);
+    for (int i=0; i<n1; i++) tmp *= Gimpl::twist.omega[t2];
+    tmp = adj(tmp);
+    for (int i=0; i<n2; i++) tmp = Gimpl::twist.omega[t1]*tmp;
+    return tmp;
+}
+
+void OrthonormalityTest(){
+    bool testpassed = true;
+    double precision = 1e-13;
+    pPerpLoop(n1,n2){
+        pPerpLoop(m1,m2){
+            double tmp = abs(TensorRemove(trace(adjGamma(m1,m2)*Gamma(n1,n2))));
+            if(m1==n1 && m2==n2) tmp -= 1.;
+            if(std::abs(tmp)>precision) testpassed = false;
+        }
+    }
+    
+    if(testpassed) std::cout << GridLogMessage << "Orthonormality test SUCCEEDED" << std::endl;
+    else std::cout << GridLogMessage << "Orthonormality test FAILED" << std::endl;
+}
+
+template<class vobj>
+void pPerpProjectionForward(Lattice<vobj> &result, const Lattice<vobj> &source){
+    
+    Lattice<vobj> tmpresult(grid);
+    decltype(peekColour(source,0,0)) tmp(grid);
+    
+    pPerpLoop(n1,n2){
+        tmp = trace(adjGamma(n1,n2)*source);
+        pokeColour(tmpresult,tmp,n1,n2);
+    }
+    
+    TwistMult(result,conjugate(pPerpPhase),tmpresult);
+}
+
+template<class vobj>
+void pPerpProjectionBackward(Lattice<vobj> &result,const Lattice<vobj> &source){
+    
+    Lattice<vobj> tmp(grid), tmpresult(grid);
+    TwistMult(tmp,pPerpPhase,source);
+    
+    tmpresult = zero;
+    pPerpLoop(n1,n2){
+        tmpresult = tmpresult + Gamma(n1,n2) * peekColour(tmp,n1,n2);
+    }
+    
+    result = tmpresult;
+}
+
+template<class vobj>
+void FFTforward(Lattice<vobj> &result,const Lattice<vobj> &source){
+    conformable(result._grid,grid);
+    conformable(source._grid,grid);
+    
+    pPerpProjectionForward(result,source);
+    theFFT.FFT_all_dim(result,result,FFT::forward);
+}
+
+template<class vobj>
+void FFTbackward(Lattice<vobj> &result,const Lattice<vobj> &source){
+    conformable(result._grid,grid);
+    conformable(source._grid,grid);
+    
+    theFFT.FFT_all_dim(result,source,FFT::backward);
+    pPerpProjectionBackward(result,result);
+}
+
+template<class vobj>
+void FreeStaggeredOperatorInverse(Lattice<vobj> &result,const Lattice<vobj> &source){
+    
+    FFTforward(result,source);
+    TwistedStaggeredPropagator(result,result);
+    FFTbackward(result,result);
+}
+
+template<class vobj>
+void TwistedStaggeredPropagator(Lattice<vobj> &result,const Lattice<vobj> &source){
+    
+    int Lmu;
+    Lattice<vobj> tmp(grid), shiftedsource(grid);
+    
+    shiftedsource = source;
+    TwistMult(result,lambda[0],shiftedsource);
+    
+    for (int mu=1; mu<Nd; mu++) {
+        Lmu = grid->GlobalDimensions()[mu-1];
+        shiftedsource = Cshift(shiftedsource, mu-1, Lmu/2);
+        TwistMult(tmp,lambda[mu],shiftedsource);
+        result += tmp;
+    }
 }
 
 };

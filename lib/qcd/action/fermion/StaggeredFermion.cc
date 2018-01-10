@@ -32,9 +32,9 @@ namespace Grid {
 namespace QCD {
 
 const std::vector<int> 
-StaggeredFermionStatic::directions({0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3});
+StaggeredFermionStatic::directions({0, 1, 2, 3, 0, 1, 2, 3});
 const std::vector<int> 
-StaggeredFermionStatic::displacements({1, 1, 1, 1, -1, -1, -1, -1, 3, 3, 3, 3, -3, -3, -3, -3});
+StaggeredFermionStatic::displacements({1, 1, 1, 1, -1, -1, -1, -1});
 
 /////////////////////////////////
 // Constructor and gauge import
@@ -42,7 +42,7 @@ StaggeredFermionStatic::displacements({1, 1, 1, 1, -1, -1, -1, -1, 3, 3, 3, 3, -
 
 
 template <class Impl>
-StaggeredFermion<Impl>::StaggeredFermion(GridCartesian &Fgrid, GridRedBlackCartesian &Hgrid,
+StaggeredFermion<Impl>::StaggeredFermion(GaugeField &_Umu, GridCartesian &Fgrid, GridRedBlackCartesian &Hgrid,
 							 RealD _mass,
 							 const ImplParams &p)
     : Kernels(p),
@@ -57,113 +57,32 @@ StaggeredFermion<Impl>::StaggeredFermion(GridCartesian &Fgrid, GridRedBlackCarte
       Umu(&Fgrid),
       UmuEven(&Hgrid),
       UmuOdd(&Hgrid),
-      UUUmu(&Fgrid),
-      UUUmuEven(&Hgrid),
-      UUUmuOdd(&Hgrid) ,
       _tmp(&Hgrid)
 {
+    ImportGauge(_Umu);
 }
 
 template <class Impl>
-StaggeredFermion<Impl>::StaggeredFermion(GaugeField &_Uthin, GaugeField &_Ufat, GridCartesian &Fgrid,
-							 GridRedBlackCartesian &Hgrid, RealD _mass,
-							 RealD _c1, RealD _c2,RealD _u0,
-							 const ImplParams &p)
-  : StaggeredFermion(Fgrid,Hgrid,_mass,p)
-{
-  c1=_c1;
-  c2=_c2;
-  u0=_u0;
-  ImportGauge(_Uthin,_Ufat);
-}
-template <class Impl>
-StaggeredFermion<Impl>::StaggeredFermion(GaugeField &_Uthin,GaugeField &_Utriple, GaugeField &_Ufat, GridCartesian &Fgrid,
-							 GridRedBlackCartesian &Hgrid, RealD _mass,
-							 const ImplParams &p)
-  : StaggeredFermion(Fgrid,Hgrid,_mass,p)
-{
-  ImportGaugeSimple(_Utriple,_Ufat);
-}
-
-
-  ////////////////////////////////////////////////////////////
-  // Momentum space propagator should be 
-  // https://arxiv.org/pdf/hep-lat/9712010.pdf
-  //
-  // mom space action.
-  //   gamma_mu i ( c1 sin pmu + c2 sin 3 pmu ) + m
-  //
-  // must track through staggered flavour/spin reduction in literature to 
-  // turn to free propagator for the one component chi field, a la page 4/5
-  // of above link to implmement fourier based solver.
-  ////////////////////////////////////////////////////////////
-template <class Impl>
-void StaggeredFermion<Impl>::ImportGauge(const GaugeField &_Uthin)
-{
-  ImportGauge(_Uthin,_Uthin);
-};
-template <class Impl>
-void StaggeredFermion<Impl>::ImportGaugeSimple(const GaugeField &_Utriple,const GaugeField &_Ufat)
-{
-  /////////////////////////////////////////////////////////////////
-  // Trivial import; phases and fattening and such like preapplied
-  /////////////////////////////////////////////////////////////////
-  GaugeLinkField U(GaugeGrid());
-
-  for (int mu = 0; mu < Nd; mu++) {
-
-    U = PeekIndex<LorentzIndex>(_Utriple, mu);
-    PokeIndex<LorentzIndex>(UUUmu, U, mu );
-
-    U = adj( Cshift(U, mu, -3));
-    PokeIndex<LorentzIndex>(UUUmu, -U, mu+4 );
-
-    U = PeekIndex<LorentzIndex>(_Ufat, mu);
-    PokeIndex<LorentzIndex>(Umu, U, mu);
-
-    U = adj( Cshift(U, mu, -1));
-    PokeIndex<LorentzIndex>(Umu, -U, mu+4);
-
-  }
-  pickCheckerboard(Even, UmuEven,  Umu);
-  pickCheckerboard(Odd,  UmuOdd ,  Umu);
-  pickCheckerboard(Even, UUUmuEven,UUUmu);
-  pickCheckerboard(Odd,  UUUmuOdd, UUUmu);
-}
-template <class Impl>
-void StaggeredFermion<Impl>::ImportGauge(const GaugeField &_Uthin,const GaugeField &_Ufat)
+void StaggeredFermion<Impl>::ImportGauge(const GaugeField &_Umu)
 {
   GaugeLinkField U(GaugeGrid());
 
-  ////////////////////////////////////////////////////////
-  // Double Store should take two fields for Naik and one hop separately.
-  ////////////////////////////////////////////////////////
-  Impl::DoubleStore(GaugeGrid(), UUUmu, Umu, _Uthin, _Ufat );
+  Impl::DoubleStore(GaugeGrid(), Umu, _Umu );
 
   ////////////////////////////////////////////////////////
-  // Apply scale factors to get the right fermion Kinetic term
-  // Could pass coeffs into the double store to save work.
   // 0.5 ( U p(x+mu) - Udag(x-mu) p(x-mu) ) 
   ////////////////////////////////////////////////////////
   for (int mu = 0; mu < Nd; mu++) {
 
     U = PeekIndex<LorentzIndex>(Umu, mu);
-    PokeIndex<LorentzIndex>(Umu, U*( 0.5*c1/u0), mu );
+    PokeIndex<LorentzIndex>(Umu, U*( 0.5), mu );
     
     U = PeekIndex<LorentzIndex>(Umu, mu+4);
-    PokeIndex<LorentzIndex>(Umu, U*(-0.5*c1/u0), mu+4);
-
-    U = PeekIndex<LorentzIndex>(UUUmu, mu);
-    PokeIndex<LorentzIndex>(UUUmu, U*( 0.5*c2/u0/u0/u0), mu );
-    
-    U = PeekIndex<LorentzIndex>(UUUmu, mu+4);
-    PokeIndex<LorentzIndex>(UUUmu, U*(-0.5*c2/u0/u0/u0), mu+4);
+    PokeIndex<LorentzIndex>(Umu, U*(-0.5), mu+4);
   }
 
   pickCheckerboard(Even, UmuEven, Umu);
   pickCheckerboard(Odd,  UmuOdd , Umu);
-  pickCheckerboard(Even, UUUmuEven, UUUmu);
-  pickCheckerboard(Odd,   UUUmuOdd, UUUmu);
 }
 
 /////////////////////////////
@@ -214,10 +133,46 @@ void StaggeredFermion<Impl>::MooeeDag(const FermionField &in, FermionField &out)
   Mooee(in, out);
 }
 
+// Mooee is disabled in the perturbative case
+template <>
+void WilsonFermion<QCDpt::PStaggeredSmellImplF>::Mooee(const FermionField &in, FermionField &out) {
+  assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::PStaggeredSmellImplD>::Mooee(const FermionField &in, FermionField &out) {
+  assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::StaggeredSmellImplF>::Mooee(const FermionField &in, FermionField &out) {
+  assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::StaggeredSmellImplD>::Mooee(const FermionField &in, FermionField &out) {
+  assert(0);
+}
+
 template <class Impl>
 void StaggeredFermion<Impl>::MooeeInv(const FermionField &in, FermionField &out) {
   out.checkerboard = in.checkerboard;
   out = (1.0 / (mass)) * in;
+}
+
+// MooeeInv is disabled in the perturbative case
+template <>
+void WilsonFermion<QCDpt::PStaggeredSmellImplF>::MooeeInv(const FermionField &in, FermionField &out) {
+  assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::PStaggeredSmellImplD>::MooeeInv(const FermionField &in, FermionField &out) {
+  assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::StaggeredSmellImplF>::MooeeInv(const FermionField &in, FermionField &out) {
+  assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::StaggeredSmellImplD>::MooeeInv(const FermionField &in, FermionField &out) {
+  assert(0);
 }
 
 template <class Impl>
@@ -232,7 +187,7 @@ void StaggeredFermion<Impl>::MooeeInvDag(const FermionField &in,
 ///////////////////////////////////
 
 template <class Impl>
-void StaggeredFermion<Impl>::DerivInternal(StencilImpl &st, DoubledGaugeField &U, DoubledGaugeField &UUU,
+void StaggeredFermion<Impl>::DerivInternal(StencilImpl &st, DoubledGaugeField &U,
 						   GaugeField & mat,
 						   const FermionField &A, const FermionField &B, int dag) {
   assert((dag == DaggerNo) || (dag == DaggerYes));
@@ -250,33 +205,12 @@ void StaggeredFermion<Impl>::DerivInternal(StencilImpl &st, DoubledGaugeField &U
     ////////////////////////
     // Call the single hop
     ////////////////////////
-    PARALLEL_FOR_LOOP
-    for (int sss = 0; sss < B._grid->oSites(); sss++) {
-      Kernels::DhopDir(st, U, UUU, st.CommBuf(), sss, sss, B, Btilde, mu,1);
+    
+    parallel_for (int sss = 0; sss < B._grid->oSites(); sss++) {
+      Kernels::DhopDir(st, U, st.CommBuf(), sss, sss, B, Btilde, mu);
     }
 
-    // Force in three link terms
-    //
-    //    Impl::InsertForce4D(mat, Btilde, Atilde, mu);
-    //
-    // dU_ac(x)/dt = i p_ab U_bc(x)
-    //
-    // => dS_f/dt = dS_f/dU_ac(x) . dU_ac(x)/dt =  i p_ab U_bc(x) dS_f/dU_ac(x) 
-    //
-    // One link: form fragments S_f = A U B 
-    //
-    //         write Btilde = U(x) B(x+mu)
-    //
-    // mat+= TraceIndex<SpinIndex>(outerProduct(Btilde,A)); 
-    // 
-    // Three link: form fragments S_f = A UUU B 
-    //
-    // mat+= outer ( A, UUUB) <-- Best take DhopDeriv with one linke or identity matrix
-    // mat+= outer ( AU, UUB) <-- and then use covariant cshift?
-    // mat+= outer ( AUU, UB) <-- Returned from call to DhopDir
-
-    assert(0);// need to figure out the force interface with a blasted three link term.
-    
+      Impl::InsertForce4D(mat, Btilde, Atilde, mu);
   }
 }
 
@@ -289,7 +223,7 @@ void StaggeredFermion<Impl>::DhopDeriv(GaugeField &mat, const FermionField &U, c
 
   mat.checkerboard = U.checkerboard;
 
-  DerivInternal(Stencil, Umu, UUUmu, mat, U, V, dag);
+  DerivInternal(Stencil, Umu, mat, U, V, dag);
 }
 
 template <class Impl>
@@ -303,7 +237,7 @@ void StaggeredFermion<Impl>::DhopDerivOE(GaugeField &mat, const FermionField &U,
   assert(U.checkerboard == Odd);
   mat.checkerboard = Odd;
 
-  DerivInternal(StencilEven, UmuOdd, UUUmuOdd, mat, U, V, dag);
+  DerivInternal(StencilEven, UmuOdd, mat, U, V, dag);
 }
 
 template <class Impl>
@@ -317,7 +251,7 @@ void StaggeredFermion<Impl>::DhopDerivEO(GaugeField &mat, const FermionField &U,
   assert(U.checkerboard == Even);
   mat.checkerboard = Even;
 
-  DerivInternal(StencilOdd, UmuEven, UUUmuEven, mat, U, V, dag);
+  DerivInternal(StencilOdd, UmuEven, mat, U, V, dag);
 }
 
 template <class Impl>
@@ -326,8 +260,7 @@ void StaggeredFermion<Impl>::Dhop(const FermionField &in, FermionField &out, int
   conformable(in._grid, out._grid);
 
   out.checkerboard = in.checkerboard;
-
-  DhopInternal(Stencil, Lebesgue, Umu, UUUmu, in, out, dag);
+  DhopInternal(Stencil, Lebesgue, Umu, in, out, dag);
 }
 
 template <class Impl>
@@ -338,7 +271,7 @@ void StaggeredFermion<Impl>::DhopOE(const FermionField &in, FermionField &out, i
   assert(in.checkerboard == Even);
   out.checkerboard = Odd;
 
-  DhopInternal(StencilEven, LebesgueEvenOdd, UmuOdd, UUUmuOdd, in, out, dag);
+  DhopInternal(StencilEven, LebesgueEvenOdd, UmuOdd, in, out, dag);
 }
 
 template <class Impl>
@@ -349,7 +282,7 @@ void StaggeredFermion<Impl>::DhopEO(const FermionField &in, FermionField &out, i
   assert(in.checkerboard == Odd);
   out.checkerboard = Even;
 
-  DhopInternal(StencilOdd, LebesgueEvenOdd, UmuEven, UUUmuEven, in, out, dag);
+  DhopInternal(StencilOdd, LebesgueEvenOdd, UmuEven, in, out, dag);
 }
 
 template <class Impl>
@@ -365,14 +298,13 @@ void StaggeredFermion<Impl>::DhopDir(const FermionField &in, FermionField &out, 
 
   PARALLEL_FOR_LOOP
   for (int sss = 0; sss < in._grid->oSites(); sss++) {
-    Kernels::DhopDir(Stencil, Umu, UUUmu, Stencil.CommBuf(), sss, sss, in, out, dir, disp);
+    Kernels::DhopDir(Stencil, Umu, Stencil.CommBuf(), sss, sss, in, out, dir);
   }
 };
 
 template <class Impl>
 void StaggeredFermion<Impl>::DhopInternal(StencilImpl &st, LebesgueOrder &lo,
 						  DoubledGaugeField &U,
-						  DoubledGaugeField &UUU,
 						  const FermionField &in,
 						  FermionField &out, int dag) {
   assert((dag == DaggerNo) || (dag == DaggerYes));
@@ -383,16 +315,19 @@ void StaggeredFermion<Impl>::DhopInternal(StencilImpl &st, LebesgueOrder &lo,
   if (dag == DaggerYes) {
     PARALLEL_FOR_LOOP
     for (int sss = 0; sss < in._grid->oSites(); sss++) {
-      Kernels::DhopSiteDag(st, lo, U, UUU, st.CommBuf(), 1, sss, in, out);
+      Kernels::DhopSiteDag(st, lo, U, st.CommBuf(), 1, sss, in, out);
     }
   } else {
     PARALLEL_FOR_LOOP
     for (int sss = 0; sss < in._grid->oSites(); sss++) {
-      Kernels::DhopSite(st, lo, U, UUU, st.CommBuf(), 1, sss, in, out);
+      Kernels::DhopSite(st, lo, U, st.CommBuf(), 1, sss, in, out);
     }
   }
 };
 
-FermOpStaggeredTemplateInstantiate(StaggeredFermion);
+template class StaggeredFermion<QCDpt::PStaggeredSmellImplF>;
+template class StaggeredFermion<QCDpt::PStaggeredSmellImplD>;
+template class StaggeredFermion<QCDpt::StaggeredSmellImplF>;
+template class StaggeredFermion<QCDpt::StaggeredSmellImplD>;
 
 }}

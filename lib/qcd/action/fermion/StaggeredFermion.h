@@ -37,14 +37,14 @@ class StaggeredFermionStatic {
  public:
   static const std::vector<int> directions;
   static const std::vector<int> displacements;
-  static const int npoint = 16;
+  static const int npoint = 8;
 };
 
 template <class Impl>
-class StaggeredFermion : public StaggeredKernels<Impl>, public StaggeredFermionStatic {
+class StaggeredFermion : public NaiveStaggeredKernels<Impl>, public StaggeredFermionStatic {
  public:
   INHERIT_IMPL_TYPES(Impl);
-  typedef StaggeredKernels<Impl> Kernels;
+  typedef NaiveStaggeredKernels<Impl> Kernels;
 
   FermionField _tmp;
   FermionField &tmp(void) { return _tmp; }
@@ -98,31 +98,16 @@ class StaggeredFermion : public StaggeredKernels<Impl>, public StaggeredFermionS
   ///////////////////////////////////////////////////////////////
   // Extra methods added by derived
   ///////////////////////////////////////////////////////////////
-  void DerivInternal(StencilImpl &st, 
-		     DoubledGaugeField &U,DoubledGaugeField &UUU,
-		     GaugeField &mat, 
-		     const FermionField &A, const FermionField &B, int dag);
+  void DerivInternal(StencilImpl &st, DoubledGaugeField &U, GaugeField &mat, const FermionField &A, const FermionField &B, int dag);
 
-  void DhopInternal(StencilImpl &st, LebesgueOrder &lo, DoubledGaugeField &U,DoubledGaugeField &UUU,
-                    const FermionField &in, FermionField &out, int dag);
+  void DhopInternal(StencilImpl &st, LebesgueOrder &lo, DoubledGaugeField &U, const FermionField &in, FermionField &out, int dag);
 
   // Constructor
-  StaggeredFermion(GaugeField &_Uthin, GaugeField &_Ufat, GridCartesian &Fgrid,
-			   GridRedBlackCartesian &Hgrid, RealD _mass,
-			   RealD _c1=9.0/8.0, RealD _c2=-1.0/24.0,RealD _u0=1.0,
-			   const ImplParams &p = ImplParams());
-
-  StaggeredFermion(GaugeField &_Uthin, GaugeField &_Utriple, GaugeField &_Ufat, GridCartesian &Fgrid,
+  StaggeredFermion(GaugeField &_U, GridCartesian &Fgrid,
 			   GridRedBlackCartesian &Hgrid, RealD _mass,
 			   const ImplParams &p = ImplParams());
-
-  StaggeredFermion(GridCartesian &Fgrid, GridRedBlackCartesian &Hgrid, RealD _mass,
-			   const ImplParams &p = ImplParams());
-
 
   // DoubleStore impl dependent
-  void ImportGaugeSimple(const GaugeField &_Utriple, const GaugeField &_Ufat);
-  void ImportGauge(const GaugeField &_Uthin, const GaugeField &_Ufat);
   void ImportGauge(const GaugeField &_Uthin);
 
   ///////////////////////////////////////////////////////////////
@@ -134,9 +119,6 @@ class StaggeredFermion : public StaggeredKernels<Impl>, public StaggeredFermionS
   // any other parameters of action ???
 
   RealD mass;
-  RealD u0;
-  RealD c1;
-  RealD c2;
 
   GridBase *_grid;
   GridBase *_cbgrid;
@@ -151,16 +133,13 @@ class StaggeredFermion : public StaggeredKernels<Impl>, public StaggeredFermionS
   DoubledGaugeField UmuEven;
   DoubledGaugeField UmuOdd;
 
-  DoubledGaugeField UUUmu;
-  DoubledGaugeField UUUmuEven;
-  DoubledGaugeField UUUmuOdd;
-
   LebesgueOrder Lebesgue;
   LebesgueOrder LebesgueEvenOdd;
 };
 
 typedef StaggeredFermion<StaggeredImplF> StaggeredFermionF;
 typedef StaggeredFermion<StaggeredImplD> StaggeredFermionD;
+
 
 }
 }

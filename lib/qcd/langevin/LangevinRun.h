@@ -38,6 +38,7 @@ namespace QCDpt {
 // change if needed
 const int load_Nplow = Np - 2;
 
+template <class PFermionImpl>
 class LangevinParams {
 public:
     double tau;
@@ -64,10 +65,10 @@ public:
     std::string basename;
     CheckpointerParameters CPparams;
     
-    StochasticFermionAction<PWilsonSmellImplR> *FA;
+    StochasticFermionAction<PFermionImpl> *FA;
     
     // in the quenched case, the parameters Nf, mass and boundary_phases can be omitted
-    LangevinParams(int argc, char **argv, int Nf_=0, PRealD mass_=zero, std::vector<Complex> boundary_phases_={0.}, StochasticFermionAction<PWilsonSmellImplR> *FA_ = NULL):
+    LangevinParams(int argc, char **argv, int Nf_=0, PRealD mass_=zero, std::vector<Complex> boundary_phases_={0.}, StochasticFermionAction<PFermionImpl> *FA_ = NULL):
     FA(FA_)
     {
     
@@ -229,7 +230,7 @@ public:
     
 };
 
-template <class gimpl>
+template <class gimpl, class PFermionImpl = PWilsonSmellImplR>
 class LangevinRun {
 
 private:
@@ -240,7 +241,7 @@ private:
     
     GridSerialRNG sRNG;
     
-    TwistValencePropagator<PWilsonSmellImplR> *TVP = NULL;
+    TwistValencePropagator<PFermionImpl> *TVP = NULL;
     
 protected:
     
@@ -249,14 +250,14 @@ protected:
     
     typename gimpl::GaugeField U;
     
-    LangevinParams Params;
+    LangevinParams<PFermionImpl> Params;
     PertLangevin<gimpl> L;
     
     BinaryHmcCheckpointer<gimpl> CP;
     
 public:
     
-    LangevinRun(GridCartesian *grid_, GridParallelRNG *pRNG_, LangevinParams Params_):
+    LangevinRun(GridCartesian *grid_, GridParallelRNG *pRNG_, LangevinParams<PFermionImpl> Params_):
     grid(grid_),
     pRNG(pRNG_),
     U(grid_),
@@ -287,7 +288,7 @@ public:
             if(Params.measureprop) openProp();
         }
         
-        if(Params.Nf!=0 && Params.measureprop) TVP = new TwistValencePropagator<PWilsonSmellImplR>(grid,Params.FA,Params.prop_phases1,Params.prop_phases2,Params.prop_phases3);
+        if(Params.Nf!=0 && Params.measureprop) TVP = new TwistValencePropagator<PFermionImpl>(grid,Params.FA,Params.prop_phases1,Params.prop_phases2,Params.prop_phases3);
     };
     
     template<class Action>

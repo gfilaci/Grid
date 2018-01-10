@@ -41,6 +41,7 @@ Author: Peter Boyle <pabobyle@ph.ed.ac.uk>
 #include <Grid/qcd/action/fermion/FermionOperator.h>
 #include <Grid/qcd/action/fermion/WilsonKernels.h>        //used by all wilson type fermions
 #include <Grid/qcd/action/fermion/StaggeredKernels.h>        //used by all wilson type fermions
+#include <Grid/qcd/action/fermion/NaiveStaggeredKernels.h>
 
 #define FermOpStaggeredTemplateInstantiate(A) \
   template class A<StaggeredImplF>; \

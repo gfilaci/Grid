@@ -663,7 +663,7 @@ class StaggeredSmellImpl : public TwistedGaugeImpl<GaugeImplTypes_ptscalar<S, Re
 
   
 /////////////////////////////////////////////////////////////////////////////
-// Perturbative staggered fermion wish smell
+// Perturbative staggered fermion with smell
 /////////////////////////////////////////////////////////////////////////////
 template <class S, class Representation = FundamentalRepresentation >
 class PStaggeredSmellImpl : public TwistedGaugeImpl<GaugeImplTypes_pt<S, Representation::Dimension > > {
@@ -922,6 +922,123 @@ class PStaggeredSmellImpl : public TwistedGaugeImpl<GaugeImplTypes_pt<S, Represe
     }
   };
   
+  /////////////////////////////////////////////////////////////////////////////
+// Nonperturbative naive staggered fermion
+/////////////////////////////////////////////////////////////////////////////
+template <class S, class Representation = FundamentalRepresentation >
+class NaiveStaggeredImpl : public PeriodicGaugeImpl<GaugeImplTypes<S, Representation::Dimension > > {
+
+    public:
+    
+    typedef RealD  _Coeff_t ;
+    static const int Dimension = Representation::Dimension;
+    static const bool LsVectorised=false;
+    typedef PeriodicGaugeImpl<GaugeImplTypes<S, Dimension > > Gimpl;
+      
+    //Necessary?
+    constexpr bool is_fundamental() const{return Dimension == Nc ? 1 : 0;}
+    
+    typedef _Coeff_t Coeff_t;
+
+    INHERIT_GIMPL_TYPES(Gimpl);
+      
+    template <typename vtype> using iImplSpinor            = iScalar<iScalar<iVector<vtype, Dimension> > >;
+    template <typename vtype> using iImplHalfSpinor        = iScalar<iScalar<iVector<vtype, Dimension> > >;
+    template <typename vtype> using iImplDoubledGaugeField = iVector<iScalar<iMatrix<vtype, Dimension> >, Nds>;
+    template <typename vtype> using iImplPropagator        = iScalar<iScalar<iMatrix<vtype, Dimension> > >;
+    
+    typedef iImplSpinor<Simd>            SiteSpinor;
+    typedef iImplHalfSpinor<Simd>        SiteHalfSpinor;
+    typedef iImplDoubledGaugeField<Simd> SiteDoubledGaugeField;
+    typedef iImplPropagator<Simd>        SitePropagator;
+    
+    typedef Lattice<SiteSpinor>            FermionField;
+    typedef Lattice<SiteDoubledGaugeField> DoubledGaugeField;
+    typedef Lattice<SitePropagator> PropagatorField;
+    
+    typedef SimpleCompressor<SiteSpinor> Compressor;
+    typedef StaggeredImplParams ImplParams;
+    typedef CartesianStencil<SiteSpinor, SiteSpinor> StencilImpl;
+    
+    typedef Lattice<iSinglet<typename FermionField::vector_type> > LatticeSinglet;
+    
+    ImplParams Params;
+    
+    NaiveStaggeredImpl(const ImplParams &p = ImplParams()) : Params(p){};
+      
+    inline void multLink(SiteSpinor &phi,
+			 const SiteDoubledGaugeField &U,
+			 const SiteSpinor &chi,
+			 int mu,
+             StencilEntry *SE,
+             StencilImpl &St) {
+        mult(&phi(), &U(mu), &chi());
+    }
+    
+    inline void multLinkAdd(SiteSpinor &phi,
+			    const SiteDoubledGaugeField &U,
+			    const SiteSpinor &chi,
+			    int mu,
+                StencilEntry *SE,
+                StencilImpl &St) {
+        mac(&phi(), &U(mu), &chi());
+    }
+      
+    template <class ref>
+    inline void loadLinkElement(Simd &reg, ref &memory) {
+      reg = memory;
+    }
+      
+    inline void DoubleStore(GridBase *GaugeGrid, DoubledGaugeField &Uds, const GaugeField &Uthin) {
+      conformable(Uds._grid, GaugeGrid);
+      conformable(Uthin._grid, GaugeGrid);
+      GaugeLinkField U(GaugeGrid);
+      GaugeLinkField Udag(GaugeGrid);
+      Lattice<iScalar<vInteger> > coor(GaugeGrid);
+      typedef typename Simd::scalar_type scalar_type;
+      
+      for (int mu = 0; mu < Nd; mu++) {
+
+	// Staggered Phase.
+	Lattice<iScalar<vInteger> > coor(GaugeGrid);
+	Lattice<iScalar<vInteger> > x(GaugeGrid); LatticeCoordinate(x,0);
+	Lattice<iScalar<vInteger> > y(GaugeGrid); LatticeCoordinate(y,1);
+	Lattice<iScalar<vInteger> > z(GaugeGrid); LatticeCoordinate(z,2);
+	Lattice<iScalar<vInteger> > t(GaugeGrid); LatticeCoordinate(t,3);
+
+	Lattice<iScalar<vInteger> > lin_z(GaugeGrid); lin_z=x+y;
+	Lattice<iScalar<vInteger> > lin_t(GaugeGrid); lin_t=x+y+z;
+
+	ComplexField phases(GaugeGrid);	phases=1.0;
+
+	if ( mu == 1 ) phases = where( mod(x    ,2)==(Integer)0, phases,-phases);
+	if ( mu == 2 ) phases = where( mod(lin_z,2)==(Integer)0, phases,-phases);
+	if ( mu == 3 ) phases = where( mod(lin_t,2)==(Integer)0, phases,-phases);
+
+	U      = PeekIndex<LorentzIndex>(Uthin, mu);
+	Udag   = adj( Cshift(U, mu, -1));
+
+	U    = U    *phases;
+	Udag = Udag *phases;
+    
+	PokeIndex<LorentzIndex>(Uds, U, mu);
+	PokeIndex<LorentzIndex>(Uds, Udag, mu + 4);
+
+      }
+    }
+
+    inline void InsertForce4D(GaugeField &mat, FermionField &Btilde, FermionField &A,int mu){
+        GaugeLinkField link(mat._grid);
+        link = TraceIndex<SpinIndex>(outerProduct(Btilde,A));
+        PokeIndex<LorentzIndex>(mat,link,mu);
+    }
+      
+    inline void InsertForce5D(GaugeField &mat, FermionField &Btilde, FermionField &Atilde,int mu){
+      assert (0); 
+      // Must never hit
+    }
+  };
+  
   
 typedef PWilsonSmellImpl<vComplex,  FundamentalRepresentation, CoeffReal > PWilsonSmellImplR;  // Real.. whichever prec
 typedef PWilsonSmellImpl<vComplexF, FundamentalRepresentation, CoeffReal > PWilsonSmellImplF;  // Float
@@ -939,6 +1056,10 @@ typedef PStaggeredSmellImpl<vComplexD, FundamentalRepresentation > PStaggeredSme
 typedef StaggeredSmellImpl<vComplex,  FundamentalRepresentation > StaggeredSmellImplR;  // Real.. whichever prec
 typedef StaggeredSmellImpl<vComplexF, FundamentalRepresentation > StaggeredSmellImplF;  // Float
 typedef StaggeredSmellImpl<vComplexD, FundamentalRepresentation > StaggeredSmellImplD;  // Double
+
+typedef NaiveStaggeredImpl<vComplex,  FundamentalRepresentation > NaiveStaggeredImplR;  // Real.. whichever prec
+typedef NaiveStaggeredImpl<vComplexF, FundamentalRepresentation > NaiveStaggeredImplF;  // Float
+typedef NaiveStaggeredImpl<vComplexD, FundamentalRepresentation > NaiveStaggeredImplD;  // Double
 
 }}}
 

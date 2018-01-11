@@ -252,5 +252,7 @@ template class NaiveStaggeredKernels<QCDpt::PStaggeredSmellImplF>;
 template class NaiveStaggeredKernels<QCDpt::PStaggeredSmellImplD>;
 template class NaiveStaggeredKernels<QCDpt::StaggeredSmellImplF>;
 template class NaiveStaggeredKernels<QCDpt::StaggeredSmellImplD>;
+template class NaiveStaggeredKernels<QCDpt::NaiveStaggeredImplF>;
+template class NaiveStaggeredKernels<QCDpt::NaiveStaggeredImplD>;
 }}
 

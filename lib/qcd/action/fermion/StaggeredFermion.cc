@@ -329,5 +329,7 @@ template class StaggeredFermion<QCDpt::PStaggeredSmellImplF>;
 template class StaggeredFermion<QCDpt::PStaggeredSmellImplD>;
 template class StaggeredFermion<QCDpt::StaggeredSmellImplF>;
 template class StaggeredFermion<QCDpt::StaggeredSmellImplD>;
+template class StaggeredFermion<QCDpt::NaiveStaggeredImplF>;
+template class StaggeredFermion<QCDpt::NaiveStaggeredImplD>;
 
 }}

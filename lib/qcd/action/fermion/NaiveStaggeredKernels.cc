@@ -245,8 +245,9 @@ void NaiveStaggeredKernels<Impl>::DhopDir( StencilImpl &st, DoubledGaugeField &U
     chi_p = &buf[SE->_offset];
   }
   Impl::multLink(Uchi, U._odata[sU], *chi_p, dir, SE, st);
+  vstream(out._odata[sF], Uchi);
   
-}
+};
 
 template class NaiveStaggeredKernels<QCDpt::PStaggeredSmellImplF>;
 template class NaiveStaggeredKernels<QCDpt::PStaggeredSmellImplD>;

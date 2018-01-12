@@ -196,7 +196,9 @@ void StaggeredFermion<Impl>::DerivInternal(StencilImpl &st, DoubledGaugeField &U
 
   FermionField Btilde(B._grid);
   FermionField Atilde(B._grid);
-  Atilde = A;
+
+  if(!dag) Atilde = A;
+  else Atilde = -A;
 
   st.HaloExchange(B, compressor);
 

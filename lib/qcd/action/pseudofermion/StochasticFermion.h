@@ -287,7 +287,7 @@ class StochasticStaggeredAction : public Action<typename Impl::GaugeField> {
       for (int n=0; n<Npf; n++) {
           Uforce = zero;
           for (int j=0; j<=n; j++) {
-              Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerYes);
+              Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerNo);
               Uforce += Uso;
           }
           // the "+2" shift is due to the 1/beta factor in front of the fermion drift.

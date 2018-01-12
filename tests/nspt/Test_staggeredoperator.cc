@@ -177,7 +177,7 @@ std::cout<<GridLogMessage<<"====================================================
   double ncall=1000;
   double t0=usecond();
   for(int i=0;i<ncall;i++){
-    Ds.Mdir(src,result,muu,0);
+    Ds.Mdir(src,result,muu,DaggerNo);
   }
   double t1=usecond();
   double t2;

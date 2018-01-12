@@ -2,7 +2,7 @@
 
     Grid physics library, www.github.com/paboyle/Grid 
 
-    Source file: .tests//nspt/Test_staggeredoperator.cc
+    Source file: ./tests/nspt/Test_staggeredoperator.cc
 
     Copyright (C) 2015
 

@@ -298,6 +298,9 @@ class StochasticStaggeredAction : public Action<typename Impl::GaugeField> {
       dSdU = Ta(dSdU);
       dSdU *= mNf_over_fourNc;
       
+      // MDeriv is called with DaggerNo and not DaggerYes, the difference would be only a minus sign.
+      // That minus sign is recovered from the overall factor
+      // -Nf/(4Nc)
   }
   
   

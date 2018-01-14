@@ -217,7 +217,7 @@ class StochasticStaggeredAction : public Action<typename Impl::GaugeField> {
   int Npf = Np - 2;
   
   int Nf; // number of flavours
-  double mNf_over_fourNc;  // 1/Nc is the factor due to the smell, 1/4 is for taste
+  double Nf_over_fourNc;  // 1/Nc is the factor due to the smell, 1/4 is for taste
 
  public:
   
@@ -234,7 +234,7 @@ class StochasticStaggeredAction : public Action<typename Impl::GaugeField> {
         Nf(Nf_),
         TheFFT(grid_,mass_,Params_.boundary_phases)
         {
-            mNf_over_fourNc = -(double)Nf / (4.*(double)Nc);
+            Nf_over_fourNc = (double)Nf / (4.*(double)Nc);
             Dw.reserve(Np); // reserving Np, needed in measuring propagator
             psi.reserve(Np); // reserving Np, needed in measuring propagator
             for (int i=0; i<Np; i++) { // initialising Np, needed in measuring propagator
@@ -287,7 +287,7 @@ class StochasticStaggeredAction : public Action<typename Impl::GaugeField> {
       for (int n=0; n<Npf; n++) {
           Uforce = zero;
           for (int j=0; j<=n; j++) {
-              Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerNo);
+              Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerYes);
               Uforce += Uso;
           }
           // the "+2" shift is due to the 1/beta factor in front of the fermion drift.
@@ -296,11 +296,8 @@ class StochasticStaggeredAction : public Action<typename Impl::GaugeField> {
       }
       
       dSdU = Ta(dSdU);
-      dSdU *= mNf_over_fourNc;
+      dSdU *= Nf_over_fourNc;
       
-      // MDeriv is called with DaggerNo and not DaggerYes, the difference would be only a minus sign.
-      // That minus sign is recovered from the overall factor
-      // -Nf/(4Nc)
   }
   
   

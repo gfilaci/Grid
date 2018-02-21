@@ -325,7 +325,7 @@ public:
         log << "GAUGE GROUP:  SU(" << Nc << ")" << std::endl;
         log << "FERMIONS:     ";
         if(Params.Nf!=0) {
-            log << "Nf=" << Params.Nf << " fermions with mass" << std::endl;
+            log << "Nf=" << Params.Nf << " Wilson fermions with mass" << std::endl;
             log << "              " << Params.mass <<std::endl;
             log << "              and boundary phases" << std::endl;
             log << "              " << Params.boundary_phases <<std::endl;

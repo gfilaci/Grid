@@ -280,6 +280,7 @@ public:
             PertVacuum(U);
         } else if(Params.StartingType=="CheckpointStart"){
             CP.CheckpointRestore(Params.StartTrajectory,U,sRNG,*pRNG);
+            U = ProjectOnGroup(U);
         }
         
         if(grid->_processor==0){

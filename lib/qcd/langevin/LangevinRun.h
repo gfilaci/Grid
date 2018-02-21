@@ -240,9 +240,10 @@ class LangevinRun {
 
 private:
     
-    std::ofstream log, plaqfile, propfile, normfile;
+    std::ofstream log, plaqfile, liveplaqfile, propfile, normfile;
     
     PRealD plaq;
+    std::vector<PRealD> plaqbuffer;
     PComplexD norm;
     
     GridSerialRNG sRNG;
@@ -271,6 +272,7 @@ public:
     L(grid_,pRNG_,Params_.tau,Params_.alpha),
     CP(Params_.CPparams)
     {
+        if(Params.save_every!=0) plaqbuffer.resize(Params.save_every);
         
         if(Params.StartingType=="LowerOrderStart"){
             CheckpointerParameters CPparams_low;
@@ -291,7 +293,8 @@ public:
         
         if(grid->_processor==0){
             openLog();
-            openPlaq();
+            openlivePlaq();
+            if(Params.save_every!=0) openPlaq();
             if(Params.measureprop) openProp();
             if(Params.enablenorm) openNorm();
         }
@@ -404,7 +407,17 @@ public:
         
         plaqfile.precision(30);
         plaqfile << std::scientific;
-        
+    }
+    
+    void openlivePlaq(){
+        std::string liveplaqname = Params.basename + ".plaq.live";
+        liveplaqfile.open(liveplaqname.c_str());
+        if (!liveplaqfile.is_open()){
+            std::cout << GridLogError << "Unable to open live plaquette file" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        liveplaqfile.precision(30);
+        liveplaqfile << std::scientific;
     }
     
     void openNorm(){
@@ -464,7 +477,8 @@ public:
         log << now() << std::endl;
         log.flush();
         log.close();
-        plaqfile.close();
+        if(Params.save_every!=0) plaqfile.close();
+        liveplaqfile.close();
         if(Params.measureprop) propfile.close();
         if(Params.enablenorm) normfile.close();
     }
@@ -488,6 +502,8 @@ public:
         int pp = Params.sweeps/1000;
         if(pp==0) pp = 1;
         
+        int plaqcount = 0;
+        
         log << std::endl << now() << std::endl;
         log << GridLogMessage << "RUN STARTED" << std::endl;
         log.flush();
@@ -503,7 +519,8 @@ public:
             L.StochasticGF(U);
             
             plaq = WilsonLoops<gimpl>::avgPlaquette(U);
-            for (int k=0; k<Np; k++) plaqfile << plaq(k) << std::endl;
+            for (int k=0; k<Np; k++) liveplaqfile << plaq(k) << std::endl;
+            if(Params.save_every!=0) plaqbuffer[plaqcount++] = plaq;
             
             if(Params.enablenorm){
                 norm = Pnorm2(U);
@@ -511,6 +528,11 @@ public:
             }
             
             if(Params.save_every!=0 && i%Params.save_every==(Params.save_every-1)){
+                for (int c=0; c<plaqbuffer.size(); c++) {
+                    for (int k=0; k<Np; k++) plaqfile << plaqbuffer[c](k) << std::endl;
+                }
+                plaqcount = 0;
+                
                 if(Params.gfprecision!=0){
                     log << GridLogMessage << "Landau gauge fixing ..." <<std::endl;
                     log.flush();

@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     GaugeLevel.push_back(&GaugeAction);
     
     RealD mass = 0.;
-    int Nf = 16;
+    int Nf = 2;
     WilsonImplParams Params;
     Params.boundary_phases = {-1.,1.,1.,1};
     

@@ -50,6 +50,7 @@ public:
     
     bool rk;
     bool fagf;
+    bool enablenorm;
     std::string StartingType;
     std::vector<int> rngseed;
     
@@ -114,6 +115,10 @@ public:
         if( GridCmdOptionExists(argv,argv+argc,"--enable-rk") ){
             rk = true;
         } else rk = false;
+        
+        if( GridCmdOptionExists(argv,argv+argc,"--enable-norm") ){
+            enablenorm = true;
+        } else enablenorm = false;
         
         if( GridCmdOptionExists(argv,argv+argc,"--start-from") ){
             arg = GridCmdOptionPayload(argv,argv+argc,"--start-from");
@@ -209,9 +214,10 @@ class LangevinStaggeredRun {
 
 private:
     
-    std::ofstream log, plaqfile;
+    std::ofstream log, plaqfile, normfile;
     
     PRealD plaq;
+    PComplexD norm;
     
     GridSerialRNG sRNG;
     
@@ -258,6 +264,7 @@ public:
         if(grid->_processor==0){
             openLog();
             openPlaq();
+            if(Params.enablenorm) openNorm();
         }
         
     };
@@ -368,12 +375,39 @@ public:
         
     }
     
+    void openNorm(){
+        
+        std::string normname = Params.basename + ".norm";
+        
+        if(Params.StartingType=="CheckpointStart"){
+            if(exists(normname))
+                normfile.open(normname, std::ios::app);
+            else normfile.open(normname.c_str());
+        }
+        else if(!exists(normname)){
+            normfile.open(normname.c_str());
+        } else{
+            std::cout << GridLogError << "There is already a norm file with same parameters: use CheckpointStart to start from a previous checkpoint or move/delete/rename the norm file for a new ColdStart" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        
+        if (!normfile.is_open()){
+            std::cout << GridLogError << "Unable to open norm file" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        
+        normfile.precision(30);
+        normfile << std::scientific;
+        
+    }
+    
     void FinaliseRun(){
         log << GridLogMessage << "RUN COMPLETED" << std::endl;
         log << now() << std::endl;
         log.flush();
         log.close();
         plaqfile.close();
+        if(Params.enablenorm) normfile.close();
     }
     
     bool exists (const std::string &name) {
@@ -411,6 +445,11 @@ public:
             
             plaq = WilsonLoops<gimpl>::avgPlaquette(U);
             for (int k=0; k<Np; k++) plaqfile << plaq(k) << std::endl;
+            
+            if(Params.enablenorm){
+                norm = Pnorm2(U);
+                for (int k=0; k<Np; k++) normfile << norm(k).real() << std::endl;
+            }
             
             if(Params.save_every!=0 && i%Params.save_every==(Params.save_every-1)){
                 if(Params.gfprecision!=0){

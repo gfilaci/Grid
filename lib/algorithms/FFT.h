@@ -109,6 +109,7 @@ namespace Grid {
     
     GridCartesian *vgrid;
     GridCartesian *sgrid;
+    std::vector<GridCartesian*> pencil_g;
     
     int Nd;
     double flops;
@@ -133,12 +134,22 @@ namespace Grid {
     Nd(grid->_ndimension),
     dimensions(grid->_fdimensions),
     processors(grid->_processors),
-    processor_coor(grid->_processor_coor)
+    processor_coor(grid->_processor_coor),
+    pencil_g(grid->_ndimension)
     {
       flops=0;
       usec =0;
       std::vector<int> layout(Nd,1);
       sgrid = new GridCartesian(dimensions,layout,processors);
+      
+      for (int dim=0; dim<Nd; dim++) {
+          int L = vgrid->_ldimensions[dim];
+          int G = vgrid->_fdimensions[dim];
+          std::vector<int> pencil_gd(vgrid->_fdimensions);
+          pencil_gd[dim] = G*processors[dim];
+          // Pencil global vol LxLxGxLxL per node
+          pencil_g[dim] = new GridCartesian(pencil_gd,layout,processors);
+      }
     };
     
     ~FFT ( void)  {
@@ -178,19 +189,11 @@ namespace Grid {
       int L = vgrid->_ldimensions[dim];
       int G = vgrid->_fdimensions[dim];
       
-      std::vector<int> layout(Nd,1);
-      std::vector<int> pencil_gd(vgrid->_fdimensions);
-      
-      pencil_gd[dim] = G*processors[dim];
-      
-      // Pencil global vol LxLxGxLxL per node
-      GridCartesian pencil_g(pencil_gd,layout,processors);
-      
       // Construct pencils
       typedef typename vobj::scalar_object sobj;
       typedef typename sobj::scalar_type   scalar;
       
-      Lattice<sobj> pgbuf(&pencil_g);
+      Lattice<sobj> pgbuf(pencil_g[dim]);
       
 
       typedef typename FFTW<scalar>::FFTW_scalar FFTW_scalar;
@@ -253,7 +256,7 @@ namespace Grid {
       }
       
       // Loop over orthog coords
-      int NN=pencil_g.lSites();
+      int NN=pencil_g[dim]->lSites();
       GridStopWatch timer;
       timer.Start();
       PARALLEL_REGION
@@ -262,7 +265,7 @@ namespace Grid {
         
         PARALLEL_FOR_LOOP_INTERN
         for(int idx=0;idx<NN;idx++) {
-          pencil_g.LocalIndexToLocalCoor(idx, cbuf);
+          pencil_g[dim]->LocalIndexToLocalCoor(idx, cbuf);
           if ( cbuf[dim] == 0 ) {  // restricts loop to plane at lcoor[dim]==0
             FFTW_scalar *in = (FFTW_scalar *)&pgbuf._odata[idx];
             FFTW_scalar *out= (FFTW_scalar *)&pgbuf._odata[idx];

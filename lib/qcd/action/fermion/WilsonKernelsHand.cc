@@ -628,4 +628,24 @@ INSTANTIATE_THEM(ZDomainWallVec5dImplDF);
 INSTANTIATE_THEM(WilsonTwoIndexAntiSymmetricImplF);
 INSTANTIATE_THEM(WilsonTwoIndexAntiSymmetricImplD);
 
+
+// Disable Hand kernel in the perturbative case
+#define NOTINSTANTIATE_THEM(A) \
+template<> void WilsonKernels<A>::HandDhopSite(StencilImpl &st,LebesgueOrder &lo,DoubledGaugeField &U,SiteHalfSpinor *buf,\
+					     int ss,int sU,const FermionField &in, FermionField &out) {assert(0);} \
+template<> void WilsonKernels<A>::HandDhopSiteDag(StencilImpl &st,LebesgueOrder &lo,DoubledGaugeField &U,SiteHalfSpinor *buf, \
+						int ss,int sU,const FermionField &in, FermionField &out) {assert(0);}\
+template<> void WilsonKernels<A>::HandDhopSiteInt(StencilImpl &st,LebesgueOrder &lo,DoubledGaugeField &U,SiteHalfSpinor *buf,\
+						int ss,int sU,const FermionField &in, FermionField &out) {assert(0);} \
+template<> void WilsonKernels<A>::HandDhopSiteDagInt(StencilImpl &st,LebesgueOrder &lo,DoubledGaugeField &U,SiteHalfSpinor *buf, \
+						   int ss,int sU,const FermionField &in, FermionField &out) {assert(0);} \
+template<> void WilsonKernels<A>::HandDhopSiteExt(StencilImpl &st,LebesgueOrder &lo,DoubledGaugeField &U,SiteHalfSpinor *buf,\
+						int ss,int sU,const FermionField &in, FermionField &out) {assert(0);} \
+template<> void WilsonKernels<A>::HandDhopSiteDagExt(StencilImpl &st,LebesgueOrder &lo,DoubledGaugeField &U,SiteHalfSpinor *buf, \
+						   int ss,int sU,const FermionField &in, FermionField &out) {assert(0);}
+NOTINSTANTIATE_THEM(QCDpt::PWilsonSmellImplF);
+NOTINSTANTIATE_THEM(QCDpt::PWilsonSmellImplD);
+NOTINSTANTIATE_THEM(QCDpt::WilsonSmellImplF);
+NOTINSTANTIATE_THEM(QCDpt::WilsonSmellImplD);
+
 }}

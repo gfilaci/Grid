@@ -45,6 +45,7 @@ namespace QCDpt {
     public:
 
     static const int Dimension = Representation::Dimension;
+    static const bool isFundamental = Representation::isFundamental;
     static const bool LsVectorised=false;
     static const int Nhcs = Options::Nhcs;
 
@@ -160,7 +161,14 @@ namespace QCDpt {
         }
         
     }
-      
+    
+    inline void multLinkProp(SitePropagator &phi, const SiteDoubledGaugeField &U,
+                             const SitePropagator &chi, int mu)
+    {
+        assert(0);
+    }
+
+
     template <class ref>
     inline void loadLinkElement(Simd &reg, ref &memory) {
       reg = memory;
@@ -230,6 +238,7 @@ namespace QCDpt {
     typedef typename QCDpt::WilsonSmellImpl<S,Representation,CoeffReal> SOimpl;
     
     static const int Dimension = Representation::Dimension;
+    static const bool isFundamental = Representation::isFundamental;
     static const bool LsVectorised=false;
     static const int Nhcs = Options::Nhcs;
 
@@ -346,6 +355,12 @@ namespace QCDpt {
         
     }
       
+    inline void multLinkProp(SitePropagator &phi, const SiteDoubledGaugeField &U,
+                             const SitePropagator &chi, int mu)
+    {
+          assert(0);
+    }
+      
     template <class ref>
     inline void loadLinkElement(Simd &reg, ref &memory) {
       reg = memory;
@@ -405,6 +420,7 @@ class StaggeredSmellImpl : public TwistedGaugeImpl<GaugeImplTypes_ptscalar<S, Re
 
     typedef RealD  _Coeff_t ;
     static const int Dimension = Representation::Dimension;
+    static const bool isFundamental = Representation::isFundamental;
     static const bool LsVectorised=false;
     typedef TwistedGaugeImpl<GaugeImplTypes_ptscalar<S, Dimension > > Gimpl;
       
@@ -675,6 +691,7 @@ class PStaggeredSmellImpl : public TwistedGaugeImpl<GaugeImplTypes_pt<S, Represe
     
     typedef RealD  _Coeff_t ;
     static const int Dimension = Representation::Dimension;
+    static const bool isFundamental = Representation::isFundamental;
     static const bool LsVectorised=false;
     typedef TwistedGaugeImpl<GaugeImplTypes_pt<S, Dimension > > Gimpl;
       
@@ -932,6 +949,7 @@ class NaiveStaggeredImpl : public PeriodicGaugeImpl<GaugeImplTypes<S, Representa
     
     typedef RealD  _Coeff_t ;
     static const int Dimension = Representation::Dimension;
+    static const bool isFundamental = Representation::isFundamental;
     static const bool LsVectorised=false;
     typedef PeriodicGaugeImpl<GaugeImplTypes<S, Dimension > > Gimpl;
       

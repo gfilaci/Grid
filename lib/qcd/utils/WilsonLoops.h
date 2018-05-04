@@ -125,6 +125,28 @@ public:
     return sumplaq / vol / faces / Nc; // Nd , Nc dependent... FIXME
   }
 
+
+  //////////////////////////////////////////////////
+  // average over all x,y,z the temporal loop
+  //////////////////////////////////////////////////
+  static ComplexD avgPolyakovLoop(const GaugeField &Umu) {  //assume Nd=4
+    GaugeMat Ut(Umu._grid), P(Umu._grid);
+    ComplexD out;
+    int T = Umu._grid->GlobalDimensions()[3];
+    int X = Umu._grid->GlobalDimensions()[0];
+    int Y = Umu._grid->GlobalDimensions()[1];
+    int Z = Umu._grid->GlobalDimensions()[2];
+
+    Ut = peekLorentz(Umu,3); //Select temporal direction
+    P = Ut;
+    for (int t=1;t<T;t++){ 
+      P = Gimpl::CovShiftForward(Ut,3,P);
+    }
+   RealD norm = 1.0/(Nc*X*Y*Z*T);
+   out = sum(trace(P))*norm;
+   return out;   
+}
+
   //////////////////////////////////////////////////
   // average over traced single links
   //////////////////////////////////////////////////
@@ -192,6 +214,7 @@ public:
 
 
 // For the force term
+/*
 static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
     GridBase *grid = Umu._grid;
     std::vector<GaugeMat> U(Nd, grid);
@@ -205,7 +228,7 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
 
     for (int nu = 0; nu < Nd; nu++) {
       if (nu != mu) {
-        // this is ~10% faster than the Staple
+        // this is ~10% faster than the Staple  -- PAB: so what it gives the WRONG answers for other BC's!
         tmp1 = Cshift(U[nu], mu, 1);
         tmp2 = Cshift(U[mu], nu, 1);
         staple += tmp1* adj(U[nu]*tmp2);
@@ -215,7 +238,7 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
     }
     staple = U[mu]*staple;
 }
-
+*/
   //////////////////////////////////////////////////
   // the sum over all staples on each site
   //////////////////////////////////////////////////
@@ -293,9 +316,9 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
     }
   }
 
-  //////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////
   // the sum over all staples on each site in direction mu,nu, lower part
-  //////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////
   static void StapleLower(GaugeMat &staple, const GaugeLorentz &Umu, int mu,
                           int nu) {
     if (nu != mu) {
@@ -317,7 +340,9 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
       //
       staple = Gimpl::ShiftStaple(
           Gimpl::CovShiftBackward(U[nu], nu,
-                                  Gimpl::CovShiftBackward(U[mu], mu, U[nu])), mu);
+                                  Gimpl::CovShiftBackward(U[mu], mu, U[nu])),
+          mu);
+
     }
   }
 
@@ -327,7 +352,7 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
   static void FieldStrength(GaugeMat &FS, const GaugeLorentz &Umu, int mu, int nu){
       // Fmn +--<--+  Ut +--<--+
       //     |     |     |     |
-      //  (x)+-->--+     +-->--+(x)
+      //  (x)+-->--+     +-->--+(x)  - h.c.
       //     |     |     |     |
       //     +--<--+     +--<--+
 
@@ -337,7 +362,9 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
       GaugeMat v = Vup - Vdn;
       GaugeMat u = PeekIndex<LorentzIndex>(Umu, mu);  // some redundant copies
       GaugeMat vu = v*u;
-      FS = 0.25*Ta(u*v + Cshift(vu, mu, -1));
+      //FS = 0.25*Ta(u*v + Cshift(vu, mu, -1));
+      FS = (u*v + Cshift(vu, mu, -1));
+      FS = 0.125*(FS - adj(FS));
   }
 
   static Real TopologicalCharge(GaugeLorentz &U){
@@ -361,6 +388,7 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
     auto Tq = sum(qfield);
     return TensorRemove(Tq).real();
   }
+
 
   //////////////////////////////////////////////////////
   // Similar to above for rectangle is required

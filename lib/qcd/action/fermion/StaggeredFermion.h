@@ -111,6 +111,23 @@ class StaggeredFermion : public NaiveStaggeredKernels<Impl>, public StaggeredFer
   void ImportGauge(const GaugeField &_Uthin);
 
   ///////////////////////////////////////////////////////////////
+  // Conserved current utilities
+  ///////////////////////////////////////////////////////////////
+  void ContractConservedCurrent(PropagatorField &q_in_1,
+                                PropagatorField &q_in_2,
+                                PropagatorField &q_out,
+                                Current curr_type,
+                                unsigned int mu);
+
+  void SeqConservedCurrent(PropagatorField &q_in,
+                           PropagatorField &q_out,
+                           Current curr_type,
+                           unsigned int mu,
+                           std::vector<Real> mom,
+                           unsigned int tmin,
+                           unsigned int tmax);
+
+  ///////////////////////////////////////////////////////////////
   // Data members require to support the functionality
   ///////////////////////////////////////////////////////////////
 

@@ -83,10 +83,6 @@ class WilsonGaugeAction : public Action<typename Gimpl::GaugeField> {
       WilsonLoops<Gimpl>::Staple(dSdU_mu, U, mu);
       dSdU_mu = Ta(Umu * dSdU_mu) * factor;
 
-      // this is faster but dedicated to periodic bc
-//      WilsonLoops<Gimpl>::StapleMult(dSdU_mu, U, mu);
-//      dSdU_mu = Ta(dSdU_mu) * factor;
-
       PokeIndex<LorentzIndex>(dSdU, dSdU_mu, mu);
     }
   }

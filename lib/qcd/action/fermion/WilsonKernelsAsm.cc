@@ -103,10 +103,6 @@ template void WilsonKernels<A>::AsmDhopSiteDagExt(StencilImpl &st,LebesgueOrder 
 
 INSTANTIATE_ASM(WilsonImplF);
 INSTANTIATE_ASM(WilsonImplD);
-INSTANTIATE_ASM(QCDpt::PWilsonSmellImplF);
-INSTANTIATE_ASM(QCDpt::PWilsonSmellImplD);
-INSTANTIATE_ASM(QCDpt::WilsonSmellImplF);
-INSTANTIATE_ASM(QCDpt::WilsonSmellImplD);
 INSTANTIATE_ASM(ZWilsonImplF);
 INSTANTIATE_ASM(ZWilsonImplD);
 INSTANTIATE_ASM(GparityWilsonImplF);
@@ -127,5 +123,27 @@ INSTANTIATE_ASM(DomainWallVec5dImplDF);
 INSTANTIATE_ASM(ZDomainWallVec5dImplFH);
 INSTANTIATE_ASM(ZDomainWallVec5dImplDF);
 
-}}
 
+// Disable Asm kernel in the perturbative case
+#define NOTINSTANTIATE_ASM(A)\
+template<> void WilsonKernels<A>::AsmDhopSite(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U, SiteHalfSpinor *buf,\
+                                  int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out){assert(0);}\
+ \
+template<> void WilsonKernels<A>::AsmDhopSiteDag(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U, SiteHalfSpinor *buf,\
+                                  int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out){assert(0);}\
+template<> void WilsonKernels<A>::AsmDhopSiteInt(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U, SiteHalfSpinor *buf,\
+                                  int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out){assert(0);}\
+ \
+template<> void WilsonKernels<A>::AsmDhopSiteDagInt(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U, SiteHalfSpinor *buf,\
+                                  int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out){assert(0);}\
+template<> void WilsonKernels<A>::AsmDhopSiteExt(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U, SiteHalfSpinor *buf,\
+                                  int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out){assert(0);}\
+ \
+template<> void WilsonKernels<A>::AsmDhopSiteDagExt(StencilImpl &st,LebesgueOrder & lo,DoubledGaugeField &U, SiteHalfSpinor *buf,\
+                                  int ss,int ssU,int Ls,int Ns,const FermionField &in, FermionField &out){assert(0);}\
+
+NOTINSTANTIATE_ASM(QCDpt::PWilsonSmellImplF);
+NOTINSTANTIATE_ASM(QCDpt::PWilsonSmellImplD);
+NOTINSTANTIATE_ASM(QCDpt::WilsonSmellImplF);
+NOTINSTANTIATE_ASM(QCDpt::WilsonSmellImplD);
+}}

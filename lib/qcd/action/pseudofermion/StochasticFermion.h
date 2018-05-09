@@ -118,8 +118,17 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
       // Real part of Xi is gaussian with sigma = 1/sqrt(2),
       // same for imaginary part.
       // In this way < Xi^dag_a Xi_b > = delta_ab
+      
+      // GAUSSIAN NOISE
       gaussian(*pRNG,Xi);
       Xi *= M_SQRT1_2;
+      
+      // Z2 NOISE
+//      Complex shift(M_SQRT1_2,M_SQRT1_2);
+//      typename Impl::SOimpl::SiteSpinor shiftmat;
+//      for(int a=0; a<Nc; a++) for(int b=0; b<Nc; b++) pokeColour(shiftmat,shift,a,b);
+//      bernoulli(*pRNG,Xi);
+//      Xi = M_SQRT2*Xi - shiftmat;
       
 #ifdef OSX_TO_STD_RNG
       Complex im(0.,1.);
@@ -136,6 +145,10 @@ class StochasticFermionAction : public Action<typename Impl::GaugeField> {
           for (int j=0; j<=n; j++) {
               Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerYes);
               Uforce += Uso;
+              // the following three lines enable the non optimised fermion drift
+//              Dw[n-j].MDeriv(Uso, Xi, psi[j], DaggerNo);
+//              Uforce += Uso;
+//              Uforce *= 0.5;
           }
           // the "+2" shift is due to the 1/beta factor in front of the fermion drift.
           // the first two orders are already set to zero.
@@ -271,8 +284,17 @@ class StochasticStaggeredAction : public Action<typename Impl::GaugeField> {
       // Real part of Xi is gaussian with sigma = 1/sqrt(2),
       // same for imaginary part.
       // In this way < Xi^dag_a Xi_b > = delta_ab
+      
+      // GAUSSIAN NOISE
       gaussian(*pRNG,Xi);
       Xi *= M_SQRT1_2;
+      
+      // Z2 NOISE
+//      Complex shift(M_SQRT1_2,M_SQRT1_2);
+//      typename Impl::SOimpl::SiteSpinor shiftmat;
+//      for(int a=0; a<Nc; a++) for(int b=0; b<Nc; b++) pokeColour(shiftmat,shift,a,b);
+//      bernoulli(*pRNG,Xi);
+//      Xi = M_SQRT2*Xi - shiftmat;
       
 #ifdef OSX_TO_STD_RNG
       Complex im(0.,1.);
@@ -289,6 +311,10 @@ class StochasticStaggeredAction : public Action<typename Impl::GaugeField> {
           for (int j=0; j<=n; j++) {
               Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerYes);
               Uforce += Uso;
+              // the following three lines enable the non optimised fermion drift
+//              Dw[n-j].MDeriv(Uso, Xi, psi[j], DaggerNo);
+//              Uforce += Uso;
+//              Uforce *= 0.5;
           }
           // the "+2" shift is due to the 1/beta factor in front of the fermion drift.
           // the first two orders are already set to zero.

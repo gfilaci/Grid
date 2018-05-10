@@ -54,7 +54,7 @@ public:
     std::string StartingType;
     std::vector<int> rngseed;
     
-    std::string basename, nameprefix = "";;
+    std::string basename, nameprefix = "";
     CheckpointerParameters CPparams;
     
     StochasticStaggeredAction<PFermionImpl> *FA;
@@ -165,7 +165,7 @@ public:
         basename = initialiseName();
         
         CPparams.config_prefix = basename + "_lat";
-        CPparams.rng_prefix = basename + "_rng";;
+        CPparams.rng_prefix = basename + "_rng";
         CPparams.saveInterval = 1;
         CPparams.format = "IEEE64BIG";
         
@@ -253,7 +253,7 @@ public:
         if(Params.StartingType=="LowerOrderStart"){
             CheckpointerParameters CPparams_low;
             CPparams_low.config_prefix = Params.initialiseName(load_Nplow) + "_lat";
-            CPparams_low.rng_prefix = Params.initialiseName(load_Nplow) + "_rng";;
+            CPparams_low.rng_prefix = Params.initialiseName(load_Nplow) + "_rng";
             CPparams_low.saveInterval = 1;
             CPparams_low.format = "IEEE64BIG";
             ScidacHmcCheckpointer<TwistedGaugeImpl<GaugeImplTypes_pt<vComplex,Nc,load_Nplow>>,ActionParameters> CPlow(CPparams_low);

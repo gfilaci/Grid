@@ -38,6 +38,14 @@ namespace QCDpt {
 // change if needed
 const int load_Nplow = Np - 2;
 
+struct ActionParameters: Serializable {
+    GRID_SERIALIZABLE_CLASS_MEMBERS(ActionParameters,
+				    double, beta)
+
+    ActionParameters() = default;
+
+  };
+
 template <class PFermionImpl>
 class LangevinParams {
 public:
@@ -63,7 +71,7 @@ public:
     std::string StartingType;
     std::vector<int> rngseed;
     
-    std::string basename;
+    std::string basename, nameprefix = "";
     CheckpointerParameters CPparams;
     
     StochasticFermionAction<PFermionImpl> *FA;
@@ -184,6 +192,10 @@ public:
             std::exit(EXIT_FAILURE);
         }
         
+        if( GridCmdOptionExists(argv,argv+argc,"--prefix") ){
+            nameprefix = GridCmdOptionPayload(argv,argv+argc,"--prefix");
+        }
+        
         basename = initialiseName();
         
         CPparams.config_prefix = basename + "_lat";
@@ -198,7 +210,7 @@ public:
         std::stringstream ss;
         std::string _basename;
         
-        _basename = "SU";
+        _basename = nameprefix + "SU";
         ss << Nc;
         _basename += ss.str() + "_";
         ss.str(std::string());
@@ -260,7 +272,7 @@ protected:
     LangevinParams<PFermionImpl> Params;
     PertLangevin<gimpl> L;
     
-    BinaryHmcCheckpointer<gimpl> CP;
+    ScidacHmcCheckpointer<gimpl,ActionParameters> CP;
     
 public:
     
@@ -280,7 +292,7 @@ public:
             CPparams_low.rng_prefix = Params.initialiseName(load_Nplow) + "_rng";;
             CPparams_low.saveInterval = 1;
             CPparams_low.format = "IEEE64BIG";
-            BinaryHmcCheckpointer<TwistedGaugeImpl<GaugeImplTypes_pt<vComplex,Nc,load_Nplow>>> CPlow(CPparams_low);
+            ScidacHmcCheckpointer<TwistedGaugeImpl<GaugeImplTypes_pt<vComplex,Nc,load_Nplow>>,ActionParameters> CPlow(CPparams_low);
             LoadLowerOrder(&CPlow);
             Params.StartTrajectory = -1;
         } else if(Params.StartingType=="ColdStart"){
@@ -555,7 +567,7 @@ public:
     }
     
     template <class impl>
-    void LoadLowerOrder(BinaryHmcCheckpointer<impl> *CPlow){
+    void LoadLowerOrder(ScidacHmcCheckpointer<impl,ActionParameters> *CPlow){
         Lattice<iVector<iScalar<iPert<iMatrix<vComplex,Nc>,load_Nplow>>,Nd>> Ulow(grid);
         iVector<iScalar<iPert<iMatrix<Complex,Nc>,load_Nplow>>,Nd> tmplow = zero;
         

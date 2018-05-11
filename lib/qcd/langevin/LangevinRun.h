@@ -198,8 +198,8 @@ public:
         
         basename = initialiseName();
         
-        CPparams.config_prefix = basename + "_lat";
-        CPparams.rng_prefix = basename + "_rng";
+        CPparams.config_prefix = nameprefix + basename + "_lat";
+        CPparams.rng_prefix = nameprefix + basename + "_rng";
         CPparams.saveInterval = 1;
         CPparams.format = "IEEE64BIG";
         
@@ -210,7 +210,7 @@ public:
         std::stringstream ss;
         std::string _basename;
         
-        _basename = nameprefix + "SU";
+        _basename = "SU";
         ss << Nc;
         _basename += ss.str() + "_";
         ss.str(std::string());
@@ -288,8 +288,8 @@ public:
         
         if(Params.StartingType=="LowerOrderStart"){
             CheckpointerParameters CPparams_low;
-            CPparams_low.config_prefix = Params.initialiseName(load_Nplow) + "_lat";
-            CPparams_low.rng_prefix = Params.initialiseName(load_Nplow) + "_rng";
+            CPparams_low.config_prefix = Params.nameprefix + Params.initialiseName(load_Nplow) + "_lat";
+            CPparams_low.rng_prefix = Params.nameprefix + Params.initialiseName(load_Nplow) + "_rng";
             CPparams_low.saveInterval = 1;
             CPparams_low.format = "IEEE64BIG";
             ScidacHmcCheckpointer<TwistedGaugeImpl<GaugeImplTypes_pt<vComplex,Nc,load_Nplow>>,ActionParameters> CPlow(CPparams_low);

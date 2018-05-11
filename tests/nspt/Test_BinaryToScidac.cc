@@ -2,7 +2,7 @@
 
 Grid physics library, www.github.com/paboyle/Grid 
 
-Source file: ./tests/nspt/Test_runstaggered.cc
+Source file: ./tests/nspt/Test_BinaryToScidac.cc
 
 Copyright (C) 2015-2017
 
@@ -33,6 +33,7 @@ using namespace QCD;
 using namespace QCDpt;
 
 /*
+ Use --configname, --rngname and --number to choose the file.
  Filenames must have the structure
  
  configname.number
@@ -46,12 +47,6 @@ using namespace QCDpt;
  The lattice size must be given with --grid
  and Grid must be compiled with the correct Np
  */
-/***************************************/
-typedef TwistedGimpl_ptR gimpl;
-string configname = "nameofthecfg";
-string rngname    = "nameofrnd";
-int number = 0;
-/***************************************/
 
 int main(int argc, char *argv[]) {
     
@@ -66,7 +61,31 @@ int main(int argc, char *argv[]) {
     GridParallelRNG pRNG(&Grid);
     GridSerialRNG   sRNG;
     
+    typedef TwistedGimpl_ptR gimpl;
     typename gimpl::GaugeField U(&Grid);
+    string configname, rngname;
+    int number;
+    
+    if( GridCmdOptionExists(argv,argv+argc,"--configname") ){
+        configname = GridCmdOptionPayload(argv,argv+argc,"--configname");
+    } else{
+        std::cout << "ERROR: choose the name of the configuration with --configname" << std::endl;
+        return EXIT_FAILURE;
+    }
+    if( GridCmdOptionExists(argv,argv+argc,"--rngname") ){
+        rngname = GridCmdOptionPayload(argv,argv+argc,"--rngname");
+    } else{
+        std::cout << "ERROR: choose the name of the rng checkpoint with --rngname" << std::endl;
+        return EXIT_FAILURE;
+    }
+    if( GridCmdOptionExists(argv,argv+argc,"--number") ){
+        string arg = GridCmdOptionPayload(argv,argv+argc,"--number");
+        std::stringstream ss(arg);
+        ss>>number;
+    } else{
+        std::cout << "ERROR: choose the number of the configuration with --number" << std::endl;
+        return EXIT_FAILURE;
+    }
     
     CheckpointerParameters BCPparams;
     CheckpointerParameters SCPparams;

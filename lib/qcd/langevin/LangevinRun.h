@@ -416,9 +416,7 @@ public:
             std::cout << GridLogError << "Unable to open plaquette file" << std::endl;
             exit(EXIT_FAILURE);
         }
-        
-        plaqfile.precision(30);
-        plaqfile << std::scientific;
+        plaqfile << std::setprecision(std::numeric_limits<Real>::digits10) << std::scientific;
     }
     
     void openlivePlaq(){
@@ -428,8 +426,7 @@ public:
             std::cout << GridLogError << "Unable to open live plaquette file" << std::endl;
             exit(EXIT_FAILURE);
         }
-        liveplaqfile.precision(30);
-        liveplaqfile << std::scientific;
+        liveplaqfile << std::setprecision(std::numeric_limits<Real>::digits10) << std::scientific;
     }
     
     void openNorm(){
@@ -452,10 +449,7 @@ public:
             std::cout << GridLogError << "Unable to open norm file" << std::endl;
             exit(EXIT_FAILURE);
         }
-        
-        normfile.precision(30);
-        normfile << std::scientific;
-        
+        normfile << std::setprecision(std::numeric_limits<Real>::digits10) << std::scientific;
     }
     
     void openProp(){

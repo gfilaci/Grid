@@ -42,7 +42,7 @@ struct ActionParameters: Serializable {
     GRID_SERIALIZABLE_CLASS_MEMBERS(ActionParameters,
 				    double, beta)
 
-    ActionParameters() = default;
+    ActionParameters(): beta(0.) {};
 
   };
 

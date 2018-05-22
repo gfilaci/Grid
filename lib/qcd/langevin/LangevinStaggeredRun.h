@@ -54,20 +54,20 @@ public:
     std::string StartingType;
     std::vector<int> rngseed;
     
-    std::string basename, nameprefix = "";
+    std::string basename, nameprefix = "", fermion_action;
     CheckpointerParameters CPparams;
     
-    StochasticStaggeredAction<PFermionImpl> *FA;
+    // pointer to a generic staggered action
+    Action<typename PFermionImpl::GaugeField> *FA;
     
     // in the quenched case, the parameters Nf, mass and boundary_phases can be omitted
-    LangevinStaggeredParams(int argc, char **argv, int Nf_=0, RealD mass_=0., std::vector<Complex> boundary_phases_={0.}, StochasticStaggeredAction<PFermionImpl> *FA_ = NULL):
-    FA(FA_)
-    {
-    
+    LangevinStaggeredParams(int argc, char **argv, int Nf_=0, RealD mass_=0., std::vector<Complex> boundary_phases_={0.}, Action<typename PFermionImpl::GaugeField> *FA_ = NULL):
+    FA(FA_){
         std::string arg;
         
         Nf = Nf_;
         if(Nf_!=0){
+            fermion_action = FA->action_name();
             mass = mass_;
             boundary_phases = boundary_phases_;
         }
@@ -305,25 +305,26 @@ public:
         
         log << std::endl << "/**********************************************/" << std::endl;
         log << now() << std::endl << std::endl;
-        log << "ORDERS:       " << Np << std::endl;
-        log << "GAUGE GROUP:  SU(" << Nc << ")" << std::endl;
-        log << "FERMIONS:     ";
+        log << "ORDERS:         " << Np << std::endl;
+        log << "GAUGE GROUP:    SU(" << Nc << ")" << std::endl;
+        log << "FERMIONS:       ";
         if(Params.Nf!=0) {
             log << "Nf=" << Params.Nf << " staggered fermions with mass" << std::endl;
-            log << "              " << Params.mass <<std::endl;
-            log << "              and boundary phases" << std::endl;
-            log << "              " << Params.boundary_phases <<std::endl;
+            log << "                " << Params.mass <<std::endl;
+            log << "                and boundary phases" << std::endl;
+            log << "                " << Params.boundary_phases <<std::endl;
+            log << "FERMION ACTION: " << Params.fermion_action << std::endl;
         } else{
             log << "no fermions" << std::endl;
         }
         
-        log<<"TWISTED BC:   directions ";
+        log<<"TWISTED BC:     directions ";
         for (int d=0; d<Nd; d++) {
             if(istwisted(d)) log << d << " ";
         }
         log << std::endl;
         
-        log << "LATTICE:      " << GridCmdVectorIntToString(GridDefaultLatt()) << std::endl;
+        log << "LATTICE:        " << GridCmdVectorIntToString(GridDefaultLatt()) << std::endl;
         
         log << std::endl;
         

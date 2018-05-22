@@ -150,6 +150,22 @@ template <>
 void WilsonFermion<QCDpt::StaggeredSmellImplD>::Mooee(const FermionField &in, FermionField &out) {
   assert(0);
 }
+template <>
+void WilsonFermion<QCDpt::PStaggeredAdjointImplF>::Mooee(const FermionField &in, FermionField &out) {
+    assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::PStaggeredAdjointImplD>::Mooee(const FermionField &in, FermionField &out) {
+    assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::StaggeredAdjointImplF>::Mooee(const FermionField &in, FermionField &out) {
+    assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::StaggeredAdjointImplD>::Mooee(const FermionField &in, FermionField &out) {
+    assert(0);
+}
 
 template <class Impl>
 void StaggeredFermion<Impl>::MooeeInv(const FermionField &in, FermionField &out) {
@@ -173,6 +189,22 @@ void WilsonFermion<QCDpt::StaggeredSmellImplF>::MooeeInv(const FermionField &in,
 template <>
 void WilsonFermion<QCDpt::StaggeredSmellImplD>::MooeeInv(const FermionField &in, FermionField &out) {
   assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::PStaggeredAdjointImplF>::MooeeInv(const FermionField &in, FermionField &out) {
+    assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::PStaggeredAdjointImplD>::MooeeInv(const FermionField &in, FermionField &out) {
+    assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::StaggeredAdjointImplF>::MooeeInv(const FermionField &in, FermionField &out) {
+    assert(0);
+}
+template <>
+void WilsonFermion<QCDpt::StaggeredAdjointImplD>::MooeeInv(const FermionField &in, FermionField &out) {
+    assert(0);
 }
 
 template <class Impl>
@@ -357,6 +389,10 @@ template class StaggeredFermion<QCDpt::PStaggeredSmellImplF>;
 template class StaggeredFermion<QCDpt::PStaggeredSmellImplD>;
 template class StaggeredFermion<QCDpt::StaggeredSmellImplF>;
 template class StaggeredFermion<QCDpt::StaggeredSmellImplD>;
+template class StaggeredFermion<QCDpt::PStaggeredAdjointImplF>;
+template class StaggeredFermion<QCDpt::PStaggeredAdjointImplD>;
+template class StaggeredFermion<QCDpt::StaggeredAdjointImplF>;
+template class StaggeredFermion<QCDpt::StaggeredAdjointImplD>;
 template class StaggeredFermion<QCDpt::NaiveStaggeredImplF>;
 template class StaggeredFermion<QCDpt::NaiveStaggeredImplD>;
 

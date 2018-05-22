@@ -333,10 +333,10 @@ class StochasticStaggeredAction : public Action<typename Impl::GaugeField> {
             Uso = peekPert(U,k);
             Dw[k].ImportGauge(Uso);
         }
-        
+
         // apply M0^-1 to Xi
         TheFFT.FreeStaggeredOperatorInverse(psi[0],Xi);
-        
+
         for (int n=1; n<Npf; n++){
             psi[n] = zero;
             for (int j=0; j<n; j++) {
@@ -445,13 +445,30 @@ public:
     //////////////////////////////////////////////////////
     virtual void deriv(const GaugeField &U, GaugeField &dSdU) {
         
+//        Complex ci(0.,1.);//$//
+        ColourMatrix ta;
+        Xi = zero;
+        LatticeReal ca(grid);
+        for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
+            gaussian(*pRNG, ca);
+//            std::cout<<"-----ca-----"<<std::endl;
+//            std::cout<<ca<<std::endl;
+            SU<Nc>::generator(a, ta);
+//            std::cout<<"-----ta-----"<<std::endl;
+//            std::cout<<ta<<std::endl;
+            Xi += toComplex(ca) * ta;
+//            std::cout<<"-----Xi-----"<<std::endl;
+//            std::cout<<Xi<<std::endl;std::exit(0);
+        }
+//        Xi *= ci;
+        
         // Real part of Xi is gaussian with sigma = 1/sqrt(2),
         // same for imaginary part.
         // In this way < Xi^dag_a Xi_b > = delta_ab
         
         // GAUSSIAN NOISE
-        gaussian(*pRNG,Xi);
-        Xi *= M_SQRT1_2;
+//        gaussian(*pRNG,Xi);
+//        Xi *= M_SQRT1_2;
         
         // Z2 NOISE
         //      Complex shift(M_SQRT1_2,M_SQRT1_2);
@@ -497,10 +514,10 @@ public:
             Uso = peekPert(U,k);
             Dw[k].ImportGauge(Uso);
         }
-        
+
         // apply M0^-1 to Xi
         TheFFT.FreeStaggeredOperatorInverse(psi[0],Xi);
-        
+
         for (int n=1; n<Npf; n++){
             psi[n] = zero;
             for (int j=0; j<n; j++) {

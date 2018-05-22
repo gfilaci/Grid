@@ -27,7 +27,7 @@ See the full license in the file "LICENSE" in the top level distribution directo
     /*  END LEGAL */
 #include <Grid/Grid.h>
 
-//#define testadjoint
+#define testadjoint
 
 using namespace std;
 using namespace Grid;

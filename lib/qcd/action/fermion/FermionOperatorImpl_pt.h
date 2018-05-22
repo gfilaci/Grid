@@ -732,9 +732,71 @@ class PStaggeredSmellImpl : public TwistedGaugeImpl<GaugeImplTypes_pt<S, Represe
 			 int mu,
              StencilEntry *SE,
                          StencilImpl &St) {
-        SiteSpinor phitmp;
-        mult(&phitmp(), &U(mu), &chi());
-        mult(&phi(), &phitmp(), &U(mu+Nds));
+        
+        typedef SiteSpinor vobj;
+        typedef typename SiteSpinor::scalar_object sobj;
+        
+        vobj vtmp;
+        
+        GridBase *grid = St._grid;
+        
+        const int Nsimd = grid->Nsimd();
+        
+        int direction = St._directions[mu];
+        int distance = St._distances[mu];
+        int ptype = St._permute_type[mu];
+        int sl = St._grid->_simd_layout[direction];
+        
+        // Fixme X.Y.Z.T hardcode in stencil
+        int mmu = mu % Nd;
+        
+        // assert our assumptions
+        assert((distance == 1) || (distance == -1));  // nearest neighbour stencil hard code
+        assert((sl == 1) || (sl == 2));
+        
+        std::vector<int> icoor;
+        
+        if ( SE->_around_the_world && istwisted(mmu) ) {
+            
+            if ( sl == 2 ) {
+                
+                std::vector<sobj> vals(Nsimd);
+                
+                extract(chi,vals);
+                for(int s=0;s<Nsimd;s++){
+                    
+                    grid->iCoorFromIindex(icoor,s);
+                    
+                    assert((icoor[direction]==0)||(icoor[direction]==1));
+                    
+                    int permute_lane;
+                    if ( distance == 1) {
+                        permute_lane = icoor[direction]?1:0;
+                    } else {
+                        permute_lane = icoor[direction]?0:1;
+                    }
+                    
+                    if ( permute_lane ) {
+                        // distance = +1  -->  (U*omega) (psi*omegadag)
+                        // distance = -1  -->  (omegadag*U) (psi*omega)
+                        if(distance == 1) vals[s] = vals[s]*Gimpl::twist.adjomega[mmu];
+                        else vals[s] = vals[s]*Gimpl::twist.omega[mmu];
+                    }
+                }
+                merge(vtmp,vals);
+                
+            } else {
+                // distance = +1  -->  (U*omega) (psi*omegadag)
+                // distance = -1  -->  (omegadag*U) (psi*omega)
+                if(distance == 1) vtmp = chi*Gimpl::twist.adjomega[mmu];
+                else vtmp = chi*Gimpl::twist.omega[mmu];
+            }
+            mult(&phi(), &U(mu), &vtmp());
+            
+        } else {
+            mult(&phi(), &U(mu), &chi());
+        }
+        
     }
     inline void multLinkAdd(SiteSpinor &phi,
 			    const SiteDoubledGaugeField &U,
@@ -742,9 +804,71 @@ class PStaggeredSmellImpl : public TwistedGaugeImpl<GaugeImplTypes_pt<S, Represe
 			    int mu,
                 StencilEntry *SE,
                             StencilImpl &St) {
-        SiteSpinor phitmp;
-        mac(&phitmp(), &U(mu), &chi());
-        mac(&phi(), &phitmp(), &U(mu+Nds));
+        
+        typedef SiteSpinor vobj;
+        typedef typename SiteSpinor::scalar_object sobj;
+        
+        vobj vtmp;
+        
+        GridBase *grid = St._grid;
+        
+        const int Nsimd = grid->Nsimd();
+        
+        int direction = St._directions[mu];
+        int distance = St._distances[mu];
+        int ptype = St._permute_type[mu];
+        int sl = St._grid->_simd_layout[direction];
+        
+        // Fixme X.Y.Z.T hardcode in stencil
+        int mmu = mu % Nd;
+        
+        // assert our assumptions
+        assert((distance == 1) || (distance == -1));  // nearest neighbour stencil hard code
+        assert((sl == 1) || (sl == 2));
+        
+        std::vector<int> icoor;
+        
+        if ( SE->_around_the_world && istwisted(mmu) ) {
+            
+            if ( sl == 2 ) {
+                
+                std::vector<sobj> vals(Nsimd);
+                
+                extract(chi,vals);
+                for(int s=0;s<Nsimd;s++){
+                    
+                    grid->iCoorFromIindex(icoor,s);
+                    
+                    assert((icoor[direction]==0)||(icoor[direction]==1));
+                    
+                    int permute_lane;
+                    if ( distance == 1) {
+                        permute_lane = icoor[direction]?1:0;
+                    } else {
+                        permute_lane = icoor[direction]?0:1;
+                    }
+                    
+                    if ( permute_lane ) {
+                        // distance = +1  -->  (U*omega) (psi*omegadag)
+                        // distance = -1  -->  (omegadag*U) (psi*omega)
+                        if(distance == 1) vals[s] = vals[s]*Gimpl::twist.adjomega[mmu];
+                        else vals[s] = vals[s]*Gimpl::twist.omega[mmu];
+                    }
+                }
+                merge(vtmp,vals);
+                
+            } else {
+                // distance = +1  -->  (U*omega) (psi*omegadag)
+                // distance = -1  -->  (omegadag*U) (psi*omega)
+                if(distance == 1) vtmp = chi*Gimpl::twist.adjomega[mmu];
+                else vtmp = chi*Gimpl::twist.omega[mmu];
+            }
+            mac(&phi(), &U(mu), &vtmp());
+            
+        } else {
+            mac(&phi(), &U(mu), &chi());
+        }
+        
     }
       
     template <class ref>
@@ -1002,7 +1126,7 @@ public:
                             StencilEntry *SE,
                             StencilImpl &St) {
         SiteSpinor phitmp;
-        mac(&phitmp(), &U(mu), &chi());
+        mult(&phitmp(), &U(mu), &chi());
         mac(&phi(), &phitmp(), &U(mu+Nds));
     }
     
@@ -1143,144 +1267,20 @@ public:
                          const SiteSpinor &chi,
                          int mu,
                          StencilEntry *SE,
-                         StencilImpl &St) {
-        
-        typedef SiteSpinor vobj;
-        typedef typename SiteSpinor::scalar_object sobj;
-        
-        vobj vtmp;
-        
-        GridBase *grid = St._grid;
-        
-        const int Nsimd = grid->Nsimd();
-        
-        int direction = St._directions[mu];
-        int distance = St._distances[mu];
-        int ptype = St._permute_type[mu];
-        int sl = St._grid->_simd_layout[direction];
-        
-        // Fixme X.Y.Z.T hardcode in stencil
-        int mmu = mu % Nd;
-        
-        // assert our assumptions
-        assert((distance == 1) || (distance == -1));  // nearest neighbour stencil hard code
-        assert((sl == 1) || (sl == 2));
-        
-        std::vector<int> icoor;
-        
-        if ( SE->_around_the_world && istwisted(mmu) ) {
-            
-            if ( sl == 2 ) {
-                
-                std::vector<sobj> vals(Nsimd);
-                
-                extract(chi,vals);
-                for(int s=0;s<Nsimd;s++){
-                    
-                    grid->iCoorFromIindex(icoor,s);
-                    
-                    assert((icoor[direction]==0)||(icoor[direction]==1));
-                    
-                    int permute_lane;
-                    if ( distance == 1) {
-                        permute_lane = icoor[direction]?1:0;
-                    } else {
-                        permute_lane = icoor[direction]?0:1;
-                    }
-                    
-                    if ( permute_lane ) {
-                        // distance = +1  -->  (U*omega) (psi*omegadag)
-                        // distance = -1  -->  (omegadag*U) (psi*omega)
-                        if(distance == 1) vals[s] = vals[s]*Gimpl::twist.adjomega[mmu];
-                        else vals[s] = vals[s]*Gimpl::twist.omega[mmu];
-                    }
-                }
-                merge(vtmp,vals);
-                
-            } else {
-                // distance = +1  -->  (U*omega) (psi*omegadag)
-                // distance = -1  -->  (omegadag*U) (psi*omega)
-                if(distance == 1) vtmp = chi*Gimpl::twist.adjomega[mmu];
-                else vtmp = chi*Gimpl::twist.omega[mmu];
-            }
-            mult(&phi(), &U(mu), &vtmp());
-            
-        } else {
-            mult(&phi(), &U(mu), &chi());
-        }
-        
+                         StencilImpl &St){
+        SiteSpinor phitmp;
+        mult(&phitmp(), &U(mu), &chi());
+        mult(&phi(), &phitmp(), &U(mu+Nds));
     }
     inline void multLinkAdd(SiteSpinor &phi,
                             const SiteDoubledGaugeField &U,
                             const SiteSpinor &chi,
                             int mu,
                             StencilEntry *SE,
-                            StencilImpl &St) {
-        
-        typedef SiteSpinor vobj;
-        typedef typename SiteSpinor::scalar_object sobj;
-        
-        vobj vtmp;
-        
-        GridBase *grid = St._grid;
-        
-        const int Nsimd = grid->Nsimd();
-        
-        int direction = St._directions[mu];
-        int distance = St._distances[mu];
-        int ptype = St._permute_type[mu];
-        int sl = St._grid->_simd_layout[direction];
-        
-        // Fixme X.Y.Z.T hardcode in stencil
-        int mmu = mu % Nd;
-        
-        // assert our assumptions
-        assert((distance == 1) || (distance == -1));  // nearest neighbour stencil hard code
-        assert((sl == 1) || (sl == 2));
-        
-        std::vector<int> icoor;
-        
-        if ( SE->_around_the_world && istwisted(mmu) ) {
-            
-            if ( sl == 2 ) {
-                
-                std::vector<sobj> vals(Nsimd);
-                
-                extract(chi,vals);
-                for(int s=0;s<Nsimd;s++){
-                    
-                    grid->iCoorFromIindex(icoor,s);
-                    
-                    assert((icoor[direction]==0)||(icoor[direction]==1));
-                    
-                    int permute_lane;
-                    if ( distance == 1) {
-                        permute_lane = icoor[direction]?1:0;
-                    } else {
-                        permute_lane = icoor[direction]?0:1;
-                    }
-                    
-                    if ( permute_lane ) {
-                        // distance = +1  -->  (U*omega) (psi*omegadag)
-                        // distance = -1  -->  (omegadag*U) (psi*omega)
-                        if(distance == 1) vals[s] = vals[s]*Gimpl::twist.adjomega[mmu];
-                        else vals[s] = vals[s]*Gimpl::twist.omega[mmu];
-                    }
-                }
-                merge(vtmp,vals);
-                
-            } else {
-                // distance = +1  -->  (U*omega) (psi*omegadag)
-                // distance = -1  -->  (omegadag*U) (psi*omega)
-                if(distance == 1) vtmp = chi*Gimpl::twist.adjomega[mmu];
-                else vtmp = chi*Gimpl::twist.omega[mmu];
-            }
-            mac(&phi(), &U(mu), &vtmp());
-            
-        } else {
-            mac(&phi(), &U(mu), &chi());
-        }
-        
+                            StencilImpl &St){
+        SiteSpinor phitmp;
+        mult(&phitmp(), &U(mu), &chi());
+        mac(&phi(), &phitmp(), &U(mu+Nds));
     }
     
     template <class ref>

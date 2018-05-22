@@ -704,7 +704,7 @@ class PStaggeredSmellImpl : public TwistedGaugeImpl<GaugeImplTypes_pt<S, Represe
       
     template <typename vtype> using iImplSpinor            = iScalar<iScalar<iPert<iMatrix<vtype, Dimension>, Np> > >;
     template <typename vtype> using iImplHalfSpinor        = iScalar<iScalar<iPert<iVector<vtype, Dimension>, Np> > >;
-    template <typename vtype> using iImplDoubledGaugeField = iVector<iScalar<iPert<iMatrix<vtype, Dimension>, Np> >, Nds>;
+    template <typename vtype> using iImplDoubledGaugeField = iVector<iScalar<iPert<iMatrix<vtype, Dimension>, Np> >, 2*Nds>;
     template <typename vtype> using iImplPropagator        = iScalar<iScalar<iPert<iMatrix<vtype, Dimension>, Np> > >;
     
     typedef iImplSpinor<Simd>            SiteSpinor;
@@ -731,144 +731,20 @@ class PStaggeredSmellImpl : public TwistedGaugeImpl<GaugeImplTypes_pt<S, Represe
 			 const SiteSpinor &chi,
 			 int mu,
              StencilEntry *SE,
-             StencilImpl &St) {
-        
-        typedef SiteSpinor vobj;
-        typedef typename SiteSpinor::scalar_object sobj;
-        
-        vobj vtmp;
-        
-        GridBase *grid = St._grid;
-        
-        const int Nsimd = grid->Nsimd();
-        
-        int direction = St._directions[mu];
-        int distance = St._distances[mu];
-        int ptype = St._permute_type[mu];
-        int sl = St._grid->_simd_layout[direction];
-        
-        // Fixme X.Y.Z.T hardcode in stencil
-        int mmu = mu % Nd;
-        
-        // assert our assumptions
-        assert((distance == 1) || (distance == -1));  // nearest neighbour stencil hard code
-        assert((sl == 1) || (sl == 2));
-        
-        std::vector<int> icoor;
-        
-        if ( SE->_around_the_world && istwisted(mmu) ) {
-            
-            if ( sl == 2 ) {
-                
-                std::vector<sobj> vals(Nsimd);
-                
-                extract(chi,vals);
-                for(int s=0;s<Nsimd;s++){
-                    
-                    grid->iCoorFromIindex(icoor,s);
-                    
-                    assert((icoor[direction]==0)||(icoor[direction]==1));
-                    
-                    int permute_lane;
-                    if ( distance == 1) {
-                        permute_lane = icoor[direction]?1:0;
-                    } else {
-                        permute_lane = icoor[direction]?0:1;
-                    }
-                    
-                    if ( permute_lane ) {
-                        // distance = +1  -->  (U*omega) (psi*omegadag)
-                        // distance = -1  -->  (omegadag*U) (psi*omega)
-                        if(distance == 1) vals[s] = vals[s]*Gimpl::twist.adjomega[mmu];
-                        else vals[s] = vals[s]*Gimpl::twist.omega[mmu];
-                    }
-                }
-                merge(vtmp,vals);
-                
-            } else {
-                // distance = +1  -->  (U*omega) (psi*omegadag)
-                // distance = -1  -->  (omegadag*U) (psi*omega)
-                if(distance == 1) vtmp = chi*Gimpl::twist.adjomega[mmu];
-                else vtmp = chi*Gimpl::twist.omega[mmu];
-            }
-            mult(&phi(), &U(mu), &vtmp());
-            
-        } else { 
-            mult(&phi(), &U(mu), &chi());
-        }
-        
+                         StencilImpl &St) {
+        SiteSpinor phitmp;
+        mult(&phitmp(), &U(mu), &chi());
+        mult(&phi(), &phitmp(), &U(mu+Nds));
     }
     inline void multLinkAdd(SiteSpinor &phi,
 			    const SiteDoubledGaugeField &U,
 			    const SiteSpinor &chi,
 			    int mu,
                 StencilEntry *SE,
-                StencilImpl &St) {
-        
-        typedef SiteSpinor vobj;
-        typedef typename SiteSpinor::scalar_object sobj;
-        
-        vobj vtmp;
-        
-        GridBase *grid = St._grid;
-        
-        const int Nsimd = grid->Nsimd();
-        
-        int direction = St._directions[mu];
-        int distance = St._distances[mu];
-        int ptype = St._permute_type[mu];
-        int sl = St._grid->_simd_layout[direction];
-        
-        // Fixme X.Y.Z.T hardcode in stencil
-        int mmu = mu % Nd;
-        
-        // assert our assumptions
-        assert((distance == 1) || (distance == -1));  // nearest neighbour stencil hard code
-        assert((sl == 1) || (sl == 2));
-        
-        std::vector<int> icoor;
-        
-        if ( SE->_around_the_world && istwisted(mmu) ) {
-            
-            if ( sl == 2 ) {
-                
-                std::vector<sobj> vals(Nsimd);
-                
-                extract(chi,vals);
-                for(int s=0;s<Nsimd;s++){
-                    
-                    grid->iCoorFromIindex(icoor,s);
-                    
-                    assert((icoor[direction]==0)||(icoor[direction]==1));
-                    
-                    int permute_lane;
-                    if ( distance == 1) {
-                        permute_lane = icoor[direction]?1:0;
-                    } else {
-                        permute_lane = icoor[direction]?0:1;
-                    }
-                    
-                    if ( permute_lane ) {
-                        // distance = +1  -->  (U*omega) (psi*omegadag)
-                        // distance = -1  -->  (omegadag*U) (psi*omega)
-                        if(distance == 1) vals[s] = vals[s]*Gimpl::twist.adjomega[mmu];
-                        else vals[s] = vals[s]*Gimpl::twist.omega[mmu];
-                    }
-                }
-                merge(vtmp,vals);
-                
-            } else {
-                // distance = +1  -->  (U*omega) (psi*omegadag)
-                // distance = -1  -->  (omegadag*U) (psi*omega)
-                if(distance == 1) vtmp = chi*Gimpl::twist.adjomega[mmu];
-                else vtmp = chi*Gimpl::twist.omega[mmu];
-            }
-            mac(&phi(), &U(mu), &vtmp());
-            
-        } else { 
-            mac(&phi(), &U(mu), &chi());
-        }
-        
+                            StencilImpl &St) {
+        SiteSpinor phitmp;
+        mac(&phitmp(), &U(mu), &chi());
+        mac(&phi(), &phitmp(), &U(mu+Nds));
     }
       
     template <class ref>
@@ -877,56 +753,63 @@ class PStaggeredSmellImpl : public TwistedGaugeImpl<GaugeImplTypes_pt<S, Represe
     }
       
     inline void DoubleStore(GridBase *GaugeGrid, DoubledGaugeField &Uds, const GaugeField &Uthin) {
-      conformable(Uds._grid, GaugeGrid);
-      conformable(Uthin._grid, GaugeGrid);
-      GaugeLinkField U(GaugeGrid);
-      GaugeLinkField Udag(GaugeGrid);
-      Lattice<iScalar<vInteger> > coor(GaugeGrid);
-      typedef typename Simd::scalar_type scalar_type;
-      
-      for (int mu = 0; mu < Nd; mu++) {
-
-	// Staggered Phase.
-	Lattice<iScalar<vInteger> > coor(GaugeGrid);
-	Lattice<iScalar<vInteger> > x(GaugeGrid); LatticeCoordinate(x,0);
-	Lattice<iScalar<vInteger> > y(GaugeGrid); LatticeCoordinate(y,1);
-	Lattice<iScalar<vInteger> > z(GaugeGrid); LatticeCoordinate(z,2);
-	Lattice<iScalar<vInteger> > t(GaugeGrid); LatticeCoordinate(t,3);
-
-	Lattice<iScalar<vInteger> > lin_z(GaugeGrid); lin_z=x+y;
-	Lattice<iScalar<vInteger> > lin_t(GaugeGrid); lin_t=x+y+z;
-
-	ComplexField phases(GaugeGrid);	phases=1.0;
-
-	if ( mu == 1 ) phases = where( mod(x    ,2)==(Integer)0, phases,-phases);
-	if ( mu == 2 ) phases = where( mod(lin_z,2)==(Integer)0, phases,-phases);
-	if ( mu == 3 ) phases = where( mod(lin_t,2)==(Integer)0, phases,-phases);
-
-	U      = PeekIndex<LorentzIndex>(Uthin, mu);
-	Udag   = adj( Cshift(U, mu, -1));
-
-	U    = U    *phases;
-	Udag = Udag *phases;
-
-
-    // fermion phase and twist
-    auto pha = Params.boundary_phases[mu];
-    scalar_type phase( real(pha),imag(pha) );
-    int Lmu = GaugeGrid->GlobalDimensions()[mu] - 1;
-    LatticeCoordinate(coor, mu);
-    if(istwisted(mu)){
-        U = where(coor == Lmu, phase * U * Gimpl::twist.omega[mu], U);
-        Udag = where(coor == 0, conjugate(phase) * Gimpl::twist.adjomega[mu] * Udag, Udag);
-    }
-    else{
-        U = where(coor == Lmu, phase * U, U);
-        Udag = where(coor == 0, conjugate(phase) * Udag, Udag);
-    }
-
-	PokeIndex<LorentzIndex>(Uds, U, mu);
-	PokeIndex<LorentzIndex>(Uds, Udag, mu + 4);
-
-      }
+        conformable(Uds._grid, GaugeGrid);
+        conformable(Uthin._grid, GaugeGrid);
+        GaugeLinkField U(GaugeGrid);
+        GaugeLinkField Udag(GaugeGrid);
+        GaugeLinkField U_mirror(GaugeGrid);
+        GaugeLinkField Udag_mirror(GaugeGrid);
+        Lattice<iScalar<vInteger> > coor(GaugeGrid);
+        typedef typename Simd::scalar_type scalar_type;
+        
+        for (int mu = 0; mu < Nd; mu++) {
+            
+            // Staggered Phase.
+            Lattice<iScalar<vInteger> > coor(GaugeGrid);
+            Lattice<iScalar<vInteger> > x(GaugeGrid); LatticeCoordinate(x,0);
+            Lattice<iScalar<vInteger> > y(GaugeGrid); LatticeCoordinate(y,1);
+            Lattice<iScalar<vInteger> > z(GaugeGrid); LatticeCoordinate(z,2);
+            Lattice<iScalar<vInteger> > t(GaugeGrid); LatticeCoordinate(t,3);
+            
+            Lattice<iScalar<vInteger> > lin_z(GaugeGrid); lin_z=x+y;
+            Lattice<iScalar<vInteger> > lin_t(GaugeGrid); lin_t=x+y+z;
+            
+            ComplexField phases(GaugeGrid);    phases=1.0;
+            
+            if ( mu == 1 ) phases = where( mod(x    ,2)==(Integer)0, phases,-phases);
+            if ( mu == 2 ) phases = where( mod(lin_z,2)==(Integer)0, phases,-phases);
+            if ( mu == 3 ) phases = where( mod(lin_t,2)==(Integer)0, phases,-phases);
+            
+            U      = PeekIndex<LorentzIndex>(Uthin, mu);
+            Udag   = adj( Cshift(U, mu, -1));
+            
+            U_mirror    = adj(U);
+            Udag_mirror = adj(Udag);
+            U    = U    *phases;
+            Udag = Udag *phases;
+            
+            
+            // fermion phase and twist
+            auto pha = Params.boundary_phases[mu];
+            scalar_type phase( real(pha),imag(pha) );
+            int Lmu = GaugeGrid->GlobalDimensions()[mu] - 1;
+            LatticeCoordinate(coor, mu);
+            if(istwisted(mu)){
+                U        = where(coor == Lmu, phase * U * Gimpl::twist.omega[mu], U);
+                U_mirror = where(coor == Lmu, Gimpl::twist.adjomega[mu] * U_mirror, U_mirror);
+                Udag        = where(coor == 0, conjugate(phase) * Gimpl::twist.adjomega[mu] * Udag, Udag);
+                Udag_mirror = where(coor == 0, Udag_mirror * Gimpl::twist.omega[mu], Udag_mirror);
+            }
+            else{
+                U = where(coor == Lmu, phase * U, U);
+                Udag = where(coor == 0, conjugate(phase) * Udag, Udag);
+            }
+            
+            PokeIndex<LorentzIndex>(Uds, U,           mu     );
+            PokeIndex<LorentzIndex>(Uds, Udag,        mu + 4 );
+            PokeIndex<LorentzIndex>(Uds, U_mirror,    mu + 8 );
+            PokeIndex<LorentzIndex>(Uds, Udag_mirror, mu + 12);
+        }
     }
 
     inline void InsertForce4D(GaugeField &mat, FermionField &Btilde, FermionField &A,int mu){
@@ -1080,7 +963,7 @@ public:
     
     template <typename vtype> using iImplSpinor            = iScalar<iScalar<iScalar<iMatrix<vtype, Dimension> > > >;
     template <typename vtype> using iImplHalfSpinor        = iScalar<iScalar<iScalar<iMatrix<vtype, Dimension> > > >;
-    template <typename vtype> using iImplDoubledGaugeField = iVector<iScalar<iScalar<iMatrix<vtype, Dimension> > >, Nds>;
+    template <typename vtype> using iImplDoubledGaugeField = iVector<iScalar<iScalar<iMatrix<vtype, Dimension> > >, 2*Nds>;
     template <typename vtype> using iImplPropagator        = iScalar<iScalar<iScalar<iMatrix<vtype, Dimension> > > >;
     
     typedef iImplSpinor<Simd>            SiteSpinor;
@@ -1108,71 +991,9 @@ public:
                          int mu,
                          StencilEntry *SE,
                          StencilImpl &St) {
-        
-        typedef SiteSpinor vobj;
-        typedef typename SiteSpinor::scalar_object sobj;
-        
-        vobj vtmp;
-        
-        GridBase *grid = St._grid;
-        
-        const int Nsimd = grid->Nsimd();
-        
-        int direction = St._directions[mu];
-        int distance = St._distances[mu];
-        int ptype = St._permute_type[mu];
-        int sl = St._grid->_simd_layout[direction];
-        
-        // Fixme X.Y.Z.T hardcode in stencil
-        int mmu = mu % Nd;
-        
-        // assert our assumptions
-        assert((distance == 1) || (distance == -1));  // nearest neighbour stencil hard code
-        assert((sl == 1) || (sl == 2));
-        
-        std::vector<int> icoor;
-        
-        if ( SE->_around_the_world && istwisted(mmu) ) {
-            
-            if ( sl == 2 ) {
-                
-                std::vector<sobj> vals(Nsimd);
-                
-                extract(chi,vals);
-                for(int s=0;s<Nsimd;s++){
-                    
-                    grid->iCoorFromIindex(icoor,s);
-                    
-                    assert((icoor[direction]==0)||(icoor[direction]==1));
-                    
-                    int permute_lane;
-                    if ( distance == 1) {
-                        permute_lane = icoor[direction]?1:0;
-                    } else {
-                        permute_lane = icoor[direction]?0:1;
-                    }
-                    
-                    if ( permute_lane ) {
-                        // distance = +1  -->  (U*omega) (psi*omegadag)
-                        // distance = -1  -->  (omegadag*U) (psi*omega)
-                        if(distance == 1) vals[s] = vals[s]*Gimpl::twist.adjomega[mmu];
-                        else vals[s] = vals[s]*Gimpl::twist.omega[mmu];
-                    }
-                }
-                merge(vtmp,vals);
-                
-            } else {
-                // distance = +1  -->  (U*omega) (psi*omegadag)
-                // distance = -1  -->  (omegadag*U) (psi*omega)
-                if(distance == 1) vtmp = chi*Gimpl::twist.adjomega[mmu];
-                else vtmp = chi*Gimpl::twist.omega[mmu];
-            }
-            mult(&phi(), &U(mu), &vtmp());
-            
-        } else {
-            mult(&phi(), &U(mu), &chi());
-        }
-        
+        SiteSpinor phitmp;
+        mult(&phitmp(), &U(mu), &chi());
+        mult(&phi(), &phitmp(), &U(mu+Nds));
     }
     inline void multLinkAdd(SiteSpinor &phi,
                             const SiteDoubledGaugeField &U,
@@ -1180,71 +1001,9 @@ public:
                             int mu,
                             StencilEntry *SE,
                             StencilImpl &St) {
-        
-        typedef SiteSpinor vobj;
-        typedef typename SiteSpinor::scalar_object sobj;
-        
-        vobj vtmp;
-        
-        GridBase *grid = St._grid;
-        
-        const int Nsimd = grid->Nsimd();
-        
-        int direction = St._directions[mu];
-        int distance = St._distances[mu];
-        int ptype = St._permute_type[mu];
-        int sl = St._grid->_simd_layout[direction];
-        
-        // Fixme X.Y.Z.T hardcode in stencil
-        int mmu = mu % Nd;
-        
-        // assert our assumptions
-        assert((distance == 1) || (distance == -1));  // nearest neighbour stencil hard code
-        assert((sl == 1) || (sl == 2));
-        
-        std::vector<int> icoor;
-        
-        if ( SE->_around_the_world && istwisted(mmu) ) {
-            
-            if ( sl == 2 ) {
-                
-                std::vector<sobj> vals(Nsimd);
-                
-                extract(chi,vals);
-                for(int s=0;s<Nsimd;s++){
-                    
-                    grid->iCoorFromIindex(icoor,s);
-                    
-                    assert((icoor[direction]==0)||(icoor[direction]==1));
-                    
-                    int permute_lane;
-                    if ( distance == 1) {
-                        permute_lane = icoor[direction]?1:0;
-                    } else {
-                        permute_lane = icoor[direction]?0:1;
-                    }
-                    
-                    if ( permute_lane ) {
-                        // distance = +1  -->  (U*omega) (psi*omegadag)
-                        // distance = -1  -->  (omegadag*U) (psi*omega)
-                        if(distance == 1) vals[s] = vals[s]*Gimpl::twist.adjomega[mmu];
-                        else vals[s] = vals[s]*Gimpl::twist.omega[mmu];
-                    }
-                }
-                merge(vtmp,vals);
-                
-            } else {
-                // distance = +1  -->  (U*omega) (psi*omegadag)
-                // distance = -1  -->  (omegadag*U) (psi*omega)
-                if(distance == 1) vtmp = chi*Gimpl::twist.adjomega[mmu];
-                else vtmp = chi*Gimpl::twist.omega[mmu];
-            }
-            mac(&phi(), &U(mu), &vtmp());
-            
-        } else {
-            mac(&phi(), &U(mu), &chi());
-        }
-        
+        SiteSpinor phitmp;
+        mac(&phitmp(), &U(mu), &chi());
+        mac(&phi(), &phitmp(), &U(mu+Nds));
     }
     
     template <class ref>
@@ -1257,6 +1016,8 @@ public:
         conformable(Uthin._grid, GaugeGrid);
         GaugeLinkField U(GaugeGrid);
         GaugeLinkField Udag(GaugeGrid);
+        GaugeLinkField U_mirror(GaugeGrid);
+        GaugeLinkField Udag_mirror(GaugeGrid);
         Lattice<iScalar<vInteger> > coor(GaugeGrid);
         typedef typename Simd::scalar_type scalar_type;
         
@@ -1281,6 +1042,8 @@ public:
             U      = PeekIndex<LorentzIndex>(Uthin, mu);
             Udag   = adj( Cshift(U, mu, -1));
             
+            U_mirror    = adj(U);
+            Udag_mirror = adj(Udag);
             U    = U    *phases;
             Udag = Udag *phases;
             
@@ -1291,29 +1054,32 @@ public:
             int Lmu = GaugeGrid->GlobalDimensions()[mu] - 1;
             LatticeCoordinate(coor, mu);
             if(istwisted(mu)){
-                U = where(coor == Lmu, phase * U * Gimpl::twist.omega[mu], U);
-                Udag = where(coor == 0, conjugate(phase) * Gimpl::twist.adjomega[mu] * Udag, Udag);
+                U        = where(coor == Lmu, phase * U * Gimpl::twist.omega[mu], U);
+                U_mirror = where(coor == Lmu, Gimpl::twist.adjomega[mu] * U_mirror, U_mirror);
+                Udag        = where(coor == 0, conjugate(phase) * Gimpl::twist.adjomega[mu] * Udag, Udag);
+                Udag_mirror = where(coor == 0, Udag_mirror * Gimpl::twist.omega[mu], Udag_mirror);
             }
             else{
                 U = where(coor == Lmu, phase * U, U);
                 Udag = where(coor == 0, conjugate(phase) * Udag, Udag);
             }
             
-            PokeIndex<LorentzIndex>(Uds, U, mu);
-            PokeIndex<LorentzIndex>(Uds, Udag, mu + 4);
-            
+            PokeIndex<LorentzIndex>(Uds, U,           mu     );
+            PokeIndex<LorentzIndex>(Uds, Udag,        mu + 4 );
+            PokeIndex<LorentzIndex>(Uds, U_mirror,    mu + 8 );
+            PokeIndex<LorentzIndex>(Uds, Udag_mirror, mu + 12);
         }
     }
     
     inline void InsertForce4D(GaugeField &mat, FermionField &Btilde, FermionField &A,int mu){
         GaugeLinkField link(mat._grid);
-        // matrix product automatically performs the sum over smells
-        // and gives a matrix in colour space.
         // Need to resolve nesting because mult(iVector,iVector) is not defined...
         FermionField tmp = adj(A);
         link = zero;
         parallel_for(int ss=0;ss<mat._grid->oSites();ss++){
-            link._odata[ss]._internal._internal += Btilde._odata[ss]._internal._internal * tmp._odata[ss]._internal._internal;
+            // commutator
+            link._odata[ss]._internal._internal += (Btilde._odata[ss]._internal._internal * tmp._odata[ss]._internal._internal
+                                                  - tmp._odata[ss]._internal._internal * Btilde._odata[ss]._internal._internal);
         }
         PokeIndex<LorentzIndex>(mat,link,mu);
     }

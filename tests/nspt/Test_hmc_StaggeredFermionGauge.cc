@@ -30,6 +30,8 @@ directory
 /*  END LEGAL */
 #include <Grid/Grid.h>
 
+//#define testadjoint
+
 int main(int argc, char **argv) {
   using namespace Grid;
   using namespace Grid::QCD;
@@ -41,10 +43,14 @@ int main(int argc, char **argv) {
 
    // Typedefs to simplify notation
   typedef GenericHMCRunner<MinimumNorm2> HMCWrapper;  // Uses the default minimum norm
+#ifndef testadjoint
   typedef QCDpt::NaiveStaggeredImplD FermionImplPolicy;
   typedef StaggeredFermion<QCDpt::NaiveStaggeredImplD> FermionAction;
+#else
+  typedef QCDpt::StaggeredAdjointImplNPD FermionImplPolicy;
+  typedef StaggeredFermion<QCDpt::StaggeredAdjointImplNPD> FermionAction;
+#endif
   typedef typename FermionAction::FermionField FermionField;
-
 
   //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   HMCWrapper TheHMC;

@@ -259,5 +259,7 @@ template class NaiveStaggeredKernels<QCDpt::StaggeredAdjointImplF>;
 template class NaiveStaggeredKernels<QCDpt::StaggeredAdjointImplD>;
 template class NaiveStaggeredKernels<QCDpt::NaiveStaggeredImplF>;
 template class NaiveStaggeredKernels<QCDpt::NaiveStaggeredImplD>;
+template class NaiveStaggeredKernels<QCDpt::StaggeredAdjointImplNPF>;
+template class NaiveStaggeredKernels<QCDpt::StaggeredAdjointImplNPD>;
 }}
 

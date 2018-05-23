@@ -395,5 +395,6 @@ template class StaggeredFermion<QCDpt::StaggeredAdjointImplF>;
 template class StaggeredFermion<QCDpt::StaggeredAdjointImplD>;
 template class StaggeredFermion<QCDpt::NaiveStaggeredImplF>;
 template class StaggeredFermion<QCDpt::NaiveStaggeredImplD>;
-
+template class StaggeredFermion<QCDpt::StaggeredAdjointImplNPF>;
+template class StaggeredFermion<QCDpt::StaggeredAdjointImplNPD>;
 }}

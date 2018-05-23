@@ -445,22 +445,16 @@ public:
     //////////////////////////////////////////////////////
     virtual void deriv(const GaugeField &U, GaugeField &dSdU) {
         
-//        Complex ci(0.,1.);//$//
         ColourMatrix ta;
         Xi = zero;
-        LatticeReal ca(grid);
+        LatticeComplex ca(grid);
         for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
             gaussian(*pRNG, ca);
-//            std::cout<<"-----ca-----"<<std::endl;
-//            std::cout<<ca<<std::endl;
             SU<Nc>::generator(a, ta);
-//            std::cout<<"-----ta-----"<<std::endl;
-//            std::cout<<ta<<std::endl;
-            Xi += toComplex(ca) * ta;
-//            std::cout<<"-----Xi-----"<<std::endl;
-//            std::cout<<Xi<<std::endl;std::exit(0);
+            //$// bernoulli
+            Xi += ca * ta;
         }
-//        Xi *= ci;
+        Xi *= M_SQRT1_2;
         
         // Real part of Xi is gaussian with sigma = 1/sqrt(2),
         // same for imaginary part.
@@ -501,7 +495,6 @@ public:
             // the first two orders are already set to zero.
             pokePert(dSdU,Uforce,n+2);
         }
-        
         dSdU = Ta(dSdU);
         dSdU *= twoNf_over_four;
         

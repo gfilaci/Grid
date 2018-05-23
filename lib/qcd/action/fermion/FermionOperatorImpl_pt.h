@@ -1197,14 +1197,9 @@ public:
     
     inline void InsertForce4D(GaugeField &mat, FermionField &Btilde, FermionField &A,int mu){
         GaugeLinkField link(mat._grid);
-        // Need to resolve nesting because mult(iVector,iVector) is not defined...
         FermionField tmp = adj(A);
-        link = zero;
-        parallel_for(int ss=0;ss<mat._grid->oSites();ss++){
-            // commutator
-            link._odata[ss]._internal._internal += (Btilde._odata[ss]._internal._internal * tmp._odata[ss]._internal._internal
-                                                  - tmp._odata[ss]._internal._internal * Btilde._odata[ss]._internal._internal);
-        }
+        link  = Btilde*tmp;
+        link -= tmp*Btilde;
         PokeIndex<LorentzIndex>(mat,link,mu);
     }
     

@@ -29,7 +29,7 @@ directory
 #ifndef QCD_STOCHASTICFERMION_H
 #define QCD_STOCHASTICFERMION_H
 
-//#define OSX_TO_STD_RNG//$//
+//#define OSX_TO_STD_RNG//$$//
 
 namespace Grid {
 namespace QCD {
@@ -445,16 +445,27 @@ public:
     //////////////////////////////////////////////////////
     virtual void deriv(const GaugeField &U, GaugeField &dSdU) {
         
+//        // complex gaussian noise in the algebra
+//        ColourMatrix ta;
+//        Xi = zero;
+//        LatticeComplex ca(grid);
+//        for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
+//            gaussian(*pRNG, ca);
+//            SU<Nc>::generator(a, ta);
+//            Xi += ca * ta;
+//        }
+//        Xi *= M_SQRT1_2;//$//
+        
+        // real gaussian noise in the algebra
         ColourMatrix ta;
         Xi = zero;
-        LatticeComplex ca(grid);
+        LatticeReal ca(grid);
         for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
             gaussian(*pRNG, ca);
             SU<Nc>::generator(a, ta);
-            //$// bernoulli
-            Xi += ca * ta;
+            Xi += toComplex(ca) * ta;
         }
-        Xi *= M_SQRT1_2;
+        //$//
         
         // Real part of Xi is gaussian with sigma = 1/sqrt(2),
         // same for imaginary part.

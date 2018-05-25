@@ -29,7 +29,7 @@ directory
 #ifndef QCD_LANGEVIN_PT_H
 #define QCD_LANGEVIN_PT_H
 
-//#define OSX_TO_STD_RNG//$//
+//#define OSX_TO_STD_RNG//$$//
 
 namespace Grid {
 namespace QCD {

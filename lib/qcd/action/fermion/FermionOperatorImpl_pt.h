@@ -1288,6 +1288,8 @@ public:
         conformable(Uthin._grid, GaugeGrid);
         GaugeLinkField U(GaugeGrid);
         GaugeLinkField Udag(GaugeGrid);
+        GaugeLinkField U_mirror(GaugeGrid);
+        GaugeLinkField Udag_mirror(GaugeGrid);
         Lattice<iScalar<vInteger> > coor(GaugeGrid);
         typedef typename Simd::scalar_type scalar_type;
         
@@ -1312,6 +1314,8 @@ public:
             U      = PeekIndex<LorentzIndex>(Uthin, mu);
             Udag   = adj( Cshift(U, mu, -1));
             
+            U_mirror    = adj(U);
+            Udag_mirror = adj(Udag);
             U    = U    *phases;
             Udag = Udag *phases;
             
@@ -1322,17 +1326,20 @@ public:
             int Lmu = GaugeGrid->GlobalDimensions()[mu] - 1;
             LatticeCoordinate(coor, mu);
             if(istwisted(mu)){
-                U = where(coor == Lmu, phase * U * Gimpl::twist.omega[mu], U);
-                Udag = where(coor == 0, conjugate(phase) * Gimpl::twist.adjomega[mu] * Udag, Udag);
+                U        = where(coor == Lmu, phase * U * Gimpl::twist.omega[mu], U);
+                U_mirror = where(coor == Lmu, Gimpl::twist.adjomega[mu] * U_mirror, U_mirror);
+                Udag        = where(coor == 0, conjugate(phase) * Gimpl::twist.adjomega[mu] * Udag, Udag);
+                Udag_mirror = where(coor == 0, Udag_mirror * Gimpl::twist.omega[mu], Udag_mirror);
             }
             else{
                 U = where(coor == Lmu, phase * U, U);
                 Udag = where(coor == 0, conjugate(phase) * Udag, Udag);
             }
             
-            PokeIndex<LorentzIndex>(Uds, U, mu);
-            PokeIndex<LorentzIndex>(Uds, Udag, mu + 4);
-            
+            PokeIndex<LorentzIndex>(Uds, U,           mu     );
+            PokeIndex<LorentzIndex>(Uds, Udag,        mu + 4 );
+            PokeIndex<LorentzIndex>(Uds, U_mirror,    mu + 8 );
+            PokeIndex<LorentzIndex>(Uds, Udag_mirror, mu + 12);
         }
     }
     
@@ -1350,7 +1357,8 @@ public:
     // Nonperturbative naive staggered fermion in the adjoint representation
     /////////////////////////////////////////////////////////////////////////////
 template <class S, class Representation = FundamentalRepresentation >
-class StaggeredAdjointImplNP : public PeriodicGaugeImpl<GaugeImplTypes<S, Representation::Dimension > > {
+//class StaggeredAdjointImplNP : public PeriodicGaugeImpl<GaugeImplTypes<S, Representation::Dimension > > {
+class StaggeredAdjointImplNP : public TwistedGaugeImplNP<GaugeImplTypes<S, Representation::Dimension > > {//$//
     
 public:
     
@@ -1358,7 +1366,8 @@ public:
     static const int Dimension = Representation::Dimension;
     static const bool isFundamental = Representation::isFundamental;
     static const bool LsVectorised=false;
-    typedef PeriodicGaugeImpl<GaugeImplTypes<S, Dimension > > Gimpl;
+    typedef TwistedGaugeImplNP<GaugeImplTypes<S, Dimension > > Gimpl;//$//
+//    typedef PeriodicGaugeImpl<GaugeImplTypes<S, Dimension > > Gimpl;
     
     //Necessary?
     constexpr bool is_fundamental() const{return Dimension == Nc ? 1 : 0;}
@@ -1453,6 +1462,17 @@ public:
             Udag_mirror = adj(Udag);
             U    = U    *phases;
             Udag = Udag *phases;
+            
+            
+            // twist//$//
+            int Lmu = GaugeGrid->GlobalDimensions()[mu] - 1;
+            LatticeCoordinate(coor, mu);
+            if(istwisted(mu)){
+                U        = where(coor == Lmu, U * Gimpl::twist.omega[mu], U);
+                U_mirror = where(coor == Lmu, Gimpl::twist.adjomega[mu] * U_mirror, U_mirror);
+                Udag        = where(coor == 0, Gimpl::twist.adjomega[mu] * Udag, Udag);
+                Udag_mirror = where(coor == 0, Udag_mirror * Gimpl::twist.omega[mu], Udag_mirror);
+            }
             
             PokeIndex<LorentzIndex>(Uds, U,           mu     );
             PokeIndex<LorentzIndex>(Uds, Udag,        mu + 4 );

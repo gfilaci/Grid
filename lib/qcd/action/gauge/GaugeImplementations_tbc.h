@@ -143,9 +143,118 @@ public:
   static inline bool isPeriodicGaugeField(void) { return false; }
 };
 
+    
+template <class GimplTypes> class TwistedGaugeImplNP : public GimplTypes {
+public:
+    INHERIT_GIMPL_TYPES(GimplTypes);
+    
+    static twistmatricesNP<Nc,typename Simd::scalar_type> twist;
+    
+    template <class covariant>
+    static Lattice<covariant> CovShiftForward(const GaugeLinkField &Link, int mu,
+                                              const Lattice<covariant> &field) {
+        GridBase * grid = Link._grid;
+        
+        int Lmu = grid->GlobalDimensions()[mu]-1;
+        
+        conformable(field,Link);
+        
+        Lattice<iScalar<vInteger> > coor(grid);    LatticeCoordinate(coor,mu);
+        
+        Lattice<covariant> field_bc = Cshift(field,mu,1);
+        
+        if(istwisted(mu))
+            field_bc = where(coor==Lmu,twist.forward(field_bc,mu),field_bc);
+        
+        return Link*field_bc;
+    }
+    
+    template <class covariant>
+    static Lattice<covariant> CovShiftBackward(const GaugeLinkField &Link, int mu,
+                                               const Lattice<covariant> &field) {
+        GridBase * grid = field._grid;
+        
+        int Lmu = grid->GlobalDimensions()[mu]-1;
+        
+        conformable(field,Link);
+        
+        Lattice<iScalar<vInteger> > coor(grid);    LatticeCoordinate(coor,mu);
+        
+        Lattice<covariant> tmp(grid);
+        
+        tmp = adj(Link)*field;
+        
+        if(istwisted(mu))
+            tmp = where(coor==Lmu,twist.backward(tmp,mu),tmp);
+        
+        return Cshift(tmp,mu,-1);
+    }
+    
+    static inline GaugeLinkField
+    CovShiftIdentityBackward(const GaugeLinkField &Link, int mu) {
+        GridBase *grid = Link._grid;
+        int Lmu = grid->GlobalDimensions()[mu] - 1;
+        
+        Lattice<iScalar<vInteger>> coor(grid);
+        LatticeCoordinate(coor, mu);
+        
+        GaugeLinkField tmp(grid);
+        tmp = adj(Link);
+        
+        if(istwisted(mu))
+            tmp = where(coor == Lmu, twist.backward(tmp,mu), tmp);
+        
+        return Cshift(tmp, mu, -1);
+    }
+    static inline GaugeLinkField
+    CovShiftIdentityForward(const GaugeLinkField &Link, int mu) {
+        return Link;
+    }
+    
+    static inline GaugeLinkField ShiftStaple(const GaugeLinkField &Link, int mu) {
+        GridBase *grid = Link._grid;
+        int Lmu = grid->GlobalDimensions()[mu] - 1;
+        
+        Lattice<iScalar<vInteger>> coor(grid);
+        LatticeCoordinate(coor, mu);
+        
+        GaugeLinkField tmp(grid);
+        tmp = Cshift(Link, mu, 1);
+        
+        if(istwisted(mu))
+            tmp = where(coor == Lmu, twist.forward(tmp,mu), tmp);
+        
+        return tmp;
+    }
+    
+    static inline GaugeLinkField MoveForward(const GaugeLinkField &Link, int mu) {
+        return ShiftStaple(Link,mu);
+    }
+    
+    static inline GaugeLinkField MoveBackward(const GaugeLinkField &Link, int mu) {
+        GridBase *grid = Link._grid;
+        int Lmu = grid->GlobalDimensions()[mu] - 1;
+        
+        Lattice<iScalar<vInteger>> coor(grid);
+        LatticeCoordinate(coor, mu);
+        
+        GaugeLinkField tmp = Link;
+        
+        if(istwisted(mu))
+            tmp = where(coor == Lmu, twist.backward(tmp,mu), tmp);
+        
+        return Cshift(tmp, mu, -1);
+    }
+    
+    static inline bool isPeriodicGaugeField(void) { return false; }
+};
+    
 template <class GimplTypes>
 twistmatrices<Nc,typename GimplTypes::Simd::scalar_type> TwistedGaugeImpl<GimplTypes>::twist;
 
+template <class GimplTypes>
+twistmatricesNP<Nc,typename GimplTypes::Simd::scalar_type> TwistedGaugeImplNP<GimplTypes>::twist;
+    
 typedef TwistedGaugeImpl<GimplTypes_ptR> TwistedGimpl_ptR;
 typedef PeriodicGaugeImpl<GimplTypes_ptR> PeriodicGimpl_ptR;
 

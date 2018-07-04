@@ -1389,7 +1389,7 @@ public:
     typedef Lattice<SitePropagator> PropagatorField;
     
     typedef SimpleCompressor<SiteSpinor> Compressor;
-    typedef StaggeredImplParams ImplParams;
+    typedef WilsonImplParams ImplParams; // because boundary phases are needed
     typedef CartesianStencil<SiteSpinor, SiteSpinor> StencilImpl;
     
     typedef Lattice<iSinglet<typename FermionField::vector_type> > LatticeSinglet;
@@ -1462,15 +1462,21 @@ public:
             Udag = Udag *phases;
             
             
-            // twist
-            int Lmu = GaugeGrid->GlobalDimensions()[mu] - 1;
-            LatticeCoordinate(coor, mu);
-            if(istwisted(mu)){
-                U        = where(coor == Lmu, U * Gimpl::twist.omega[mu], U);
-                U_mirror = where(coor == Lmu, Gimpl::twist.adjomega[mu] * U_mirror, U_mirror);
-                Udag        = where(coor == 0, Gimpl::twist.adjomega[mu] * Udag, Udag);
-                Udag_mirror = where(coor == 0, Udag_mirror * Gimpl::twist.omega[mu], Udag_mirror);
-            }
+			// fermion phase and twist
+			auto pha = Params.boundary_phases[mu];
+			scalar_type phase( real(pha),imag(pha) );
+			int Lmu = GaugeGrid->GlobalDimensions()[mu] - 1;
+			LatticeCoordinate(coor, mu);
+			if(istwisted(mu)){
+				U        = where(coor == Lmu, phase * U * Gimpl::twist.omega[mu], U);
+				U_mirror = where(coor == Lmu, Gimpl::twist.adjomega[mu] * U_mirror, U_mirror);
+				Udag        = where(coor == 0, conjugate(phase) * Gimpl::twist.adjomega[mu] * Udag, Udag);
+				Udag_mirror = where(coor == 0, Udag_mirror * Gimpl::twist.omega[mu], Udag_mirror);
+			}
+			else{
+				U = where(coor == Lmu, phase * U, U);
+				Udag = where(coor == 0, conjugate(phase) * Udag, Udag);
+			}
             
             PokeIndex<LorentzIndex>(Uds, U,           mu     );
             PokeIndex<LorentzIndex>(Uds, Udag,        mu + 4 );

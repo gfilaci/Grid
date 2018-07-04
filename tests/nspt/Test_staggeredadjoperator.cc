@@ -55,7 +55,8 @@ int main (int argc, char ** argv)
   typedef typename StaggeredFermion<QCDpt::StaggeredAdjointImplNPD>::FermionField FermionField;
   typedef typename StaggeredFermion<QCDpt::StaggeredAdjointImplNPD>::ComplexField ComplexField;
   typename StaggeredFermion<QCDpt::StaggeredAdjointImplNPD>::ImplParams params;
-
+  params.boundary_phases = {-1.,1.,1.,1};
+	
 	FermionField src   (&Grid); SU3::GaussianFundamentalLieAlgebraMatrix(pRNG,src);
   FermionField result(&Grid); result=zero;
   FermionField    ref(&Grid);    ref=zero;
@@ -110,12 +111,17 @@ int main (int argc, char ** argv)
 	  int Lmu = Grid.GlobalDimensions()[mu] - 1;
 	  LatticeCoordinate(coor, mu);
 		
+	  auto pha = params.boundary_phases[mu];
+	  ComplexD phase( real(pha),imag(pha) );
+		
 	  tmp = Cshift(src,mu,1);
-	  if(istwisted(mu)) tmp = where(coor==Lmu, TwistedBC.twist.forward(tmp,mu), tmp);
+	  if(istwisted(mu)) tmp = where(coor==Lmu, phase*TwistedBC.twist.forward(tmp,mu), tmp);
+	  else tmp = where(coor==Lmu, phase*tmp, tmp);
       ref = ref +0.5*phases*U[mu]*tmp*adj(U[mu]);
 		
 	  tmp = Cshift(src,mu,-1);
-	  if(istwisted(mu)) tmp = where(coor==0, TwistedBC.twist.backward(tmp,mu), tmp);
+	  if(istwisted(mu)) tmp = where(coor==0, conjugate(phase)*TwistedBC.twist.backward(tmp,mu), tmp);
+	  else tmp = where(coor==0, conjugate(phase)*tmp, tmp);
 	  U[mu] = Cshift(U[mu],mu,-1);
 	  if(istwisted(mu)) U[mu] = where(coor==0, TwistedBC.twist.backward(U[mu],mu), U[mu]);
 	  ref = ref -0.5*phases*adj(U[mu])*tmp*U[mu];
@@ -146,7 +152,6 @@ int main (int argc, char ** argv)
 
   err = ref-result;
   std::cout<<GridLogMessage << "norm diff   "<< norm2(err)<<std::endl;
-	
 	
 	// Only one non-zero (y)
 	for(int mu=0;mu<Nd;mu++){
@@ -184,8 +189,12 @@ std::cout<<GridLogMessage<<"====================================================
 	  int Lmu = Grid.GlobalDimensions()[muu] - 1;
 	  LatticeCoordinate(coor, muu);
 	  
+	  auto pha = params.boundary_phases[muu];
+	  ComplexD phase( real(pha),imag(pha) );
+	  
 	  tmp = Cshift(src,muu,1);
-	  if(istwisted(muu)) tmp = where(coor==Lmu, TwistedBC.twist.forward(tmp,muu), tmp);
+	  if(istwisted(muu)) tmp = where(coor==Lmu, phase*TwistedBC.twist.forward(tmp,muu), tmp);
+	  else tmp = where(coor==Lmu, phase*tmp, tmp);
 	  ref = ref +0.5*phases*U[muu]*tmp*adj(U[muu]);
 
     }

@@ -1235,7 +1235,7 @@ public:
     
     template <typename vtype> using iImplSpinor            = iScalar<iScalar<iPert<iMatrix<vtype, Dimension>, Np> > >;
     template <typename vtype> using iImplHalfSpinor        = iScalar<iScalar<iPert<iVector<vtype, Dimension>, Np> > >;
-    template <typename vtype> using iImplDoubledGaugeField = iVector<iScalar<iPert<iMatrix<vtype, Dimension>, Np> >, Nds>;
+    template <typename vtype> using iImplDoubledGaugeField = iVector<iScalar<iPert<iMatrix<vtype, Dimension>, Np> >, 2*Nds>;
     template <typename vtype> using iImplPropagator        = iScalar<iScalar<iPert<iMatrix<vtype, Dimension>, Np> > >;
     
     typedef iImplSpinor<Simd>            SiteSpinor;
@@ -1357,8 +1357,7 @@ public:
     // Nonperturbative naive staggered fermion in the adjoint representation
     /////////////////////////////////////////////////////////////////////////////
 template <class S, class Representation = FundamentalRepresentation >
-//class StaggeredAdjointImplNP : public PeriodicGaugeImpl<GaugeImplTypes<S, Representation::Dimension > > {
-class StaggeredAdjointImplNP : public TwistedGaugeImplNP<GaugeImplTypes<S, Representation::Dimension > > {//$//
+class StaggeredAdjointImplNP : public TwistedGaugeImplNP<GaugeImplTypes<S, Representation::Dimension > > {
     
 public:
     
@@ -1366,8 +1365,7 @@ public:
     static const int Dimension = Representation::Dimension;
     static const bool isFundamental = Representation::isFundamental;
     static const bool LsVectorised=false;
-    typedef TwistedGaugeImplNP<GaugeImplTypes<S, Dimension > > Gimpl;//$//
-//    typedef PeriodicGaugeImpl<GaugeImplTypes<S, Dimension > > Gimpl;
+    typedef TwistedGaugeImplNP<GaugeImplTypes<S, Dimension > > Gimpl;
     
     //Necessary?
     constexpr bool is_fundamental() const{return Dimension == Nc ? 1 : 0;}
@@ -1464,7 +1462,7 @@ public:
             Udag = Udag *phases;
             
             
-            // twist//$//
+            // twist
             int Lmu = GaugeGrid->GlobalDimensions()[mu] - 1;
             LatticeCoordinate(coor, mu);
             if(istwisted(mu)){

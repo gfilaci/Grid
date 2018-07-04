@@ -445,26 +445,26 @@ public:
     //////////////////////////////////////////////////////
     virtual void deriv(const GaugeField &U, GaugeField &dSdU) {
         
-//        // complex gaussian noise in the algebra
-//        ColourMatrix ta;
-//        Xi = zero;
-//        LatticeComplex ca(grid);
-//        for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
-//            gaussian(*pRNG, ca);
-//            SU<Nc>::generator(a, ta);
-//            Xi += ca * ta;
-//        }
-//        Xi *= M_SQRT1_2;//$//
-        
-        // real gaussian noise in the algebra
+        // complex gaussian noise in the algebra
         ColourMatrix ta;
         Xi = zero;
-        LatticeReal ca(grid);
+        LatticeComplex ca(grid);
         for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
             gaussian(*pRNG, ca);
             SU<Nc>::generator(a, ta);
-            Xi += toComplex(ca) * ta;
+            Xi += ca * ta;
         }
+        Xi *= M_SQRT1_2;//$//
+		
+        // real gaussian noise in the algebra
+//        ColourMatrix ta;
+//        Xi = zero;
+//        LatticeReal ca(grid);
+//        for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
+//            gaussian(*pRNG, ca);
+//            SU<Nc>::generator(a, ta);
+//            Xi += toComplex(ca) * ta;
+//        }
         //$//
         
         // Real part of Xi is gaussian with sigma = 1/sqrt(2),

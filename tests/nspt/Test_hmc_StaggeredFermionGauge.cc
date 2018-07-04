@@ -30,7 +30,7 @@ directory
 /*  END LEGAL */
 #include <Grid/Grid.h>
 
-//#define testadjoint
+#define testadjoint
 
 int main(int argc, char **argv) {
   using namespace Grid;

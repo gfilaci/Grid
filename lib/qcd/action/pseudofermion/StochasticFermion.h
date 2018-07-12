@@ -446,12 +446,12 @@ public:
         LatticeComplex ca(grid);
 		
 		// GAUSSIAN NOISE (in the algebra)
-        for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
-            gaussian(*pRNG, ca);
-            SU<Nc>::generator(a, ta);
-            psi_so += ca * ta;
-        }
-        psi_so *= M_SQRT1_2;
+//        for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
+//            gaussian(*pRNG, ca);
+//            SU<Nc>::generator(a, ta);
+//            psi_so += ca * ta;
+//        }
+//        psi_so *= M_SQRT1_2;
 		// -------------------------------------------//
         // Z2 NOISE (in the algebra)
 		Complex shift(M_SQRT1_2,M_SQRT1_2);

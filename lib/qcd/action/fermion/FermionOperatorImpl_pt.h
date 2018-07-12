@@ -898,7 +898,7 @@ class PStaggeredSmellImpl : public TwistedGaugeImpl<GaugeImplTypes_pt<S, Represe
             Lattice<iScalar<vInteger> > lin_z(GaugeGrid); lin_z=x+y;
             Lattice<iScalar<vInteger> > lin_t(GaugeGrid); lin_t=x+y+z;
             
-            ComplexField phases(GaugeGrid);    phases=1.0;
+            typename SOimpl::ComplexField phases(GaugeGrid);    phases=1.0;
             
             if ( mu == 1 ) phases = where( mod(x    ,2)==(Integer)0, phases,-phases);
             if ( mu == 2 ) phases = where( mod(lin_z,2)==(Integer)0, phases,-phases);
@@ -1214,7 +1214,12 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 template <class S, class Representation = FundamentalRepresentation >
 class PStaggeredAdjointImpl : public TwistedGaugeImpl<GaugeImplTypes_pt<S, Representation::Dimension > > {
-    
+	
+private:
+	bool AllOrders   = true;
+	int  GaugeOrder  = 0;
+	int  SpinorOrder = 0;
+	
 public:
     
     // single order implementation
@@ -1256,16 +1261,38 @@ public:
     ImplParams Params;
     
     PStaggeredAdjointImpl(const ImplParams &p = ImplParams()) : Params(p){};
-    
+	
+	bool GetAllOrders()   {return AllOrders;}
+	int  GetGaugeOrder()  {return GaugeOrder;}
+	int  GetSpinorOrder() {return SpinorOrder;}
+	void SetAllOrders(bool AllOrders_,
+					  int GaugeOrder_=0,
+					  int SpinorOrder_=0){
+		AllOrders   = AllOrders_;
+		GaugeOrder  = GaugeOrder_;
+		SpinorOrder = SpinorOrder_;
+		assert(GaugeOrder<Np);
+		assert(SpinorOrder<Np);
+	}
+	
     inline void multLink(SiteSpinor &phi,
                          const SiteDoubledGaugeField &U,
                          const SiteSpinor &chi,
                          int mu,
                          StencilEntry *SE,
                          StencilImpl &St){
-        SiteSpinor phitmp;
-        mult(&phitmp(), &U(mu), &chi());
-        mult(&phi(), &phitmp(), &U(mu+Nds));
+		SiteSpinor phitmp;
+		if(AllOrders){
+			mult(&phitmp(), &U(mu), &chi());
+			mult(&phi(), &phitmp(), &U(mu+Nds));
+		} else{
+			mult(&phitmp()()(SpinorOrder), &U(mu)()(0),              &chi()()(SpinorOrder));
+			mult(&phi()()(SpinorOrder),    &phitmp()()(SpinorOrder), &U(mu+Nds)()(GaugeOrder));
+			for (int l=1; l<=GaugeOrder; l++) {
+				mult(&phitmp()()(SpinorOrder), &U(mu)()(l),              &chi()()(SpinorOrder));
+				mac(&phi()()(SpinorOrder),     &phitmp()()(SpinorOrder), &U(mu+Nds)()(GaugeOrder-l));
+			}
+		}
     }
     inline void multLinkAdd(SiteSpinor &phi,
                             const SiteDoubledGaugeField &U,
@@ -1273,9 +1300,16 @@ public:
                             int mu,
                             StencilEntry *SE,
                             StencilImpl &St){
-        SiteSpinor phitmp;
-        mult(&phitmp(), &U(mu), &chi());
-        mac(&phi(), &phitmp(), &U(mu+Nds));
+		SiteSpinor phitmp;
+		if(AllOrders){
+			mult(&phitmp(), &U(mu), &chi());
+			mac(&phi(), &phitmp(), &U(mu+Nds));
+		} else{
+			for (int l=0; l<=GaugeOrder; l++) {
+				mult(&phitmp()()(SpinorOrder), &U(mu)()(l),              &chi()()(SpinorOrder));
+				mac(&phi()()(SpinorOrder),     &phitmp()()(SpinorOrder), &U(mu+Nds)()(GaugeOrder-l));
+			}
+		}
     }
     
     template <class ref>
@@ -1305,7 +1339,7 @@ public:
             Lattice<iScalar<vInteger> > lin_z(GaugeGrid); lin_z=x+y;
             Lattice<iScalar<vInteger> > lin_t(GaugeGrid); lin_t=x+y+z;
             
-            ComplexField phases(GaugeGrid);    phases=1.0;
+			typename SOimpl::ComplexField phases(GaugeGrid);    phases=1.0;
             
             if ( mu == 1 ) phases = where( mod(x    ,2)==(Integer)0, phases,-phases);
             if ( mu == 2 ) phases = where( mod(lin_z,2)==(Integer)0, phases,-phases);
@@ -1344,7 +1378,11 @@ public:
     }
     
     inline void InsertForce4D(GaugeField &mat, FermionField &Btilde, FermionField &A,int mu){
-        assert(0);
+		GaugeLinkField link(mat._grid);
+		FermionField tmp = adj(A);
+		link  = Btilde*tmp;
+		link -= tmp*Btilde;
+		PokeIndex<LorentzIndex>(mat,link,mu);
     }
     
     inline void InsertForce5D(GaugeField &mat, FermionField &Btilde, FermionField &Atilde,int mu){

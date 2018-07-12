@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     RealD mass = 0.;
     int Nf = 2;
     WilsonImplParams Params;
-    Params.boundary_phases = {-1.,1.,1.,1};
+    Params.boundary_phases = {-1.,1.,1.,1.};
     
     StochasticStaggeredAction<fimpl> FermionAction(&pRNG,&Grid,&RBGrid,mass,Params,Nf);
     ActionLevel<fimpl::GaugeField,PNoHirep> FermionLevel;

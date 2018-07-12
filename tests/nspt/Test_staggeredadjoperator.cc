@@ -32,6 +32,7 @@ Author: Gianluca Filaci <g.filaci@ed.ac.uk>
 using namespace std;
 using namespace Grid;
 using namespace Grid::QCD;
+using namespace Grid::QCD::QCDpt;
 
 int main (int argc, char ** argv)
 {
@@ -52,22 +53,22 @@ int main (int argc, char ** argv)
   GridParallelRNG          pRNG(&Grid);
   pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
 
-  typedef typename StaggeredFermion<QCDpt::StaggeredAdjointImplNPD>::FermionField FermionField;
-  typedef typename StaggeredFermion<QCDpt::StaggeredAdjointImplNPD>::ComplexField ComplexField;
-  typename StaggeredFermion<QCDpt::StaggeredAdjointImplNPD>::ImplParams params;
-  params.boundary_phases = {-1.,1.,1.,1};
+  typedef typename StaggeredFermion<QCDpt::PStaggeredAdjointImplD>::FermionField FermionField;
+	typedef typename StaggeredFermion<QCDpt::PStaggeredAdjointImplD>::SOimpl::ComplexField ComplexField;
+  typename StaggeredFermion<QCDpt::PStaggeredAdjointImplD>::ImplParams params;
+  params.boundary_phases = {-1.,1.,1.,1.};
 	
-	FermionField src   (&Grid); SU3::GaussianFundamentalLieAlgebraMatrix(pRNG,src);
+	FermionField src   (&Grid); gaussian(pRNG,src);
   FermionField result(&Grid); result=zero;
   FermionField    ref(&Grid);    ref=zero;
   FermionField    tmp(&Grid);    tmp=zero;
   FermionField    err(&Grid);    tmp=zero;
   FermionField phi   (&Grid); random(pRNG,phi);
   FermionField chi   (&Grid); random(pRNG,chi);
-  LatticeGaugeField Umu(&Grid); SU3::HotConfiguration(pRNG,Umu);
-	std::vector<LatticeColourMatrix> U(4,&Grid);
+	QCDpt::LatticeGaugeField Umu(&Grid); QCDpt::PertRandom(pRNG,Umu);
+	std::vector<QCDpt::LatticePertColourMatrix> U(4,&Grid);
 
-	QCDpt::TwistedGaugeImplNP<GimplTypesR> TwistedBC;
+	QCDpt::TwistedGaugeImpl<QCDpt::GimplTypes_ptR> TwistedBC;
 	
   double volume=1;
   for(int mu=0;mu<Nd;mu++){
@@ -129,7 +130,7 @@ int main (int argc, char ** argv)
     }
   }
 
-  StaggeredFermion<QCDpt::StaggeredAdjointImplNPD> Ds(Umu,Grid,RBGrid,mass,params);
+  StaggeredFermion<QCDpt::PStaggeredAdjointImplD> Ds(Umu,Grid,RBGrid,mass,params);
 	
   std::cout<<GridLogMessage<<"=========================================================="<<std::endl;
   std::cout<<GridLogMessage<<"= Testing Dhop against cshift implementation         "<<std::endl;
@@ -146,12 +147,12 @@ int main (int argc, char ** argv)
   double flops=(16*(3*(6+8+8)) + 15*3*2)*volume*ncall; // == 66*16 +  == 1146
 
   std::cout<<GridLogMessage << "Called Ds"<<std::endl;
-  std::cout<<GridLogMessage << "norm result "<< norm2(result)<<std::endl;
-  std::cout<<GridLogMessage << "norm ref    "<< norm2(ref)<<std::endl;
+  std::cout<<GridLogMessage << "norm result "<< Pnorm2(result)<<std::endl;
+  std::cout<<GridLogMessage << "norm ref    "<< Pnorm2(ref)<<std::endl;
   std::cout<<GridLogMessage << "mflop/s =   "<< flops/(t1-t0)<<std::endl;
 
   err = ref-result;
-  std::cout<<GridLogMessage << "norm diff   "<< norm2(err)<<std::endl;
+  std::cout<<GridLogMessage << "norm diff   "<< Pnorm2(err)<<std::endl;
 	
 	// Only one non-zero (y)
 	for(int mu=0;mu<Nd;mu++){
@@ -210,12 +211,12 @@ std::cout<<GridLogMessage<<"====================================================
   double flops=(16*(3*(6+8+8)) + 15*3*2)*volume*ncall; // == 66*16 +  == 1146
 
   std::cout<<GridLogMessage << "Called Mdir"<<std::endl;
-  std::cout<<GridLogMessage << "norm result "<< norm2(result)<<std::endl;
-  std::cout<<GridLogMessage << "norm ref    "<< norm2(ref)<<std::endl;
+  std::cout<<GridLogMessage << "norm result "<< Pnorm2(result)<<std::endl;
+  std::cout<<GridLogMessage << "norm ref    "<< Pnorm2(ref)<<std::endl;
   std::cout<<GridLogMessage << "mflop/s =   "<< flops/(t1-t0)<<std::endl;
 
   err = ref-result;
-  std::cout<<GridLogMessage << "norm diff   "<< norm2(err)<<std::endl;
+  std::cout<<GridLogMessage << "norm diff   "<< Pnorm2(err)<<std::endl;
 }
                                       std::cout<<GridLogMessage<<"=========================================================="<<std::endl;
   std::cout<<GridLogMessage<<"= Testing that Deo + Doe = Dunprec "<<std::endl;
@@ -237,117 +238,7 @@ std::cout<<GridLogMessage<<"====================================================
   setCheckerboard(r_eo,r_e);
 
   err= ref - r_eo;
-  std::cout<<GridLogMessage << "EO norm diff   "<< norm2(err)<< " "<<norm2(ref)<< " " << norm2(r_eo) <<std::endl;
-
-  std::cout<<GridLogMessage<<"=============================================================="<<std::endl;
-  std::cout<<GridLogMessage<<"= Test Ddagger is the dagger of D by requiring                "<<std::endl;
-  std::cout<<GridLogMessage<<"=  < phi | Deo | chi > * = < chi | Deo^dag| phi>  "<<std::endl;
-  std::cout<<GridLogMessage<<"=============================================================="<<std::endl;
-
-  FermionField chi_e   (&RBGrid);
-  FermionField chi_o   (&RBGrid);
-
-  FermionField dchi_e  (&RBGrid);
-  FermionField dchi_o  (&RBGrid);
-
-  FermionField phi_e   (&RBGrid);
-  FermionField phi_o   (&RBGrid);
-
-  FermionField dphi_e  (&RBGrid);
-  FermionField dphi_o  (&RBGrid);
-
-  pickCheckerboard(Even,chi_e,chi);
-  pickCheckerboard(Odd ,chi_o,chi);
-  pickCheckerboard(Even,phi_e,phi);
-  pickCheckerboard(Odd ,phi_o,phi);
-
-  Ds.Meooe(chi_e,dchi_o);
-  Ds.Meooe(chi_o,dchi_e);
-  Ds.MeooeDag(phi_e,dphi_o);
-  Ds.MeooeDag(phi_o,dphi_e);
-
-  ComplexD pDce = innerProduct(phi_e,dchi_e);
-  ComplexD pDco = innerProduct(phi_o,dchi_o);
-  ComplexD cDpe = innerProduct(chi_e,dphi_e);
-  ComplexD cDpo = innerProduct(chi_o,dphi_o);
-
-  std::cout<<GridLogMessage <<"e "<<pDce<<" "<<cDpe <<std::endl;
-  std::cout<<GridLogMessage <<"o "<<pDco<<" "<<cDpo <<std::endl;
-
-  std::cout<<GridLogMessage <<"pDce - conj(cDpo) "<< pDce-conj(cDpo) <<std::endl;
-  std::cout<<GridLogMessage <<"pDco - conj(cDpe) "<< pDco-conj(cDpe) <<std::endl;
-  std::cout<<GridLogMessage <<"e "<<pDce<<" "<<cDpe <<std::endl;
-  std::cout<<GridLogMessage <<"o "<<pDco<<" "<<cDpo <<std::endl;
-
-  std::cout<<GridLogMessage <<"pDce - conj(cDpo) "<< pDce-conj(cDpo) <<std::endl;
-  std::cout<<GridLogMessage <<"pDco - conj(cDpe) "<< pDco-conj(cDpe) <<std::endl;
-
-  std::cout<<GridLogMessage<<"=============================================================="<<std::endl;
-  std::cout<<GridLogMessage<<"= Test MeeInv Mee = 1                                         "<<std::endl;
-  std::cout<<GridLogMessage<<"=============================================================="<<std::endl;
-
-  pickCheckerboard(Even,chi_e,chi);
-  pickCheckerboard(Odd ,chi_o,chi);
-
-  Ds.Mooee(chi_e,src_e);
-  Ds.MooeeInv(src_e,phi_e);
-
-  Ds.Mooee(chi_o,src_o);
-  Ds.MooeeInv(src_o,phi_o);
-
-  setCheckerboard(phi,phi_e);
-  setCheckerboard(phi,phi_o);
-
-  err = phi-chi;
-  std::cout<<GridLogMessage << "norm diff   "<< norm2(err)<< std::endl;
-
-  std::cout<<GridLogMessage<<"=============================================================="<<std::endl;
-  std::cout<<GridLogMessage<<"= Test MeeInvDag MeeDag = 1                                   "<<std::endl;
-  std::cout<<GridLogMessage<<"=============================================================="<<std::endl;
-
-  pickCheckerboard(Even,chi_e,chi);
-  pickCheckerboard(Odd ,chi_o,chi);
-
-  Ds.MooeeDag(chi_e,src_e);
-  Ds.MooeeInvDag(src_e,phi_e);
-
-  Ds.MooeeDag(chi_o,src_o);
-  Ds.MooeeInvDag(src_o,phi_o);
-
-  setCheckerboard(phi,phi_e);
-  setCheckerboard(phi,phi_o);
-
-  err = phi-chi;
-  std::cout<<GridLogMessage << "norm diff   "<< norm2(err)<< std::endl;
-
-  std::cout<<GridLogMessage<<"=============================================================="<<std::endl;
-  std::cout<<GridLogMessage<<"= Test MpcDagMpc is Hermitian              "<<std::endl;
-  std::cout<<GridLogMessage<<"=============================================================="<<std::endl;
-
-  random(pRNG,phi);
-  random(pRNG,chi);
-  pickCheckerboard(Even,chi_e,chi);
-  pickCheckerboard(Odd ,chi_o,chi);
-  pickCheckerboard(Even,phi_e,phi);
-  pickCheckerboard(Odd ,phi_o,phi);
-
-  SchurDiagMooeeOperator<StaggeredFermion<QCDpt::StaggeredAdjointImplNPD>,FermionField> HermOpEO(Ds);
-  HermOpEO.MpcDagMpc(chi_e,dchi_e,t1,t2);
-  HermOpEO.MpcDagMpc(chi_o,dchi_o,t1,t2);
-
-  HermOpEO.MpcDagMpc(phi_e,dphi_e,t1,t2);
-  HermOpEO.MpcDagMpc(phi_o,dphi_o,t1,t2);
-
-  pDce = innerProduct(phi_e,dchi_e);
-  pDco = innerProduct(phi_o,dchi_o);
-  cDpe = innerProduct(chi_e,dphi_e);
-  cDpo = innerProduct(chi_o,dphi_o);
-
-  std::cout<<GridLogMessage <<"e "<<pDce<<" "<<cDpe <<std::endl;
-  std::cout<<GridLogMessage <<"o "<<pDco<<" "<<cDpo <<std::endl;
-
-  std::cout<<GridLogMessage <<"pDce - conj(cDpo) "<< pDco-conj(cDpo) <<std::endl;
-  std::cout<<GridLogMessage <<"pDco - conj(cDpe) "<< pDce-conj(cDpe) <<std::endl;
-
+  std::cout<<GridLogMessage << "EO norm diff   "<< Pnorm2(err)<< " "<<Pnorm2(ref)<< " " << Pnorm2(r_eo) <<std::endl;
+	
   Grid_finalize();
 }

@@ -27,8 +27,6 @@ See the full license in the file "LICENSE" in the top level distribution directo
     /*  END LEGAL */
 #include <Grid/Grid.h>
 
-#define testadjoint
-
 using namespace std;
 using namespace Grid;
 using namespace QCD;
@@ -57,11 +55,7 @@ int main(int argc, char *argv[]) {
     pRNG.SeedFixedIntegers(std::vector<int>({45,12,81,9}));
     
     typedef TwistedGimpl_ptR   gimpl;
-#ifndef testadjoint
     typedef PStaggeredSmellImplR  fimpl;
-#else
-    typedef PStaggeredAdjointImplR  fimpl;
-#endif
     
     gimpl::GaugeField U(&Grid);
     PertRandom(pRNG,U);
@@ -74,13 +68,9 @@ int main(int argc, char *argv[]) {
     RealD mass = 1.;
     int Nf = 2;
     WilsonImplParams Params;
-    Params.boundary_phases = {-1.,1.,1.,1};
-    
-#ifndef testadjoint
+    Params.boundary_phases = {-1.,1.,1.,1.};
+	
     StochasticStaggeredAction<fimpl> FA(&pRNG,&Grid,&RBGrid,mass,Params,Nf);
-#else
-    StochasticAdjointStaggeredAction<fimpl> FA(&pRNG,&Grid,&RBGrid,mass,Params,Nf);
-#endif
     
     // ********** //
     // START TEST //
@@ -90,9 +80,7 @@ int main(int argc, char *argv[]) {
     int Npf = Np - 2;
     
     random(pRNG,FA.Xi);
-#ifdef testadjoint
-    FA.Xi = Ta(FA.Xi);
-#endif
+	
     cout<<endl<<"Norm of random Xi:"<<endl;
     cout<<norm2(FA.Xi)<<endl;
     

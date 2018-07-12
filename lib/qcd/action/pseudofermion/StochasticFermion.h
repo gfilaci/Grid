@@ -372,17 +372,13 @@ template <class Impl>
 class StochasticAdjointStaggeredAction : public Action<typename Impl::GaugeField> {
 public:
     INHERIT_IMPL_TYPES(Impl);
-    typedef typename Impl::SOimpl SOImpl;
-    typedef typename Impl::SOimpl::FermionField SOFermionField;
-    typedef typename Impl::SOimpl::Gimpl::Field SOGaugeField;
-    
-    // vector of staggered operators, one for each perturbative order
-    std::vector<StaggeredFermion<SOImpl>> Dw;
-    std::vector<SOFermionField> psi;
-    SOFermionField Xi, psitmp;
-    SOGaugeField Uso, Uforce;
+	
+    FermionField Xi, psi, psitmp;
+	decltype(peekPert(Xi,0)) psi_so;
+	GaugeField Uforce;
     TwistedStaggeredFFT<Impl> TheFFT;
-    
+	StaggeredFermion<Impl> Dw;
+	
 private:
     GridParallelRNG *pRNG;
     GridCartesian* grid;
@@ -403,25 +399,17 @@ public:
     /////////////////////////////////////////////////
     StochasticAdjointStaggeredAction(GridParallelRNG *pRNG_, GridCartesian* grid_, GridRedBlackCartesian* rbgrid_, RealD mass_, WilsonImplParams Params_, int Nf_)
     : pRNG(pRNG_),
-    Uso(grid_),
-    Xi(grid_),
-    psitmp(grid_),
-    Uforce(grid_),
     grid(grid_),
     Nf(Nf_),
-    TheFFT(grid_,mass_,Params_.boundary_phases)
+    TheFFT(grid_,mass_,Params_.boundary_phases),
+	Xi(grid_),
+	psi(grid_),
+	psitmp(grid_),
+	psi_so(grid_),
+	Uforce(grid_),
+	Dw(Uforce,*grid_,*rbgrid_,mass_,Params_)
     {
         twoNf_over_four = 2. * (double)Nf / 4.;
-        Dw.reserve(Np); // reserving Np, needed in measuring propagator
-        psi.reserve(Np); // reserving Np, needed in measuring propagator
-        for (int i=0; i<Np; i++) { // initialising Np, needed in measuring propagator
-            if (i==0) {
-                Dw.push_back(StaggeredFermion<SOImpl>(Uso,*grid_,*rbgrid_,mass_,Params_));
-            } else{ // else there is no diagonal term in the Wilson operator
-                Dw.push_back(StaggeredFermion<SOImpl>(Uso,*grid_,*rbgrid_,0.,Params_));
-            }
-            psi.push_back(SOFermionField(grid));
-        }
     };
     
     virtual std::string action_name(){return "StochasticAdjointStaggeredAction";}
@@ -444,110 +432,97 @@ public:
     // return dSdU = i nabla S = -i Xi^dag  dM (M)^-1 Xi
     //////////////////////////////////////////////////////
     virtual void deriv(const GaugeField &U, GaugeField &dSdU) {
-        
-        // complex gaussian noise in the algebra
+
+		// Real part of Xi is random with sigma = 1/sqrt(2),
+		// same for imaginary part.
+		// In this way < Xi^dag_a Xi_b > = delta_ab
+		
+		psi_so = zero;
         ColourMatrix ta;
-        Xi = zero;
         LatticeComplex ca(grid);
+		
+		// GAUSSIAN NOISE (in the algebra)
         for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
             gaussian(*pRNG, ca);
             SU<Nc>::generator(a, ta);
-            Xi += ca * ta;
+            psi_so += ca * ta;
         }
-        Xi *= M_SQRT1_2;//$//
+        psi_so *= M_SQRT1_2;
+		// -------------------------------------------//
+        // Z2 NOISE (in the algebra)
+		Complex shift(M_SQRT1_2,M_SQRT1_2);
+		for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
+			bernoulli(*pRNG, ca);
+			ca = M_SQRT2*ca - shift;
+			SU<Nc>::generator(a, ta);
+			psi_so += ca * ta;
+		}
+		// -------------------------------------------//
 		
-        // real gaussian noise in the algebra
-//        ColourMatrix ta;
-//        Xi = zero;
-//        LatticeReal ca(grid);
-//        for (int a = 0; a < SU<Nc>::AdjointDimension; a++) {
-//            gaussian(*pRNG, ca);
-//            SU<Nc>::generator(a, ta);
-//            Xi += toComplex(ca) * ta;
-//        }
-        //$//
-        
-        // Real part of Xi is gaussian with sigma = 1/sqrt(2),
-        // same for imaginary part.
-        // In this way < Xi^dag_a Xi_b > = delta_ab
-        
-        // GAUSSIAN NOISE
-//        gaussian(*pRNG,Xi);
-//        Xi *= M_SQRT1_2;
-        
-        // Z2 NOISE
-        //      Complex shift(M_SQRT1_2,M_SQRT1_2);
-        //      typename Impl::SOimpl::SiteSpinor shiftmat;
-        //      for(int a=0; a<Nc; a++) for(int b=0; b<Nc; b++) pokeColour(shiftmat,shift,a,b);
-        //      bernoulli(*pRNG,Xi);
-        //      Xi = M_SQRT2*Xi - shiftmat;
-        
+		Xi = zero;
+		pokePert(Xi,psi_so,0);
+
 #ifdef OSX_TO_STD_RNG
         Complex im(0.,1.);
         Xi = imag(Xi) + im * real(Xi);
 #endif
-        
+		
         // compute psi = (M)^-1 Xi
         invM(psi,U,Xi);
-        
+		
         // compute force
-        dSdU = zero;
-        for (int n=0; n<Npf; n++) {
-            Uforce = zero;
-            for (int j=0; j<=n; j++) {
-                Dw[n-j].MDeriv(Uso, psi[j], Xi, DaggerYes);
-                Uforce += Uso;
-                // the following three lines enable the non optimised fermion drift
-                Dw[n-j].MDeriv(Uso, Xi, psi[j], DaggerNo);
-                Uforce += Uso;
-                Uforce *= 0.5;
-            }
-            // the "+2" shift is due to the 1/beta factor in front of the fermion drift.
-            // the first two orders are already set to zero.
-            pokePert(dSdU,Uforce,n+2);
-        }
-        dSdU = Ta(dSdU);
-        dSdU *= twoNf_over_four;
-        
-    }
+		// the "+2" shift is due to the 1/beta factor in front of the fermion drift
+		// ShiftedSumVoid(ord,a,b,fact)   <=>   a += fact * (b shifted by ord)
+		// in principle one could try to avoid computing the last 2 orders...
+		dSdU = zero;
+		Dw.MDeriv(Uforce,psi,Xi,DaggerYes);
+		ShiftedSumVoid(2,dSdU,Uforce,twoNf_over_four);
+
+		// the following three lines enable the non optimised fermion drift
+		Dw.MDeriv(Uforce,Xi,psi,DaggerNo);
+		ShiftedSumVoid(2,dSdU,Uforce,twoNf_over_four);
+		dSdU *= 0.5;
+
+		dSdU = Ta(dSdU);
+
+	}
     
     
     // COMPUTE PERTURBATIVELY psi = (M)^-1 Xi
-    void invM(std::vector<SOFermionField>& psi, const GaugeField &U, const SOFermionField &Xi){
-        for (int k=0; k<Npf; k++) {
-            Uso = peekPert(U,k);
-            Dw[k].ImportGauge(Uso);
-        }
+    void invM(FermionField &psi, const GaugeField &U, const FermionField &Xi){
+
+		Dw.ImportGauge(U);
+		psi = zero;
 
         // apply M0^-1 to Xi
-        TheFFT.FreeStaggeredOperatorInverse(psi[0],Xi);
+		psi_so = peekPert(Xi,0);
+        TheFFT.FreeStaggeredOperatorInverse(psi_so,psi_so);
+		pokePert(psi,psi_so,0);
 
         for (int n=1; n<Npf; n++){
-            psi[n] = zero;
             for (int j=0; j<n; j++) {
-                Dw[n-j].M(psi[j],psitmp);
-                psi[n] -= psitmp;
+				Dw.SetAllOrders(false,n-j,j);
+				Dw.M(psi,psitmp);
+				//servono un ordin ordout spinor nel comportamento di Dw...//$//
+				psi_so = peekPert(psitmp,j);
+				psitmp = zero;
+				pokePert(psitmp,psi_so,n);
+                psi -= psitmp;
             }
-            // apply M0^-1 to psi[n]
-            TheFFT.FreeStaggeredOperatorInverse(psi[n],psi[n]);
+            // apply M0^-1 to nth order of psi
+			psi_so = peekPert(psi,n);
+            TheFFT.FreeStaggeredOperatorInverse(psi_so,psi_so);
+			pokePert(psi,psi_so,n);
         }
+
+		Dw.SetAllOrders(true);
     }
     
-    // COMPUTE PERTURBATIVELY psi2 = M psi
-    void M(std::vector<SOFermionField>& psi2, const GaugeField &U, const std::vector<SOFermionField>& psi){
-        for (int k=0; k<Npf; k++) {
-            Uso = peekPert(U,k);
-            Dw[k].ImportGauge(Uso);
-        }
-        
-        for (int n=0; n<Npf; n++){
-            psi2[n] = zero;
-            for (int j=0; j<=n; j++){
-                Dw[j].M(psi[n-j],psitmp);
-                psi2[n] += psitmp;
-            }
-        }
-    }
+    // COMPUTE PERTURBATIVELY psiout = M psi
+    void M(FermionField &psiout, const GaugeField &U, const FermionField &psi){
+		Dw.ImportGauge(U);
+        Dw.M(psi,psiout);
+	}
 };
 
 template <class T>

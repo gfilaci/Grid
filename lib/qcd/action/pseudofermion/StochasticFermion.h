@@ -410,6 +410,10 @@ public:
 	Dw(Uforce,*grid_,*rbgrid_,mass_,Params_)
     {
         twoNf_over_four = 2. * (double)Nf / 4.;
+		// since the fermion operator is perturbative,
+		// a perturbative implementation of the mass
+		// would be needed to work with m!=0
+		assert(mass_==0);
     };
     
     virtual std::string action_name(){return "StochasticAdjointStaggeredAction";}

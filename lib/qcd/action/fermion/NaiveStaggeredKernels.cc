@@ -46,7 +46,7 @@ void NaiveStaggeredKernels<Impl>::DhopSiteDepth(StencilImpl &st, LebesgueOrder &
 					   int sU, const FermionField &in, SiteSpinor &out,int threeLink) {
   const SiteSpinor *chi_p;
   SiteSpinor chi;
-  SiteSpinor Uchi;
+  SiteSpinor Uchi = zero;
   StencilEntry *SE;
   int ptype;
   int skew = 0;
@@ -66,6 +66,7 @@ void NaiveStaggeredKernels<Impl>::DhopSiteDepth(StencilImpl &st, LebesgueOrder &
   } else {
     chi_p = &buf[SE->_offset];
   }
+
   Impl::multLink(Uchi, U._odata[sU], *chi_p, Xp, SE, st);
 
   ///////////////////////////
@@ -229,7 +230,7 @@ void NaiveStaggeredKernels<Impl>::DhopDir( StencilImpl &st, DoubledGaugeField &U
   
   const SiteSpinor *chi_p;
   SiteSpinor chi;
-  SiteSpinor Uchi;
+  SiteSpinor Uchi = zero;
   StencilEntry *SE;
   int ptype;
   

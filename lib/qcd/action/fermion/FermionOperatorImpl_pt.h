@@ -1216,9 +1216,10 @@ template <class S, class Representation = FundamentalRepresentation >
 class PStaggeredAdjointImpl : public TwistedGaugeImpl<GaugeImplTypes_pt<S, Representation::Dimension > > {
 	
 private:
-	bool AllOrders   = true;
-	int  GaugeOrder  = 0;
-	int  SpinorOrder = 0;
+	bool AllOrders    = true;
+	int  GaugeOrder   = 0;
+	int  SpinorOrderI = 0;
+	int  SpinorOrderO = 0;
 	
 public:
     
@@ -1262,17 +1263,21 @@ public:
     
     PStaggeredAdjointImpl(const ImplParams &p = ImplParams()) : Params(p){};
 	
-	bool GetAllOrders()   {return AllOrders;}
-	int  GetGaugeOrder()  {return GaugeOrder;}
-	int  GetSpinorOrder() {return SpinorOrder;}
+	bool GetAllOrders()    {return AllOrders;}
+	int  GetGaugeOrder()   {return GaugeOrder;}
+	int  GetSpinorOrderI() {return SpinorOrderI;}
+	int  GetSpinorOrderO() {return SpinorOrderO;}
 	void SetAllOrders(bool AllOrders_,
 					  int GaugeOrder_=0,
-					  int SpinorOrder_=0){
+					  int SpinorOrderI_=0,
+					  int SpinorOrderO_=0){
 		AllOrders   = AllOrders_;
 		GaugeOrder  = GaugeOrder_;
-		SpinorOrder = SpinorOrder_;
+		SpinorOrderI = SpinorOrderI_;
+		SpinorOrderO = SpinorOrderO_;
 		assert(GaugeOrder<Np);
-		assert(SpinorOrder<Np);
+		assert(SpinorOrderI<Np);
+		assert(SpinorOrderO<Np);
 	}
 	
     inline void multLink(SiteSpinor &phi,
@@ -1281,16 +1286,16 @@ public:
                          int mu,
                          StencilEntry *SE,
                          StencilImpl &St){
-		SiteSpinor phitmp;
+		SiteSpinor phitmp = zero;
 		if(AllOrders){
 			mult(&phitmp(), &U(mu), &chi());
 			mult(&phi(), &phitmp(), &U(mu+Nds));
 		} else{
-			mult(&phitmp()()(SpinorOrder), &U(mu)()(0),              &chi()()(SpinorOrder));
-			mult(&phi()()(SpinorOrder),    &phitmp()()(SpinorOrder), &U(mu+Nds)()(GaugeOrder));
+			mult(&phitmp()()(SpinorOrderI), &U(mu)()(0),              &chi()()(SpinorOrderI));
+			mult(&phi()()(SpinorOrderO),    &phitmp()()(SpinorOrderI), &U(mu+Nds)()(GaugeOrder));
 			for (int l=1; l<=GaugeOrder; l++) {
-				mult(&phitmp()()(SpinorOrder), &U(mu)()(l),              &chi()()(SpinorOrder));
-				mac(&phi()()(SpinorOrder),     &phitmp()()(SpinorOrder), &U(mu+Nds)()(GaugeOrder-l));
+				mult(&phitmp()()(SpinorOrderI), &U(mu)()(l),              &chi()()(SpinorOrderI));
+				mac(&phi()()(SpinorOrderO),     &phitmp()()(SpinorOrderI), &U(mu+Nds)()(GaugeOrder-l));
 			}
 		}
     }
@@ -1300,14 +1305,14 @@ public:
                             int mu,
                             StencilEntry *SE,
                             StencilImpl &St){
-		SiteSpinor phitmp;
+		SiteSpinor phitmp = zero;
 		if(AllOrders){
 			mult(&phitmp(), &U(mu), &chi());
 			mac(&phi(), &phitmp(), &U(mu+Nds));
 		} else{
 			for (int l=0; l<=GaugeOrder; l++) {
-				mult(&phitmp()()(SpinorOrder), &U(mu)()(l),              &chi()()(SpinorOrder));
-				mac(&phi()()(SpinorOrder),     &phitmp()()(SpinorOrder), &U(mu+Nds)()(GaugeOrder-l));
+				mult(&phitmp()()(SpinorOrderI), &U(mu)()(l),              &chi()()(SpinorOrderI));
+				mac(&phi()()(SpinorOrderO),     &phitmp()()(SpinorOrderI), &U(mu+Nds)()(GaugeOrder-l));
 			}
 		}
     }

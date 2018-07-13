@@ -505,12 +505,11 @@ public:
 
         for (int n=1; n<Npf; n++){
             for (int j=0; j<n; j++) {
-				Dw.SetAllOrders(false,n-j,j);
-				Dw.M(psi,psitmp);
-				//servono un ordin ordout spinor nel comportamento di Dw...//$//
-				psi_so = peekPert(psitmp,j);
+				// apply operator order n-j to spinor order j
+				// and put the result in order n
+				Dw.SetAllOrders(false,n-j,j,n);
 				psitmp = zero;
-				pokePert(psitmp,psi_so,n);
+				Dw.M(psi,psitmp);
                 psi -= psitmp;
             }
             // apply M0^-1 to nth order of psi

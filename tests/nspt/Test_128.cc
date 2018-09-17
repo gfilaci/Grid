@@ -20,7 +20,12 @@ int main(int argc, char *argv[]) {
     
     Lattice<iScalar<vRealD>> latD(&Grid);
     //    Lattice<iScalar<__float128>> lat(&Grid);
-    iPert<iMatrix<__complex128,3>,10> test;
+    iPert<iMatrix<__complex128,3>,10> test = zero;
+
+    test(0)(1,1) = 1.;
+    cout << test(0)(1,1) << endl;
+    cout << test(1)(1,1) << endl;
+    cout << test << endl;
     /*
     random(pRNG,latD);
     random128(pRNG,lat);

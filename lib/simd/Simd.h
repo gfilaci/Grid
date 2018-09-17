@@ -96,6 +96,26 @@ namespace Grid {
   inline RealD toReal(const RealD& r){ return r; }
   inline RealF toReal(const RealF& r){ return r; }
 
+#ifdef USE_QUADPREC
+  inline __float128 adj(const __float128  & r){ return r; }
+  inline __float128 conjugate(const __float128  & r){ return r; }
+  inline __float128 real(const __float128  & r){ return r; }
+  inline __float128 sqrt(const __float128  & r){ return sqrtq(r); }
+
+  inline __complex128 adj(const __complex128  & r){ return conjq(r); }
+  inline __complex128 conjugate(const __complex128  & r){ return conjq(r); }
+  inline __complex128 real(const __complex128  & r){ return crealq(r); }
+
+  std::ostream &operator<<(std::ostream& stream, const __float128 &x){
+    stream << (double)x;
+    return stream;
+  }
+
+  std::ostream &operator<<(std::ostream& stream, const __complex128 &x){
+    stream << (double)crealq(x) << "+I*" << (double)cimagq(x);
+    return stream;
+  }
+#endif
   
   
   ////////////////////////////////////////////////////////////////////////////////
@@ -155,7 +175,10 @@ namespace Grid {
   template<>            inline void zeroit(ComplexD &arg){ arg=0; };
   template<>            inline void zeroit(RealF &arg){ arg=0; };
   template<>            inline void zeroit(RealD &arg){ arg=0; };
-  
+#ifdef USE_QUADPREC
+  template<>            inline void zeroit(__float128 &arg){ arg=0; };
+  template<>            inline void zeroit(__complex128 &arg){ arg=0; };
+#endif  
 
   //////////////////////////////////////////////////////////
   // Permute

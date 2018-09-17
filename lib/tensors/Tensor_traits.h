@@ -81,6 +81,30 @@ namespace Grid {
     typedef RealD DoublePrecision;
     enum { TensorLevel = 0 };
   };
+  template<> class GridTypeMapper<__float128> {
+  public:
+    typedef ComplexF scalar_type;
+    typedef ComplexF vector_type;
+    typedef ComplexD vector_typeD;
+    typedef ComplexF tensor_reduced;
+    typedef ComplexF scalar_object;
+    typedef ComplexF Complexified;
+    typedef RealF Realified;
+    typedef ComplexD DoublePrecision;
+    enum { TensorLevel = 0 };
+  };
+  template<> class GridTypeMapper<__complex128> {
+  public:
+    typedef ComplexF scalar_type;
+    typedef ComplexF vector_type;
+    typedef ComplexD vector_typeD;
+    typedef ComplexF tensor_reduced;
+    typedef ComplexF scalar_object;
+    typedef ComplexF Complexified;
+    typedef RealF Realified;
+    typedef ComplexD DoublePrecision;
+    enum { TensorLevel = 0 };
+  };
   template<> class GridTypeMapper<ComplexF> {
   public:
     typedef ComplexF scalar_type;

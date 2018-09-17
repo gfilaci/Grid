@@ -26,4 +26,8 @@
 ///////////////////
 #include "Config.h"
 
+#ifdef USE_QUADPREC
+#include <quadmath.h>
+#endif
+
 #endif /* GRID_STD_H */

@@ -88,6 +88,16 @@ AC_ARG_WITH([lime],
             [AM_CXXFLAGS="-I$with_lime/include $AM_CXXFLAGS"]
             [AM_LDFLAGS="-L$with_lime/lib $AM_LDFLAGS"])
 
+############### QUAD PREC
+ac_QUADPREC="no"
+AC_ARG_WITH([quadprec],
+            [AS_HELP_STRING([--with-quadprec],
+            [enable Quad-Precision Math Library (__float128 and __complex128)])],
+            [AM_CXXFLAGS="$AM_CXXFLAGS"
+             AC_DEFINE([USE_QUADPREC],[1],[use QUADPREC])]
+             ac_QUADPREC="yes"
+            [AM_LDFLAGS="-lquadmath $AM_LDFLAGS"])
+            
 ############### lapack
 AC_ARG_ENABLE([lapack],
     [AC_HELP_STRING([--enable-lapack=yes|no|prefix], [enable LAPACK])],
@@ -516,6 +526,7 @@ Default precision           : ${ac_PRECISION}
 Software FP16 conversion    : ${ac_SFW_FP16}
 RNG choice                  : ${ac_RNG}
 GMP                         : `if test "x$have_gmp" = xtrue; then echo yes; else echo no; fi`
+QUAD PRECISION              : ${ac_QUADPREC}
 LAPACK                      : ${ac_LAPACK}
 FFTW                        : `if test "x$have_fftw" = xtrue; then echo yes; else echo no; fi`
 LIME (ILDG support)         : `if test "x$have_lime" = xtrue; then echo yes; else echo no; fi`

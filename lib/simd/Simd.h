@@ -106,6 +106,16 @@ namespace Grid {
   inline __complex128 conjugate(const __complex128  & r){ return conjq(r); }
   inline __complex128 real(const __complex128  & r){ return crealq(r); }
 
+  inline void mac (__complex128 * __restrict__ y,const __complex128 * __restrict__ a,const __complex128 *__restrict__ x){ *y = (*a) * (*x)+(*y); };
+  inline void mult(__complex128 * __restrict__ y,const __complex128 * __restrict__ l,const __complex128 *__restrict__ r){ *y = (*l) * (*r);}
+  inline void sub (__complex128 * __restrict__ y,const __complex128 * __restrict__ l,const __complex128 *__restrict__ r){ *y = (*l) - (*r);}
+  inline void add (__complex128 * __restrict__ y,const __complex128 * __restrict__ l,const __complex128 *__restrict__ r){ *y = (*l) + (*r);}
+
+  inline void mac (__float128 * __restrict__ y,const __float128 * __restrict__ a,const __float128 *__restrict__ x){ *y = (*a) * (*x)+(*y); };
+  inline void mult(__float128 * __restrict__ y,const __float128 * __restrict__ l,const __float128 *__restrict__ r){ *y = (*l) * (*r);}
+  inline void sub (__float128 * __restrict__ y,const __float128 * __restrict__ l,const __float128 *__restrict__ r){ *y = (*l) - (*r);}
+  inline void add (__float128 * __restrict__ y,const __float128 * __restrict__ l,const __float128 *__restrict__ r){ *y = (*l) + (*r);}
+
   std::ostream &operator<<(std::ostream& stream, const __float128 &x){
     stream << (double)x;
     return stream;
@@ -166,7 +176,10 @@ namespace Grid {
   inline void vstream(ComplexD &l, const ComplexD &r){ l=r;}
   inline void vstream(RealF &l, const RealF &r){ l=r;}
   inline void vstream(RealD &l, const RealD &r){ l=r;}
-  
+#ifdef USE_QUADPREC
+  inline void vstream(__float128 &l, const __float128 &r){ l=r;}
+  inline void vstream(__complex128 &l, const __complex128 &r){ l=r;}
+#endif
   
   class Zero{};
   static Zero zero;

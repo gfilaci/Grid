@@ -83,26 +83,26 @@ namespace Grid {
   };
   template<> class GridTypeMapper<__float128> {
   public:
-    typedef ComplexF scalar_type;
-    typedef ComplexF vector_type;
-    typedef ComplexD vector_typeD;
-    typedef ComplexF tensor_reduced;
-    typedef ComplexF scalar_object;
-    typedef ComplexF Complexified;
-    typedef RealF Realified;
-    typedef ComplexD DoublePrecision;
+    typedef __float128 scalar_type;
+    typedef __float128 vector_type;
+    typedef __float128 vector_typeD;
+    typedef __float128 tensor_reduced;
+    typedef __float128 scalar_object;
+    typedef __complex128 Complexified;
+    typedef __float128 Realified;
+    typedef __float128 DoublePrecision;
     enum { TensorLevel = 0 };
   };
   template<> class GridTypeMapper<__complex128> {
   public:
-    typedef ComplexF scalar_type;
-    typedef ComplexF vector_type;
-    typedef ComplexD vector_typeD;
-    typedef ComplexF tensor_reduced;
-    typedef ComplexF scalar_object;
-    typedef ComplexF Complexified;
-    typedef RealF Realified;
-    typedef ComplexD DoublePrecision;
+    typedef __complex128 scalar_type;
+    typedef __complex128 vector_type;
+    typedef __complex128 vector_typeD;
+    typedef __complex128 tensor_reduced;
+    typedef __complex128 scalar_object;
+    typedef __complex128 Complexified;
+    typedef __float128 Realified;
+    typedef __complex128 DoublePrecision;
     enum { TensorLevel = 0 };
   };
   template<> class GridTypeMapper<ComplexF> {
@@ -232,11 +232,19 @@ namespace Grid {
     static const bool value = false;
     static const bool notvalue = true;
   };
+  template<> struct isGridTensor<__float128 > {
+    static const bool value = false;
+    static const bool notvalue = true;
+  };
   template<> struct isGridTensor<ComplexD > {
     static const bool value = false;
     static const bool notvalue = true;
   };
   template<> struct isGridTensor<ComplexF > {
+    static const bool value = false;
+    static const bool notvalue = true;
+  };
+  template<> struct isGridTensor<__complex128 > {
     static const bool value = false;
     static const bool notvalue = true;
   };

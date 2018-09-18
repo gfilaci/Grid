@@ -18,12 +18,9 @@ int main(int argc, char *argv[]) {
     GridParallelRNG pRNG(&Grid);
     pRNG.SeedFixedIntegers({5,12,3,5});
     
-    __float128 one = 1.;
-    iMatrix<__float128,3> x(one);
-    
     //Lattice<iScalar<vRealD>> latD(&Grid);
 
-    /*
+    
     //    Lattice<iScalar<__float128>> lat(&Grid);
     iPert<iMatrix<__float128,3>,10> test = zero;
     //iPert<iMatrix<RealD,3>,10> test = zero;
@@ -33,7 +30,7 @@ int main(int argc, char *argv[]) {
     cout << test << endl;
     test = Exponentiate(test);
     cout << test << endl;
-    */
+    
     /*
     random(pRNG,latD);
     random128(pRNG,lat);

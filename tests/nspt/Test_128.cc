@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     
     GridSerialRNG sRNG;
     sRNG.SeedFixedIntegers({6,17,7,65});
-    
+    /*
     typedef iMatrix<vComplexD,Nc> vtype;
     typedef typename vtype::scalar_object stype;
     //    typedef typename GridTypeMapper<vtype>::scalar_type stype;
@@ -42,6 +42,13 @@ int main(int argc, char *argv[]) {
     merge(Dlat._odata[10],buf);
     
     iPert<iMatrix<__float128,Nc>,71> osite;
+    */
+
+    iVector<iScalar<iPert<iMatrix<vComplexD,Nc>,Np>>,Nd> test;
+    random(sRNG,test);
+    test = ProjectOnGroup(test);
+    cout << test << endl;
+    //    test = Logarithm(test);
 
     Grid_finalize();
     return EXIT_SUCCESS;

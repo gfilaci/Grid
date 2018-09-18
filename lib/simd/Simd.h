@@ -115,16 +115,16 @@ namespace Grid {
   inline void mult(__float128 * __restrict__ y,const __float128 * __restrict__ l,const __float128 *__restrict__ r){ *y = (*l) * (*r);}
   inline void sub (__float128 * __restrict__ y,const __float128 * __restrict__ l,const __float128 *__restrict__ r){ *y = (*l) - (*r);}
   inline void add (__float128 * __restrict__ y,const __float128 * __restrict__ l,const __float128 *__restrict__ r){ *y = (*l) + (*r);}
-
-  std::ostream &operator<<(std::ostream& stream, const __float128 &x){
+  
+  static std::ostream &operator<<(std::ostream& stream, const __float128 &x){
     stream << (double)x;
     return stream;
   }
 
-  std::ostream &operator<<(std::ostream& stream, const __complex128 &x){
+  static std::ostream &operator<<(std::ostream& stream, const __complex128 &x){
     stream << (double)crealq(x) << "+I*" << (double)cimagq(x);
     return stream;
-  }
+    }
 #endif
   
   

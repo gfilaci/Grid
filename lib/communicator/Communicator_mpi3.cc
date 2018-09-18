@@ -312,6 +312,15 @@ void CartesianCommunicator::GlobalSumVector(double *d,int N)
   int ierr = MPI_Allreduce(MPI_IN_PLACE,d,N,MPI_DOUBLE,MPI_SUM,communicator);
   assert(ierr==0);
 }
+#ifdef USE_QUADPREC
+void CartesianCommunicator::GlobalSumVector(__float128 *d,int N)
+{
+  // a custom MPI_Datatype MPI_QUAD should be defined
+  assert(0);
+  //int ierr = MPI_Allreduce(MPI_IN_PLACE,d,N,MPI_QUAD,MPI_SUM,communicator);
+  //assert(ierr==0);
+}
+#endif
 // Basic Halo comms primitive
 void CartesianCommunicator::SendToRecvFrom(void *xmit,
 					   int dest,

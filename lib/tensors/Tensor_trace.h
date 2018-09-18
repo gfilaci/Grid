@@ -39,6 +39,10 @@ inline ComplexF trace( const ComplexF &arg){    return arg;}
 inline ComplexD trace( const ComplexD &arg){    return arg;}
 inline RealF trace( const RealF &arg){    return arg;}
 inline RealD trace( const RealD &arg){    return arg;}
+#ifdef USE_QUADPREC
+ inline __float128 trace( const __float128 &arg){    return arg;}
+ inline __complex128 trace( const __complex128 &arg){    return arg;}
+#endif
 
 template<class vtype,int N>
 inline auto trace(const iMatrix<vtype,N> &arg) -> iScalar<decltype(trace(arg._internal[0][0]))>

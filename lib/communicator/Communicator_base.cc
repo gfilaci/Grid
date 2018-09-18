@@ -71,6 +71,11 @@ void CartesianCommunicator::GlobalSumVector(ComplexD *c,int N)
 {
   GlobalSumVector((double *)c,2*N);
 }
-  
+#ifdef USE_QUADPREC
+void CartesianCommunicator::GlobalSumVector(__complex128 *c,int N)
+{
+  GlobalSumVector((__float128 *)c,2*N);
 }
+#endif
 
+}

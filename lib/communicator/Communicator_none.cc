@@ -75,7 +75,9 @@ void CartesianCommunicator::GlobalSum(uint64_t &){}
 void CartesianCommunicator::GlobalSumVector(double *,int N){}
 void CartesianCommunicator::GlobalXOR(uint32_t &){}
 void CartesianCommunicator::GlobalXOR(uint64_t &){}
-
+#ifdef USE_QUADPREC
+void CartesianCommunicator::GlobalSumVector(__float128 *,int N){}
+#endif
 void CartesianCommunicator::SendRecvPacket(void *xmit,
 					   void *recv,
 					   int xmit_to_rank,

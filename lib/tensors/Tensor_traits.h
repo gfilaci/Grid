@@ -81,6 +81,7 @@ namespace Grid {
     typedef RealD DoublePrecision;
     enum { TensorLevel = 0 };
   };
+#ifdef USE_QUADPREC
   template<> class GridTypeMapper<__float128> {
   public:
     typedef __float128 scalar_type;
@@ -90,7 +91,7 @@ namespace Grid {
     typedef __float128 scalar_object;
     typedef __complex128 Complexified;
     typedef __float128 Realified;
-    typedef __float128 DoublePrecision;
+    typedef RealD DoublePrecision;
     enum { TensorLevel = 0 };
   };
   template<> class GridTypeMapper<__complex128> {
@@ -102,9 +103,10 @@ namespace Grid {
     typedef __complex128 scalar_object;
     typedef __complex128 Complexified;
     typedef __float128 Realified;
-    typedef __complex128 DoublePrecision;
+    typedef ComplexD DoublePrecision;
     enum { TensorLevel = 0 };
   };
+#endif
   template<> class GridTypeMapper<ComplexF> {
   public:
     typedef ComplexF scalar_type;
@@ -232,10 +234,6 @@ namespace Grid {
     static const bool value = false;
     static const bool notvalue = true;
   };
-  template<> struct isGridTensor<__float128 > {
-    static const bool value = false;
-    static const bool notvalue = true;
-  };
   template<> struct isGridTensor<ComplexD > {
     static const bool value = false;
     static const bool notvalue = true;
@@ -244,10 +242,16 @@ namespace Grid {
     static const bool value = false;
     static const bool notvalue = true;
   };
+#ifdef USE_QUADPREC
+  template<> struct isGridTensor<__float128 > {
+    static const bool value = false;
+    static const bool notvalue = true;
+  };
   template<> struct isGridTensor<__complex128 > {
     static const bool value = false;
     static const bool notvalue = true;
   };
+#endif
   template<> struct isGridTensor<Integer > {
     static const bool value = false;
     static const bool notvalue = true;

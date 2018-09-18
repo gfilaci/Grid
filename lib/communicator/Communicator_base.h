@@ -120,7 +120,10 @@ public:
   void GlobalSumVector(ComplexD *c,int N);
   void GlobalXOR(uint32_t &);
   void GlobalXOR(uint64_t &);
-  
+#ifdef USE_QUADPREC  
+  void GlobalSumVector(__float128 *c,int N);
+  void GlobalSumVector(__complex128 *c,int N);
+#endif
   template<class obj> void GlobalSum(obj &o){
     typedef typename obj::scalar_type scalar_type;
     int words = sizeof(obj)/sizeof(scalar_type);

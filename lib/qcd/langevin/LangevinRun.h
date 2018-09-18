@@ -36,7 +36,7 @@ namespace QCDpt {
 // by default, a configuration with one order less
 // (in beta) than the current one is usually loaded.
 // change if needed
-const int load_Nplow = Np - 2;
+const int load_Nplow = Np - 10;
 
 struct ActionParameters: Serializable {
     GRID_SERIALIZABLE_CLASS_MEMBERS(ActionParameters,

@@ -224,7 +224,7 @@ template<class vtype, int N> inline iMatrix<vtype, N> Logarithm(const iMatrix<vt
      
      // logarithm
      iPert<qtype, N> ret, newtmp, tmp;
-     double factor, sign;
+     __float128 factor, sign;
      
      for(int z=0; z<Nsimd; z++){
        

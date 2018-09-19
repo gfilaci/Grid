@@ -57,6 +57,16 @@ template<class l,int N> strong_inline iPert<l,N> operator * (const iPert<l,N>& l
 }
 template<class l,int N> strong_inline iPert<l,N> operator * (double lhs,const iPert<l,N>& rhs) {  return rhs*lhs; }
 
+#ifdef USE_QUADPREC
+ template<class l,int N> strong_inline iPert<l,N> operator * (const iPert<l,N>& lhs,__float128 rhs)
+   {
+     typename iScalar<l>::scalar_type t;t=rhs;
+     typename iScalar<l>::tensor_reduced srhs;srhs=t;
+     return lhs*srhs;
+   }
+ template<class l,int N> strong_inline iPert<l,N> operator * (__float128 lhs,const iPert<l,N>& rhs) {  return rhs*lhs; }
+#endif
+
 ////////////////////////////////////////////////////////////////////
 // Complex support; cast to "scalar_type" through constructor
 ////////////////////////////////////////////////////////////////////

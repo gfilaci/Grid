@@ -111,7 +111,7 @@ template<class vtype, int N> inline iMatrix<vtype, N> Exponentiate(const iMatrix
 	   }
 	 }
 	 
-	 newtmp = (1./(double)k) * tmp;
+	 newtmp = (1./(__float128)k) * tmp;
 	 ret += newtmp;
        }
        
@@ -251,7 +251,7 @@ template<class vtype, int N> inline iMatrix<vtype, N> Logarithm(const iMatrix<vt
 	 
 	 newtmp = tmp;
 	 sign = -sign;
-	 factor = sign/(double)k;
+	 factor = sign/(__float128)k;
 	 ret += factor * newtmp;
        }
 

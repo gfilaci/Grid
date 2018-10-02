@@ -50,17 +50,77 @@ namespace Grid {
   // ProjectOnGroup function for perturbative series
   /////////////////////////////////////////////// 
 
-  template<class vtype,int N> inline iPert<vtype,N> ProjectOnGroup(const iPert<vtype,N>&r)
+/************************************************/
+/*           QUAD PRECISION FUNCTIONS           */
+/************************************************/
+#ifdef USE_QUADPREC
+////////////
+// overloading POG in quad precision
+///////////
+  template<int N,int M> inline iPert<iMatrix<vComplexD,M>,N> ProjectOnGroup(const iPert<iMatrix<vComplexD,M>,N>&P)
+{
+  typedef iMatrix<   vComplexD,M> vtype;
+  typedef iMatrix<    ComplexD,M> stype;
+  typedef iMatrix<__complex128,M> qtype;
+  
+  qtype unit(1.0);
+  
+  // extract simd vector
+  int Nsimd = sizeof(vtype::vector_type) / sizeof(vtype::scalar_type);
+  std::vector<iPert<stype,N>> dbuf(Nsimd);
+  std::vector<iPert<qtype,N>> qbuf(Nsimd);
+  extract(P,dbuf);
+  
+  // cast to quad precision
+  for(int i=0; i<Nsimd; i++){
+    for(int j=0; j<N; j++){
+      for(int l=0; l<M; l++){
+	for(int m=0; m<M; m++){
+	  __real__ qbuf[i](j)(l,m) = dbuf[i](j)(l,m).real();
+	  __imag__ qbuf[i](j)(l,m) = dbuf[i](j)(l,m).imag();
+	}
+      }
+    }
+  }
+  
+  // POG
+  // force the expansion to start from the identity...
+  for(int z=0; z<Nsimd; z++){
+    qbuf[z]._internal[0] = unit;
+    qbuf[z] = QuadExponentiate(Ta(QuadLogarithm(qbuf[z])));
+  }
+  
+  // cast to double precision
+  for(int i=0; i<Nsimd; i++){
+    for(int j=0; j<N; j++){
+      for(int l=0; l<M; l++){
+	for(int m=0; m<M; m++){
+	  dbuf[i](j)(l,m) = ComplexD(__real__ qbuf[i](j)(l,m), __imag__ qbuf[i](j)(l,m));
+	}
+      }
+    }
+  }
+  
+  // merge simd vector
+  iPert<vtype, N> result;
+  merge(result,dbuf);
+  
+  return result;
+}
+#endif
+
+template<class vtype,int N> inline iPert<vtype,N> ProjectOnGroup(const iPert<vtype,N>&r)
     {
       iPert<vtype,N> ret(r);
-      
+
       // force the expansion to start from the identity...
       typedef vtype mytype;
       mytype unit(1.0);
       ret._internal[0] = unit;
-      
+
       return Exponentiate(Ta(Logarithm(ret)));
     }
 
 }
+
 #endif

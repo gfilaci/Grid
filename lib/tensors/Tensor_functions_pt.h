@@ -371,7 +371,7 @@ template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Exponentiate(const i
 	}
 	
 	// exponentiate
-	qbuf = QuadExponentiate(qbuf);
+	for(int z=0; z<Nsimd; z++) qbuf[z] = QuadExponentiate(qbuf[z]);
 	
 	// cast to double precision
 	for(int i=0; i<Nsimd; i++){
@@ -391,21 +391,18 @@ template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Exponentiate(const i
 	return result;
 }
 
- template<int N, int M> inline std::vector<iPert<iMatrix<__complex128,M>,N>> QuadExponentiate(const std::vector<iPert<iMatrix<__complex128,M>,N>> &qbuf)
+ template<int N, int M> inline iPert<iMatrix<__complex128,M>,N> QuadExponentiate(const iPert<iMatrix<__complex128,M>,N> &qbuf)
 {
 	typedef iMatrix<__complex128,M> qtype;
-	int Nsimd = qbuf.size();
 	auto outbuf = qbuf;
 	
 	iPert<qtype, N> newtmp, tmp;
 	qtype unit(1.0);
-	
-	for(int z=0; z<Nsimd; z++){
-		
-		newtmp = outbuf[z];
+			
+		newtmp = outbuf;
 		
 		// ASSUMING P(0) = 0
-		outbuf[z]._internal[0] = unit;
+		outbuf._internal[0] = unit;
 		
 		for(int k=2; k<N; k++){
 		        tmp = zero;
@@ -417,14 +414,13 @@ template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Exponentiate(const i
 				// but imposing i+j<N leads to j<N-i
 				for(int j=k-1; j<N-i; j++){
 					// now k<=i+k<N
-					tmp._internal[i+j] += newtmp._internal[j] * qbuf[z]._internal[i];
+					tmp._internal[i+j] += newtmp._internal[j] * qbuf._internal[i];
 				}
 			}
 			
 			newtmp = (1./(__float128)k) * tmp;
-			outbuf[z] += newtmp;
+			outbuf += newtmp;
 		}
-	}
 	
 	return outbuf;
 }
@@ -457,7 +453,7 @@ template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Logarithm(const iPer
 	}
 	
 	// exponentiate
-	qbuf = QuadLogarithm(qbuf);
+	for(int z=0; z<Nsimd; z++) qbuf[z] = QuadLogarithm(qbuf[z]);
 	
 	// cast to double precision
 	for(int i=0; i<Nsimd; i++){
@@ -477,22 +473,19 @@ template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Logarithm(const iPer
 	return result;
 }
 
- template<int N, int M> inline std::vector<iPert<iMatrix<__complex128,M>,N>> QuadLogarithm(const std::vector<iPert<iMatrix<__complex128,M>,N>> &qbuf)
+ template<int N, int M> inline iPert<iMatrix<__complex128,M>,N> QuadLogarithm(const iPert<iMatrix<__complex128,M>,N> &qbuf)
 {
 	typedef iMatrix<__complex128,M> qtype;
-	int Nsimd = qbuf.size();
 	auto outbuf = qbuf;
 	
 	iPert<qtype, N> newtmp, tmp;
 	__float128 factor, sign;
-	
-	for(int z=0; z<Nsimd; z++){
 		
-		newtmp = outbuf[z];
+		newtmp = outbuf;
 		sign = 1.;
 		
 		// ASSUMING P(0) = 1
-		outbuf[z]._internal[0] = zero;
+		outbuf._internal[0] = zero;
 		
 		for(int k=2; k<N; k++){
 		        tmp = zero;
@@ -504,16 +497,15 @@ template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Logarithm(const iPer
 				// but imposing i+j<N leads to j<N-i
 				for(int j=k-1; j<N-i; j++){
 					// now k<=i+k<N
-					tmp._internal[i+j] += newtmp._internal[j] * qbuf[z]._internal[i];
+					tmp._internal[i+j] += newtmp._internal[j] * qbuf._internal[i];
 				}
 			}
 			
 			newtmp = tmp;
 			sign = -sign;
 			factor = sign/(__float128)k;
-			outbuf[z] += factor * newtmp;
+			outbuf += factor * newtmp;
 		}
-	}
 	
 	return outbuf;
 }

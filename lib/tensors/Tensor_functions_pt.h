@@ -58,84 +58,6 @@ template<class vtype, int N> inline iMatrix<vtype, N> Exponentiate(const iMatrix
       return ret;
     }
 
-////////////
-// overloading for exp in quad precision
-///////////
-#ifdef USE_QUADPREC
- template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Exponentiate(const iPert<iMatrix<vComplexD,M>,N> &P)
-   {
-     typedef iMatrix<   vComplexD,M> vtype;
-     typedef iMatrix<    ComplexD,M> stype;
-     typedef iMatrix<__complex128,M> qtype;
-     
-     // extract simd vector
-     int Nsimd = sizeof(vtype::vector_type) / sizeof(vtype::scalar_type);
-     std::vector<iPert<stype,N>> dbuf(Nsimd);
-     std::vector<iPert<qtype,N>> qbuf(Nsimd);
-     extract(P,dbuf);
-     // cast to quad precision
-     for(int i=0; i<Nsimd; i++){
-       for(int j=0; j<N; j++){
-	 for(int l=0; l<M; l++){
-	   for(int m=0; m<M; m++){
-	     __real__ qbuf[i](j)(l,m) = dbuf[i](j)(l,m).real();
-	     __imag__ qbuf[i](j)(l,m) = dbuf[i](j)(l,m).imag();
-	   }
-	 }
-       }
-     }
-     
-     // exponentiate
-     iPert<qtype, N> ret, newtmp, tmp;
-     qtype unit(1.0);
-     
-     for(int z=0; z<Nsimd; z++){
-       
-       ret = qbuf[z];
-       newtmp = ret;
-       
-       // ASSUMING P(0) = 0
-       ret._internal[0] = unit;
-       
-       for(int k=2; k<N; k++){
-	 zeroit(tmp);
-	 // i runs from 1 to N-1 (interval where P is defined)
-	 // but newtemp starts at order k-1
-	 // so there is a contribution only for i<N+1-k
-	 for(int i=1; i<N+1-k; i++){
-	   // j runs from k-1 to N-1 (interval where newtmp is defined)
-	   // but imposing i+j<N leads to j<N-i
-	   for(int j=k-1; j<N-i; j++){
-	     // now k<=i+k<N
-	     tmp._internal[i+j] += newtmp._internal[j] * qbuf[z]._internal[i];
-	   }
-	 }
-	 
-	 newtmp = (1./(__float128)k) * tmp;
-	 ret += newtmp;
-       }
-       
-       qbuf[z] = ret;
-     }
-     
-     // cast to double precision
-     for(int i=0; i<Nsimd; i++){
-       for(int j=0; j<N; j++){
-	 for(int l=0; l<M; l++){
-	   for(int m=0; m<M; m++){
-	     dbuf[i](j)(l,m) = ComplexD(__real__ qbuf[i](j)(l,m), __imag__ qbuf[i](j)(l,m));
-	   }
-	 }
-       }
-     }
-     // merge simd vector
-     iPert<vtype, N> result;
-     merge(result,dbuf);
-     
-     return result;
-   }
-#endif
-
 template<class vtype, int N> inline iPert<vtype, N> Exponentiate(const iPert<vtype,N> &P)
   {
       // ASSUMING P(0) = 0
@@ -194,87 +116,6 @@ template<class vtype, int N> inline iMatrix<vtype, N> Logarithm(const iMatrix<vt
               ret._internal[i][j] = Logarithm(r._internal[i][j]);
       return ret;
     }
-
-////////////
-// overloading for log in quad precision
-///////////
-#ifdef USE_QUADPREC
- template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Logarithm(const iPert<iMatrix<vComplexD,M>,N> &P)
-   {
-     typedef iMatrix<   vComplexD,M> vtype;
-     typedef iMatrix<    ComplexD,M> stype;
-     typedef iMatrix<__complex128,M> qtype;
-     
-     // extract simd vector
-     int Nsimd = sizeof(vtype::vector_type) / sizeof(vtype::scalar_type);
-     std::vector<iPert<stype,N>> dbuf(Nsimd);
-     std::vector<iPert<qtype,N>> qbuf(Nsimd);
-     extract(P,dbuf);
-     // cast to quad precision
-     for(int i=0; i<Nsimd; i++){
-       for(int j=0; j<N; j++){
-	 for(int l=0; l<M; l++){
-	   for(int m=0; m<M; m++){
-	     __real__ qbuf[i](j)(l,m) = dbuf[i](j)(l,m).real();
-	     __imag__ qbuf[i](j)(l,m) = dbuf[i](j)(l,m).imag();
-	   }
-	 }
-       }
-     }
-     
-     // logarithm
-     iPert<qtype, N> ret, newtmp, tmp;
-     __float128 factor, sign;
-     
-     for(int z=0; z<Nsimd; z++){
-       
-       ret = qbuf[z];
-       newtmp = ret;
-       sign = 1.;
-       
-       // ASSUMING P(0) = 1
-       zeroit(ret._internal[0]);
-       
-       for(int k=2; k<N; k++){
-	 zeroit(tmp);
-	 // i runs from 1 to N-1 (interval where P is defined)
-	 // but newtemp starts at order k-1
-	 // so there is a contribution only for i<N+1-k
-	 for(int i=1; i<N+1-k; i++){
-	   // j runs from k-1 to N-1 (interval where newtmp is defined)
-	   // but imposing i+j<N leads to j<N-i
-	   for(int j=k-1; j<N-i; j++){
-	     // now k<=i+k<N
-	     tmp._internal[i+j] += newtmp._internal[j] * qbuf[z]._internal[i];
-	   }
-	 }
-	 
-	 newtmp = tmp;
-	 sign = -sign;
-	 factor = sign/(__float128)k;
-	 ret += factor * newtmp;
-       }
-
-       qbuf[z] = ret;
-     }
-     
-     // cast to double precision
-     for(int i=0; i<Nsimd; i++){
-       for(int j=0; j<N; j++){
-         for(int l=0; l<M; l++){
-           for(int m=0; m<M; m++){
-	     dbuf[i](j)(l,m) = ComplexD(__real__ qbuf[i](j)(l,m), __imag__ qbuf[i](j)(l,m));
-           }
-         }
-       }
-     }
-     // merge simd vector
-     iPert<vtype, N> result;
-     merge(result,dbuf);
-     
-     return result;
-}
-#endif    
 
 template<class vtype, int N> inline iPert<vtype, N> Logarithm(const iPert<vtype,N> &P)
   {
@@ -498,5 +339,186 @@ template<class vtype, int N> inline void ShiftedSumVoid(const int &ord, iPert<vt
   }
 
 
+/************************************************/
+/*           QUAD PRECISION FUNCTIONS           */
+/************************************************/
+#ifdef USE_QUADPREC
+////////////
+// overloading for exp in quad precision
+///////////
+template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Exponentiate(const iPert<iMatrix<vComplexD,M>,N> &P)
+{
+	typedef iMatrix<   vComplexD,M> vtype;
+	typedef iMatrix<    ComplexD,M> stype;
+	typedef iMatrix<__complex128,M> qtype;
+	
+	// extract simd vector
+	int Nsimd = sizeof(vtype::vector_type) / sizeof(vtype::scalar_type);
+	std::vector<iPert<stype,N>> dbuf(Nsimd);
+	std::vector<iPert<qtype,N>> qbuf(Nsimd);
+	extract(P,dbuf);
+	
+	// cast to quad precision
+	for(int i=0; i<Nsimd; i++){
+		for(int j=0; j<N; j++){
+			for(int l=0; l<M; l++){
+				for(int m=0; m<M; m++){
+					__real__ qbuf[i](j)(l,m) = dbuf[i](j)(l,m).real();
+					__imag__ qbuf[i](j)(l,m) = dbuf[i](j)(l,m).imag();
+				}
+			}
+		}
+	}
+	
+	// exponentiate
+	qbuf = QuadExponentiate(qbuf);
+	
+	// cast to double precision
+	for(int i=0; i<Nsimd; i++){
+		for(int j=0; j<N; j++){
+			for(int l=0; l<M; l++){
+				for(int m=0; m<M; m++){
+					dbuf[i](j)(l,m) = ComplexD(__real__ qbuf[i](j)(l,m), __imag__ qbuf[i](j)(l,m));
+				}
+			}
+		}
+	}
+	
+	// merge simd vector
+	iPert<vtype, N> result;
+	merge(result,dbuf);
+	
+	return result;
 }
+
+ template<int N, int M> inline std::vector<iPert<iMatrix<__complex128,M>,N>> QuadExponentiate(const std::vector<iPert<iMatrix<__complex128,M>,N>> &qbuf)
+{
+	typedef iMatrix<__complex128,M> qtype;
+	int Nsimd = qbuf.size();
+	auto outbuf = qbuf;
+	
+	iPert<qtype, N> newtmp, tmp;
+	qtype unit(1.0);
+	
+	for(int z=0; z<Nsimd; z++){
+		
+		newtmp = outbuf[z];
+		
+		// ASSUMING P(0) = 0
+		outbuf[z]._internal[0] = unit;
+		
+		for(int k=2; k<N; k++){
+		        tmp = zero;
+			// i runs from 1 to N-1 (interval where P is defined)
+			// but newtemp starts at order k-1
+			// so there is a contribution only for i<N+1-k
+			for(int i=1; i<N+1-k; i++){
+				// j runs from k-1 to N-1 (interval where newtmp is defined)
+				// but imposing i+j<N leads to j<N-i
+				for(int j=k-1; j<N-i; j++){
+					// now k<=i+k<N
+					tmp._internal[i+j] += newtmp._internal[j] * qbuf[z]._internal[i];
+				}
+			}
+			
+			newtmp = (1./(__float128)k) * tmp;
+			outbuf[z] += newtmp;
+		}
+	}
+	
+	return outbuf;
+}
+
+////////////
+// overloading for log in quad precision
+///////////
+template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Logarithm(const iPert<iMatrix<vComplexD,M>,N> &P)
+{
+	typedef iMatrix<   vComplexD,M> vtype;
+	typedef iMatrix<    ComplexD,M> stype;
+	typedef iMatrix<__complex128,M> qtype;
+	
+	// extract simd vector
+	int Nsimd = sizeof(vtype::vector_type) / sizeof(vtype::scalar_type);
+	std::vector<iPert<stype,N>> dbuf(Nsimd);
+	std::vector<iPert<qtype,N>> qbuf(Nsimd);
+	extract(P,dbuf);
+	
+	// cast to quad precision
+	for(int i=0; i<Nsimd; i++){
+		for(int j=0; j<N; j++){
+			for(int l=0; l<M; l++){
+				for(int m=0; m<M; m++){
+					__real__ qbuf[i](j)(l,m) = dbuf[i](j)(l,m).real();
+					__imag__ qbuf[i](j)(l,m) = dbuf[i](j)(l,m).imag();
+				}
+			}
+		}
+	}
+	
+	// exponentiate
+	qbuf = QuadLogarithm(qbuf);
+	
+	// cast to double precision
+	for(int i=0; i<Nsimd; i++){
+		for(int j=0; j<N; j++){
+			for(int l=0; l<M; l++){
+				for(int m=0; m<M; m++){
+					dbuf[i](j)(l,m) = ComplexD(__real__ qbuf[i](j)(l,m), __imag__ qbuf[i](j)(l,m));
+				}
+			}
+		}
+	}
+	
+	// merge simd vector
+	iPert<vtype, N> result;
+	merge(result,dbuf);
+	
+	return result;
+}
+
+ template<int N, int M> inline std::vector<iPert<iMatrix<__complex128,M>,N>> QuadLogarithm(const std::vector<iPert<iMatrix<__complex128,M>,N>> &qbuf)
+{
+	typedef iMatrix<__complex128,M> qtype;
+	int Nsimd = qbuf.size();
+	auto outbuf = qbuf;
+	
+	iPert<qtype, N> newtmp, tmp;
+	__float128 factor, sign;
+	
+	for(int z=0; z<Nsimd; z++){
+		
+		newtmp = outbuf[z];
+		sign = 1.;
+		
+		// ASSUMING P(0) = 1
+		outbuf[z]._internal[0] = zero;
+		
+		for(int k=2; k<N; k++){
+		        tmp = zero;
+			// i runs from 1 to N-1 (interval where P is defined)
+			// but newtemp starts at order k-1
+			// so there is a contribution only for i<N+1-k
+			for(int i=1; i<N+1-k; i++){
+				// j runs from k-1 to N-1 (interval where newtmp is defined)
+				// but imposing i+j<N leads to j<N-i
+				for(int j=k-1; j<N-i; j++){
+					// now k<=i+k<N
+					tmp._internal[i+j] += newtmp._internal[j] * qbuf[z]._internal[i];
+				}
+			}
+			
+			newtmp = tmp;
+			sign = -sign;
+			factor = sign/(__float128)k;
+			outbuf[z] += factor * newtmp;
+		}
+	}
+	
+	return outbuf;
+}
+#endif
+
+}
+
 #endif

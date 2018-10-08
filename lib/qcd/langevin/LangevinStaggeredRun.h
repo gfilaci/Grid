@@ -265,7 +265,9 @@ public:
         } else if(Params.StartingType=="CheckpointStart"){
             CP.CheckpointRestore(Params.StartTrajectory,U,sRNG,*pRNG);
 	    // choose if project on group after reading a previous configuration
+	    std::cout << GridLogMessage << "Projecting checkpoint configuration on group..." << std::endl;
             U = ProjectOnGroup(U);
+	    std::cout << GridLogMessage << "done." << std::endl;
         }
         
         if(grid->_processor==0){

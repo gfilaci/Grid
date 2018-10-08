@@ -265,7 +265,7 @@ public:
         } else if(Params.StartingType=="CheckpointStart"){
             CP.CheckpointRestore(Params.StartTrajectory,U,sRNG,*pRNG);
 	    // choose if project on group after reading a previous configuration
-            //U = ProjectOnGroup(U);
+            U = ProjectOnGroup(U);
         }
         
         if(grid->_processor==0){

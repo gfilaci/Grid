@@ -346,7 +346,7 @@ template<class vtype, int N> inline void ShiftedSumVoid(const int &ord, iPert<vt
 ////////////
 // overloading for exp in quad precision
 ///////////
-template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Exponentiate(const iPert<iMatrix<vComplexD,M>,N> &P)
+/*template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Exponentiate(const iPert<iMatrix<vComplexD,M>,N> &P)
 {
 	typedef iMatrix<   vComplexD,M> vtype;
 	typedef iMatrix<    ComplexD,M> stype;
@@ -389,7 +389,7 @@ template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Exponentiate(const i
 	merge(result,dbuf);
 	
 	return result;
-}
+}*/
 
  template<int N, int M> inline iPert<iMatrix<__complex128,M>,N> QuadExponentiate(const iPert<iMatrix<__complex128,M>,N> &qbuf)
 {
@@ -428,7 +428,7 @@ template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Exponentiate(const i
 ////////////
 // overloading for log in quad precision
 ///////////
-template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Logarithm(const iPert<iMatrix<vComplexD,M>,N> &P)
+/*template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Logarithm(const iPert<iMatrix<vComplexD,M>,N> &P)
 {
 	typedef iMatrix<   vComplexD,M> vtype;
 	typedef iMatrix<    ComplexD,M> stype;
@@ -471,7 +471,7 @@ template<int N, int M> inline iPert<iMatrix<vComplexD,M>,N> Logarithm(const iPer
 	merge(result,dbuf);
 	
 	return result;
-}
+}*/
 
  template<int N, int M> inline iPert<iMatrix<__complex128,M>,N> QuadLogarithm(const iPert<iMatrix<__complex128,M>,N> &qbuf)
 {

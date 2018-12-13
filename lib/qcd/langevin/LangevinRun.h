@@ -312,7 +312,7 @@ public:
             PertVacuum(U);
         } else if(Params.StartingType=="CheckpointStart"){
             CP.CheckpointRestore(Params.StartTrajectory,U,sRNG,*pRNG);
-            if(pog_at_startup){
+            if(Params.pog_at_startup){
                 std::cout << GridLogMessage << "Projecting checkpoint configuration on group..." << std::endl;
                 U = ProjectOnGroup(U);
                 std::cout << GridLogMessage << "done." << std::endl;
@@ -400,7 +400,7 @@ public:
         if(Params.gfprecision!=0)
             log << "Saving configurations in Landau gauge with precision " << Params.gfprecision << std::endl;
         log << "POG at startup:        ";
-        if(pog_at_startup) log << "YES" << std::endl;
+        if(Params.pog_at_startup) log << "YES" << std::endl;
         else log << "NO" << std::endl;
         
         log << std::endl;

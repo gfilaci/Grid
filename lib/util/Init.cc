@@ -351,9 +351,9 @@ void Grid_init(int *argc,char ***argv)
     std::cout<<GridLogMessage<<"  --tau x                : Langevin time step is x"<<std::endl;
     std::cout<<GridLogMessage<<"  --alpha x              : (stochastic) gauge fixing parameteris x"<<std::endl;
     std::cout<<GridLogMessage<<"  --sweeps x             : total number of sweeps is x"<<std::endl;
-    std::cout<<GridLogMessage<<"  --StartingType         : Valid [ColdStart, CheckpointStart, LowerOrderStart]"<<std::endl;
+    std::cout<<GridLogMessage<<"  --StartingType x       : Valid x=[ColdStart, CheckpointStart, LowerOrderStart]"<<std::endl;
     std::cout<<GridLogMessage<<"  --rng x.x.x.x          : set rng seeds for a ColdStart"<<std::endl;
-    std::cout<<GridLogMessage<<"  --start-from x         : start from checkpoint x for ColdStart and LowerOrderStart"<<std::endl;
+    std::cout<<GridLogMessage<<"  --start-from x         : start from checkpoint x for CheckpointStart or LowerOrderStart"<<std::endl;
     std::cout<<GridLogMessage<<"  --save-every x         : save a configuration every x steps"<<std::endl;
     std::cout<<GridLogMessage<<"  --prefix path          : set path for reading/writing checkpoints"<<std::endl;
     std::cout<<GridLogMessage<<"  --enable-gf x          : when saving, enable gauge fixing in Landau gauge with precision x"<<std::endl;

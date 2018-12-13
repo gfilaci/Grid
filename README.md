@@ -153,6 +153,9 @@ If you want to build all the tests at once just use `make tests`.
 - `--enable-chroma`: enable Chroma regression tests.
 - `--enable-doxygen-doc`: enable the Doxygen documentation generation (build with `make doxygen-doc`)
 
+### Build configuration options for NSPT
+- `--with-quadprec`: enable projection on group operator in quadruple precision
+
 ### Possible communication interfaces
 
 The following options can be use with the `--enable-comms=` option to target different communication interfaces:

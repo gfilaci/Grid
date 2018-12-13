@@ -133,8 +133,6 @@ public:
             div = gt * div * Gimpl::MoveForward(agt,mu);
             PokeIndex<LorentzIndex>(U,div,mu);
         }
-	// choose if projecting on group at the end of the Langevin step
-	//U = ProjectOnGroup(U);
     }
 
     void EulerStep(FieldType &U) {

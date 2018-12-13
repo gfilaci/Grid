@@ -55,6 +55,7 @@ public:
     
     int sweeps;
     int save_every;
+    int pog_every;
     int StartTrajectory;
     
     int Nf;
@@ -68,6 +69,7 @@ public:
     bool measureprop;
     bool fagf;
     bool enablenorm;
+    bool pog_at_startup;
     std::string StartingType;
     std::vector<int> rngseed;
     
@@ -132,6 +134,12 @@ public:
             ss>>save_every;
         } else save_every = 0;
         
+        if( GridCmdOptionExists(argv,argv+argc,"--pog-every") ){
+            arg = GridCmdOptionPayload(argv,argv+argc,"--pog-every");
+            std::stringstream ss(arg);
+            ss>>pog_every;
+        } else pog_every = 0;
+        
         if( GridCmdOptionExists(argv,argv+argc,"--enable-gf") ){
             arg = GridCmdOptionPayload(argv,argv+argc,"--enable-gf");
             std::stringstream ss(arg);
@@ -145,6 +153,10 @@ public:
         if( GridCmdOptionExists(argv,argv+argc,"--enable-rk") ){
             rk = true;
         } else rk = false;
+        
+        if( GridCmdOptionExists(argv,argv+argc,"--pog-at-startup") ){
+            pog_at_startup = true;
+        } else pog_at_startup = false;
         
         if( GridCmdOptionExists(argv,argv+argc,"--enable-propagator") ){
             measureprop = true;
@@ -300,7 +312,11 @@ public:
             PertVacuum(U);
         } else if(Params.StartingType=="CheckpointStart"){
             CP.CheckpointRestore(Params.StartTrajectory,U,sRNG,*pRNG);
-            U = ProjectOnGroup(U);
+            if(pog_at_startup){
+                std::cout << GridLogMessage << "Projecting checkpoint configuration on group..." << std::endl;
+                U = ProjectOnGroup(U);
+                std::cout << GridLogMessage << "done." << std::endl;
+            }
         }
         
         if(grid->_processor==0){
@@ -383,6 +399,9 @@ public:
         if(Params.StartingType=="CheckpointStart") log << "starting from:             " << Params.StartTrajectory << std::endl;
         if(Params.gfprecision!=0)
             log << "Saving configurations in Landau gauge with precision " << Params.gfprecision << std::endl;
+        log << "POG at startup:        ";
+        if(pog_at_startup) log << "YES" << std::endl;
+        else log << "NO" << std::endl;
         
         log << std::endl;
         
@@ -390,6 +409,7 @@ public:
         log << "alpha      = " << Params.alpha << std::endl;
         log << "sweeps     = " << Params.sweeps << std::endl;
         log << "save_every = " << Params.save_every << std::endl;
+        log << "pog_every  = " << Params.pog_every << std::endl;
         log << std::endl;
         
         log << std::endl;
@@ -523,6 +543,12 @@ public:
             else L.RKStep(U);
             
             L.StochasticGF(U);
+            
+            if(Params.pog_every!=0 && i%Params.pog_every==(Params.pog_every-1)){
+                std::cout << GridLogMessage << "Projecting on group..." << std::endl;
+                U = ProjectOnGroup(U);
+                std::cout << GridLogMessage << "done." << std::endl;
+            }
             
             plaq = WilsonLoops<gimpl>::avgPlaquette(U);
             for (int k=0; k<Np; k++) liveplaqfile << plaq(k) << std::endl;

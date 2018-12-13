@@ -347,6 +347,21 @@ void Grid_init(int *argc,char ***argv)
     std::cout<<GridLogMessage<<"  --lebesgue      : Cache oblivious Lebesgue curve/Morton order/Z-graph stencil looping"<<std::endl;    
     std::cout<<GridLogMessage<<"  --cacheblocking n.m.o.p : Hypercuboidal cache blocking"<<std::endl;    
     std::cout<<GridLogMessage<<std::endl;
+    std::cout<<GridLogMessage<<"*** NSPT OPTIONS ***"<<std::endl;
+    std::cout<<GridLogMessage<<"  --tau x                : Langevin time step is x"<<std::endl;
+    std::cout<<GridLogMessage<<"  --alpha x              : (stochastic) gauge fixing parameteris x"<<std::endl;
+    std::cout<<GridLogMessage<<"  --sweeps x             : total number of sweeps is x"<<std::endl;
+    std::cout<<GridLogMessage<<"  --StartingType         : Valid [ColdStart, CheckpointStart, LowerOrderStart]"<<std::endl;
+    std::cout<<GridLogMessage<<"  --rng x.x.x.x          : set rng seeds for a ColdStart"<<std::endl;
+    std::cout<<GridLogMessage<<"  --start-from x         : start from checkpoint x for ColdStart and LowerOrderStart"<<std::endl;
+    std::cout<<GridLogMessage<<"  --save-every x         : save a configuration every x steps"<<std::endl;
+    std::cout<<GridLogMessage<<"  --prefix path          : set path for reading/writing checkpoints"<<std::endl;
+    std::cout<<GridLogMessage<<"  --enable-gf x          : when saving, enable gauge fixing in Landau gauge with precision x"<<std::endl;
+    std::cout<<GridLogMessage<<"  --fourier-acceleration : enable Fourier acceleration in gauge fixing"<<std::endl;
+    std::cout<<GridLogMessage<<"  --pog-at-startup       : execute a projection on group after loading a previous checkpoint"<<std::endl;
+    std::cout<<GridLogMessage<<"  --pog-every x          : project on group every x steps"<<std::endl;
+    std::cout<<GridLogMessage<<"  --enable-rk            : enable the naive Runge-Kutta integrator"<<std::endl;
+    std::cout<<GridLogMessage<<"  --enable-norm          : save the norm of the configuration on file after each Langevin step"<<std::endl;
     exit(EXIT_SUCCESS);
   }
 

@@ -40,5 +40,6 @@ directory
 #include <Grid/qcd/action/pseudofermion/OneFlavourEvenOddRationalRatio.h>
 #include <Grid/qcd/action/pseudofermion/ExactOneFlavourRatio.h>
 #include <Grid/qcd/action/pseudofermion/StochasticFermion.h>
+#include <Grid/qcd/action/pseudofermion/TwoFlavourStaggeredRational.h>
 
 #endif

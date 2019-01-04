@@ -653,19 +653,18 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
   // RECTANGULAR WILSON LOOP OF ARBITRARY SIZE
   ////////////////////////////////////////////////////////////////////////////
   
-  template<int N>
-  static GaugeMat CovMultipleShiftForward(const GaugeMat &Link, int mu, const GaugeMat &field){
+  static GaugeMat CovMultipleShiftForward(const int N, const GaugeMat &Link, int mu, const GaugeMat &field){
       if(N==0) return field;
-      return Gimpl::CovShiftForward(Link, mu, CovMultipleShiftForward<N-1>(Link, mu, field));
+      return Gimpl::CovShiftForward(Link, mu, CovMultipleShiftForward(N-1, Link, mu, field));
   }
     
   static void WilsonRectLoop(GaugeMat &rect, const std::vector<GaugeMat> &U,
                              const int mu, const int nu, const int M, const int N) {
-      rect = CovMultipleShiftForward<M>  (U[mu], mu,
-             CovMultipleShiftForward<N-1>(U[nu], nu,
+      rect = CovMultipleShiftForward  (M, U[mu], mu,
+             CovMultipleShiftForward(N-1, U[nu], nu,
                                           U[nu])) *
-         adj(CovMultipleShiftForward<N>  (U[nu], nu,
-             CovMultipleShiftForward<M-1>(U[mu], mu,
+         adj(CovMultipleShiftForward  (N, U[nu], nu,
+             CovMultipleShiftForward(M-1, U[mu], mu,
                                           U[mu])));
   }
     

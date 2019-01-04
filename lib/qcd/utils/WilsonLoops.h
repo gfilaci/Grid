@@ -647,6 +647,70 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
       }
     }
   }
+    
+    
+  ////////////////////////////////////////////////////////////////////////////
+  // RECTANGULAR WILSON LOOP OF ARBITRARY SIZE
+  ////////////////////////////////////////////////////////////////////////////
+  
+  template<int N>
+  static GaugeMat CovMultipleShiftForward(const GaugeMat &Link, int mu, const GaugeMat &field){
+      if(N==0) return field;
+      return Gimpl::CovShiftForward(Link, mu, CovMultipleShiftForward<N-1>(Link, mu, field));
+  }
+    
+  static void WilsonRectLoop(GaugeMat &rect, const std::vector<GaugeMat> &U,
+                             const int mu, const int nu, const int M, const int N) {
+      rect = CovMultipleShiftForward<M>  (U[mu], mu,
+             CovMultipleShiftForward<N-1>(U[nu], nu,
+                                          U[nu])) *
+         adj(CovMultipleShiftForward<N>  (U[nu], nu,
+             CovMultipleShiftForward<M-1>(U[mu], mu,
+                                          U[mu])));
+  }
+    
+  static void traceDirWilsonRectLoop(ComplexField &plaq,
+                                     const std::vector<GaugeMat> &U, const int mu,
+                                     const int nu, const int M, const int N) {
+      GaugeMat sp(U[0]._grid);
+      WilsonRectLoop(sp, U, mu, nu, M, N);
+      plaq = trace(sp);
+  }
+    
+  static void siteWilsonRectLoop(ComplexField &Plaq,
+                                 const std::vector<GaugeMat> &U, const int M, const int N) {
+      ComplexField sitePlaq(U[0]._grid);
+      Plaq = zero;
+      for (int mu = 1; mu < Nd; mu++) { // mediare solo con una direzione temporale
+          for (int nu = 0; nu < mu; nu++) {
+              traceDirWilsonRectLoop(sitePlaq, U, mu, nu, M, N);
+              Plaq = Plaq + sitePlaq;
+          }
+      }
+  }
+    
+  static PlaqType sumWilsonRectLoop(const GaugeLorentz &Umu, const int M, const int N) {
+      std::vector<GaugeMat> U(Nd, Umu._grid);
+      // inefficient here
+      for (int mu = 0; mu < Nd; mu++) {
+          U[mu] = PeekIndex<LorentzIndex>(Umu, mu);
+      }
+      
+      ComplexField Plaq(Umu._grid);
+      
+      siteWilsonRectLoop(Plaq, U, M, N);
+      auto Tp = sum(Plaq);
+      auto p = TensorRemove(Tp);
+      return p.real();
+  }
+    
+  static PlaqType avgWilsonRectLoop(const GaugeLorentz &Umu, const int M, const int N) {
+      PlaqType sumplaq = sumWilsonRectLoop(Umu, M, N);
+      double vol = Umu._grid->gSites();
+      double faces = (1.0 * Nd * (Nd - 1)) / 2.0;
+      return sumplaq / vol / faces / Nc; // Nd , Nc dependent... FIXME
+  }
+  
 };
 
 typedef WilsonLoops<PeriodicGimplR> ColourWilsonLoops;

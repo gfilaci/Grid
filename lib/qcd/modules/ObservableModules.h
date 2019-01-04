@@ -93,6 +93,19 @@ class PlaquetteMod: public ObservableModule<PlaquetteLogger<Impl>, NoParameters>
 };
 
 template < class Impl >
+class WilsonLoopMod: public ObservableModule<WilsonLoopLogger<Impl>, NoParameters>{
+    typedef ObservableModule<WilsonLoopLogger<Impl>, NoParameters> ObsBase;
+    using ObsBase::ObsBase; // for constructors
+    
+    // acquire resource
+    virtual void initialize(){
+        this->ObservablePtr.reset(new WilsonLoopLogger<Impl>());
+    }
+public:
+    WilsonLoopMod(): ObsBase(NoParameters()){}
+};
+
+template < class Impl >
 class PolyakovMod: public ObservableModule<PolyakovLogger<Impl>, NoParameters>{
   typedef ObservableModule<PolyakovLogger<Impl>, NoParameters> ObsBase;
   using ObsBase::ObsBase; // for constructors

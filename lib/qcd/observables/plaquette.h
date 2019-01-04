@@ -62,6 +62,35 @@ class PlaquetteLogger : public HmcObservable<typename Impl::Field> {
   }
 };
 
+// this is only defined for a gauge theory
+template <class Impl>
+class WilsonLoopLogger : public HmcObservable<typename Impl::Field> {
+public:
+    // here forces the Impl to be of gauge fields
+    // if not the compiler will complain
+    INHERIT_GIMPL_TYPES(Impl);
+    
+    // necessary for HmcObservable compatibility
+    typedef typename Impl::Field Field;
+    
+    void TrajectoryComplete(int traj,
+                            Field &U,
+                            GridSerialRNG &sRNG,
+                            GridParallelRNG &pRNG) {
+        
+        RealD plaq = WilsonLoops<Impl>::avgWilsonRectLoop(U,1,1);
+        
+        int def_prec = std::cout.precision();
+        
+        std::cout << GridLogMessage
+        << std::setprecision(std::numeric_limits<Real>::digits10 + 1)
+        << "Wilson Loop 1x1: [ " << traj << " ] "<< plaq << std::endl;
+        
+        std::cout.precision(def_prec);
+        
+    }
+};
+    
 }  // namespace QCD
 }  // namespace Grid
 

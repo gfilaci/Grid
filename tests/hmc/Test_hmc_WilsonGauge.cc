@@ -64,10 +64,8 @@ int main(int argc, char **argv) {
   // Construct observables
   // here there is too much indirection 
   typedef PlaquetteMod<HMCWrapper::ImplPolicy> PlaqObs;
-  typedef WilsonLoopMod<HMCWrapper::ImplPolicy> WLoop;
   typedef TopologicalChargeMod<HMCWrapper::ImplPolicy> QObs;
   TheHMC.Resources.AddObservable<PlaqObs>();
-  TheHMC.Resources.AddObservable<WLoop>();
   TopologyObsParameters TopParams;
   TopParams.interval = 5;
   TopParams.do_smearing = true;

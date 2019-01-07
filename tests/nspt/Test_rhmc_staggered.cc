@@ -65,19 +65,28 @@ int main(int argc, char **argv) {
   TheHMC.Resources.LoadNerscCheckpointer(CPparams);
 
   RNGModuleParameters RNGpar;
-  RNGpar.serial_seeds = "1 2 3 4 5";
-  RNGpar.parallel_seeds = "6 7 8 9 10";
+  RNGpar.serial_seeds = "8 33 6 54";
+  RNGpar.parallel_seeds = "92 3 99 4 ";
   TheHMC.Resources.SetRNGSeeds(RNGpar);
 
   // Construct observables
   typedef PlaquetteMod<HMCWrapper::ImplPolicy> PlaqObs;
   TheHMC.Resources.AddObservable<PlaqObs>();
+  
   typedef WilsonLoopMod<HMCWrapper::ImplPolicy> WLoop;
-  WilsonLoopParameters WLParams;
-  WLParams.AddLoopTxN({1,1});
-  WLParams.AddLoopTxN({2,1});
-  WLParams.AddLoopTxN({2,2});
-  TheHMC.Resources.AddObservable<WLoop>(WLParams);
+  std::vector<int> Tvalues = {5,6,10,11,15,16};
+  std::vector<int> Rvalues = {2,4,6,8,10,12,14};
+  WilsonLoopParameters WLParams1, WLParams2;
+  WLParams1.AddLoopTxN({1,1});
+  WLParams2.AddLoopTxN({1,1});
+  for(int i=0; i<Tvalues.size(); i++)
+    for(int j=0; j<Rvalues.size(); j++){
+      WLParams1.AddLoopTxN({Tvalues[i],Rvalues[j]});
+      WLParams2.AddLoopTxN({Tvalues[i],Rvalues[j]});
+    }
+  WLParams2.do_smearing = true;
+  TheHMC.Resources.AddObservable<WLoop>(WLParams1);
+  TheHMC.Resources.AddObservable<WLoop>(WLParams2);
   //////////////////////////////////////////////
 
   /////////////////////////////////////////////////////////////
@@ -85,7 +94,7 @@ int main(int argc, char **argv) {
   // need wrappers of the fermionic classes 
   // that have a complex construction
   // standard
-  RealD beta = 5.6 ;
+  RealD beta = 5.3 ;
   WilsonGaugeActionR Waction(beta);
     
   auto GridPtr = TheHMC.Resources.GetCartesian();
@@ -94,7 +103,7 @@ int main(int argc, char **argv) {
   // temporarily need a gauge field
   LatticeGaugeField U(GridPtr);
 
-  Real mass = 10;
+  Real mass = 0.3;
 
   // Can we define an overloaded operator that does not need U and initialises
   // it with zeroes?

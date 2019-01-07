@@ -680,10 +680,13 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
                                  const std::vector<GaugeMat> &U, const int M, const int N) {
       ComplexField sitePlaq(U[0]._grid);
       Plaq = zero;
-      int mu = Nd - 1; // set size M to be the temporal direction
-      for (int nu = 0; nu < mu; nu++) {
-          traceDirWilsonRectLoop(sitePlaq, U, mu, nu, M, N);
-          Plaq = Plaq + sitePlaq;
+      for (int mu = 0; mu < Nd; mu++) {
+	for (int nu = 0; nu < Nd; nu++) {
+	  if(mu!=nu){
+	    traceDirWilsonRectLoop(sitePlaq, U, mu, nu, M, N);
+	    Plaq = Plaq + sitePlaq;
+	  }
+	}
       }
   }
     
@@ -706,7 +709,7 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
       PlaqType sumplaq = sumWilsonRectLoop(Umu, M, N);
       double vol = Umu._grid->gSites();
       double faces = (1.0 * Nd * (Nd - 1)) / 2.0;
-      return sumplaq / vol / faces / Nc; // Nd , Nc dependent... FIXME
+      return sumplaq / vol / faces / Nc / 2.; // Nd , Nc dependent... FIXME
   }
   
 };

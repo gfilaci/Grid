@@ -115,12 +115,12 @@ public:
             
             // set smear parameters: number of steps, values of weights...
             if (Pars.do_smearing){
-	      Field Utmp = U;
-	      Smear_APE<Impl> APEsmearing;
-	      for(int i=0; i<10; i++){
-		APEsmearing.smear(Utmp, Usmear);
-		Usmear = Utmp;
-	      }
+                Field Utmp = U;
+                Smear_APE<Impl> APEsmearing;
+                for(int i=0; i<10; i++){
+                    APEsmearing.smear(Utmp, Usmear);
+                    Usmear = ProjectOnGroup(Usmear+Utmp);
+                }
             }
             
             for(int i=0; i<Pars.sizes.size(); i++){

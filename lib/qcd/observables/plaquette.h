@@ -113,14 +113,14 @@ public:
             Field Usmear = U;
             int def_prec = std::cout.precision();
             
-            // implement smearing...
+            // set smear parameters: number of steps, values of weights...
             if (Pars.do_smearing){
-//                // using wilson flow by default here
-//                WilsonFlow<PeriodicGimplR> WF(Pars.Smearing.steps, Pars.Smearing.step_size, Pars.Smearing.meas_interval);
-//                WF.smear_adaptive(Usmear, U, Pars.Smearing.maxTau);
-//                Real T0   = WF.energyDensityPlaquette(Usmear);
-//                std::cout << GridLogMessage << std::setprecision(std::numeric_limits<Real>::digits10 + 1)
-//                << "T0                : [ " << traj << " ] "<< T0 << std::endl;
+	      Field Utmp = U;
+	      Smear_APE<Impl> APEsmearing;
+	      for(int i=0; i<10; i++){
+		APEsmearing.smear(Utmp, Usmear);
+		Usmear = Utmp;
+	      }
             }
             
             for(int i=0; i<Pars.sizes.size(); i++){

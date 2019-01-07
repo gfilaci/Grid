@@ -72,6 +72,12 @@ int main(int argc, char **argv) {
   // Construct observables
   typedef PlaquetteMod<HMCWrapper::ImplPolicy> PlaqObs;
   TheHMC.Resources.AddObservable<PlaqObs>();
+  typedef WilsonLoopMod<HMCWrapper::ImplPolicy> WLoop;
+  WilsonLoopParameters WLParams;
+  WLParams.AddLoopTxN({1,1});
+  WLParams.AddLoopTxN({2,1});
+  WLParams.AddLoopTxN({2,2});
+  TheHMC.Resources.AddObservable<WLoop>(WLParams);
   //////////////////////////////////////////////
 
   /////////////////////////////////////////////////////////////
@@ -94,17 +100,15 @@ int main(int argc, char **argv) {
   // it with zeroes?
   FermionAction FermOp(U, *GridPtr, *GridRBPtr, mass);
 
-  // 2 staggered flavour
+  // 2 staggered flavours (parameters taken from the one-flavour Wilson fermion action)
   OneFlavourRationalParams Params(1.0e-4, 64.0, 2000, 1.0e-6);
-  TwoFlavourRationalStaggeredPseudoFermionAction<FermionImplPolicy> WilsonNf1a(FermOp,Params);
-
+  TwoFlavourRationalStaggeredPseudoFermionAction<FermionImplPolicy> WilsonNf2(FermOp,Params);
   //Smearing on/off
-  WilsonNf1a.is_smeared = false;
+  WilsonNf2.is_smeared = false;
 
-    // Collect actions
+  // Collect actions
   ActionLevel<HMCWrapper::Field> Level1(1);
-  Level1.push_back(&WilsonNf1a);
-
+  Level1.push_back(&WilsonNf2);
   ActionLevel<HMCWrapper::Field> Level2(4);
   Level2.push_back(&Waction);
 
@@ -131,6 +135,3 @@ int main(int argc, char **argv) {
   Grid_finalize();
 
 } // main
-
-
-

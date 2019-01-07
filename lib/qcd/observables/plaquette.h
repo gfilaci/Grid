@@ -62,9 +62,32 @@ class PlaquetteLogger : public HmcObservable<typename Impl::Field> {
   }
 };
 
+struct WilsonLoopParameters : Serializable {
+    GRID_SERIALIZABLE_CLASS_MEMBERS(WilsonLoopParameters,
+                                    int, interval,
+                                    bool, do_smearing,
+                                    std::vector<std::vector<int>>, sizes);
+    
+    WilsonLoopParameters(std::vector<std::vector<int>> sizes = {},
+                         int interval = 1,
+                         bool do_smearing = false):
+    sizes(sizes), interval(interval), do_smearing(do_smearing){}
+    
+    template <class ReaderClass >
+    WilsonLoopParameters(Reader<ReaderClass>& Reader){
+        read(Reader, "WilsonLoopMeasurement", *this);
+    }
+    
+    void AddLoopTxN(std::vector<int> sizes_){
+        sizes.push_back(sizes_);
+    }
+};
+
 // this is only defined for a gauge theory
 template <class Impl>
 class WilsonLoopLogger : public HmcObservable<typename Impl::Field> {
+    WilsonLoopParameters Pars;
+    
 public:
     // here forces the Impl to be of gauge fields
     // if not the compiler will complain
@@ -73,21 +96,43 @@ public:
     // necessary for HmcObservable compatibility
     typedef typename Impl::Field Field;
     
+    WilsonLoopLogger(std::vector<std::vector<int>> sizes, int interval = 1, bool do_smearing = false):
+    Pars(sizes, interval, do_smearing){}
+    
+    WilsonLoopLogger(WilsonLoopParameters P):Pars(P){
+        std::cout << GridLogDebug << "Creating WilsonLoop " << std::endl;
+    }
+    
     void TrajectoryComplete(int traj,
                             Field &U,
                             GridSerialRNG &sRNG,
                             GridParallelRNG &pRNG) {
         
-        RealD plaq = WilsonLoops<Impl>::avgWilsonRectLoop(U,1,1);
-        
-        int def_prec = std::cout.precision();
-        
-        std::cout << GridLogMessage
-        << std::setprecision(std::numeric_limits<Real>::digits10 + 1)
-        << "Wilson Loop 1x1: [ " << traj << " ] "<< plaq << std::endl;
-        
-        std::cout.precision(def_prec);
-        
+        if (traj%Pars.interval == 0){
+            
+            Field Usmear = U;
+            int def_prec = std::cout.precision();
+            
+            // implement smearing...
+            if (Pars.do_smearing){
+//                // using wilson flow by default here
+//                WilsonFlow<PeriodicGimplR> WF(Pars.Smearing.steps, Pars.Smearing.step_size, Pars.Smearing.meas_interval);
+//                WF.smear_adaptive(Usmear, U, Pars.Smearing.maxTau);
+//                Real T0   = WF.energyDensityPlaquette(Usmear);
+//                std::cout << GridLogMessage << std::setprecision(std::numeric_limits<Real>::digits10 + 1)
+//                << "T0                : [ " << traj << " ] "<< T0 << std::endl;
+            }
+            
+            for(int i=0; i<Pars.sizes.size(); i++){
+                Real plaq = WilsonLoops<Impl>::avgWilsonRectLoop(Usmear,Pars.sizes[i][0],Pars.sizes[i][1]);
+                
+                if(Pars.do_smearing) std::cout << GridLogMessage << "YesSmearing ";
+                else std::cout << GridLogMessage << "NoSmearing ";
+                std::cout << std::setprecision(std::numeric_limits<Real>::digits10 + 1)
+                << "WilsonLoop " << Pars.sizes[i][0] << "x" << Pars.sizes[i][1] << ": [ " << traj << " ] " << plaq << std::endl;
+                std::cout.precision(def_prec);
+            }
+        }
     }
 };
     

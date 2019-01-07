@@ -680,11 +680,10 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
                                  const std::vector<GaugeMat> &U, const int M, const int N) {
       ComplexField sitePlaq(U[0]._grid);
       Plaq = zero;
-      for (int mu = 1; mu < Nd; mu++) { // mediare solo con una direzione temporale
-          for (int nu = 0; nu < mu; nu++) {
-              traceDirWilsonRectLoop(sitePlaq, U, mu, nu, M, N);
-              Plaq = Plaq + sitePlaq;
-          }
+      int mu = Nd - 1; // set size M to be the temporal direction
+      for (int nu = 0; nu < mu; nu++) {
+          traceDirWilsonRectLoop(sitePlaq, U, mu, nu, M, N);
+          Plaq = Plaq + sitePlaq;
       }
   }
     

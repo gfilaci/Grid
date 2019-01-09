@@ -28,51 +28,66 @@ Author: paboyle <paboyle@ph.ed.ac.uk>
     /*  END LEGAL */
 #include <Grid/Grid.h>
 
-
+namespace Grid {
+    class GaugeActionParameters : Serializable {
+    public:
+        GRID_SERIALIZABLE_CLASS_MEMBERS(GaugeActionParameters,
+                                        double, beta);
+        template <class ReaderClass >
+        GaugeActionParameters(Reader<ReaderClass>& Reader){
+            read(Reader, "GaugeAction", *this);
+        }
+    };
+    class FermionActionParameters : Serializable {
+    public:
+        GRID_SERIALIZABLE_CLASS_MEMBERS(FermionActionParameters,
+                                        double, mass);
+        template <class ReaderClass >
+        FermionActionParameters(Reader<ReaderClass>& Reader){
+            read(Reader, "FermionAction", *this);
+        }
+    };
+}
 
 int main(int argc, char **argv) {
   using namespace Grid;
   using namespace Grid::QCD;
 
+  typedef Grid::JSONReader       Serialiser;
+
   Grid_init(&argc, &argv);
   int threads = GridThread::GetThreads();
-  // here make a routine to print all the relevant information on the run
   std::cout << GridLogMessage << "Grid is setup to use " << threads << " threads" << std::endl;
 
    // Typedefs to simplify notation
-  typedef GenericHMCRunner<MinimumNorm2> HMCWrapper;  // Uses the default minimum norm
+  typedef GenericHMCRunner<MinimumNorm2> HMCWrapper;
   typedef QCDpt::NaiveStaggeredImplD FermionImplPolicy;
   typedef StaggeredFermion<QCDpt::NaiveStaggeredImplD> FermionAction;
   typedef typename FermionAction::FermionField FermionField;
-
-
   //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
   HMCWrapper TheHMC;
 
-  // Grid from the command line
+  TheHMC.ReadCommandLine(argc, argv);
+  if (TheHMC.ParameterFile.empty()){
+      std::cout << "Input file not specified. Use --ParameterFile option in the command line.\nAborting" << std::endl;
+      exit(1);
+  }
+
+  Serialiser Reader(TheHMC.ParameterFile);
+
   TheHMC.Resources.AddFourDimGrid("gauge");
-  // Possibile to create the module by hand 
-  // hardcoding parameters or using a Reader
 
-
-  // Checkpointer definition
-  CheckpointerParameters CPparams;  
-  CPparams.config_prefix = "ckpoint_lat";
-  CPparams.rng_prefix = "ckpoint_rng";
-  CPparams.saveInterval = 5;
-  CPparams.format = "IEEE64BIG";
-  
+  CheckpointerParameters CPparams(Reader);
   TheHMC.Resources.LoadNerscCheckpointer(CPparams);
 
-  RNGModuleParameters RNGpar;
-  RNGpar.serial_seeds = "8 33 6 54";
-  RNGpar.parallel_seeds = "92 3 99 4 ";
+  RNGModuleParameters RNGpar(Reader);
   TheHMC.Resources.SetRNGSeeds(RNGpar);
 
   // Construct observables
   typedef PlaquetteMod<HMCWrapper::ImplPolicy> PlaqObs;
   TheHMC.Resources.AddObservable<PlaqObs>();
-  
+
   typedef WilsonLoopMod<HMCWrapper::ImplPolicy> WLoop;
   std::vector<int> Tvalues = {5,6,10,11,15,16};
   std::vector<int> Rvalues = {2,4,6,8,10,12,14};
@@ -90,29 +105,18 @@ int main(int argc, char **argv) {
   //////////////////////////////////////////////
 
   /////////////////////////////////////////////////////////////
-  // Collect actions, here use more encapsulation
-  // need wrappers of the fermionic classes 
-  // that have a complex construction
-  // standard
-  RealD beta = 5.3 ;
-  WilsonGaugeActionR Waction(beta);
-    
+  GaugeActionParameters GPar(Reader);
+  WilsonGaugeActionR Waction(GPar.beta);
+
   auto GridPtr = TheHMC.Resources.GetCartesian();
   auto GridRBPtr = TheHMC.Resources.GetRBCartesian();
-
-  // temporarily need a gauge field
   LatticeGaugeField U(GridPtr);
-
-  Real mass = 0.3;
-
-  // Can we define an overloaded operator that does not need U and initialises
-  // it with zeroes?
-  FermionAction FermOp(U, *GridPtr, *GridRBPtr, mass);
+  FermionActionParameters FPar(Reader);
+  FermionAction FermOp(U, *GridPtr, *GridRBPtr, FPar.mass);
 
   // 2 staggered flavours (parameters taken from the one-flavour Wilson fermion action)
   OneFlavourRationalParams Params(1.0e-4, 64.0, 2000, 1.0e-6);
   TwoFlavourRationalStaggeredPseudoFermionAction<FermionImplPolicy> WilsonNf2(FermOp,Params);
-  //Smearing on/off
   WilsonNf2.is_smeared = false;
 
   // Collect actions
@@ -123,23 +127,9 @@ int main(int argc, char **argv) {
 
   TheHMC.TheAction.push_back(Level1);
   TheHMC.TheAction.push_back(Level2);
-  /////////////////////////////////////////////////////////////
 
-  /*
-    double rho = 0.1;  // smearing parameter
-    int Nsmear = 2;    // number of smearing levels
-    Smear_Stout<HMCWrapper::ImplPolicy> Stout(rho);
-    SmearedConfiguration<HMCWrapper::ImplPolicy> SmearingPolicy(
-        UGrid, Nsmear, Stout);
-  */
-
-  // HMC parameters are serialisable 
-  TheHMC.Parameters.MD.MDsteps = 20;
-  TheHMC.Parameters.MD.trajL   = 1.0;
-
-  TheHMC.ReadCommandLine(argc, argv); // these can be parameters from file
-  TheHMC.Run();  // no smearing
-  // TheHMC.Run(SmearingPolicy); // for smearing
+  TheHMC.Parameters.initialize(Reader);
+  TheHMC.Run();
 
   Grid_finalize();
 

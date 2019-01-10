@@ -654,6 +654,9 @@ static void StapleMult(GaugeMat &staple, const GaugeLorentz &Umu, int mu) {
   ////////////////////////////////////////////////////////////////////////////
   
   static GaugeMat CovMultipleShiftForward(const int N, const GaugeMat &Link, int mu, const GaugeMat &field){
+//      GaugeMat res = field;
+//      for(int i=0; i<N; i++) res = Gimpl::CovShiftForward(Link, mu, res);
+//      return res;
       if(N==0) return field;
       return Gimpl::CovShiftForward(Link, mu, CovMultipleShiftForward(N-1, Link, mu, field));
   }

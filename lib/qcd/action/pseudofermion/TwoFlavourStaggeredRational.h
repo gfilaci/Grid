@@ -33,7 +33,7 @@ namespace Grid{
   namespace QCD{
 
     ///////////////////////////////////////
-    // One flavour rational
+    // Two-flavour staggered rational
     ///////////////////////////////////////
 
     // S_f = chi^dag *  N(M^dag*M)/D(M^dag*M) * chi

@@ -66,20 +66,31 @@ struct WilsonLoopParameters : Serializable {
     GRID_SERIALIZABLE_CLASS_MEMBERS(WilsonLoopParameters,
                                     int, interval,
                                     bool, do_smearing,
-                                    std::vector<std::vector<int>>, sizes);
+                                    int, smearing_steps,
+                                    std::string, T,
+                                    std::string, R);
+    
+    std::vector<std::vector<int>> sizes;
+    std::vector<int> Tvec, Rvec;
     
     WilsonLoopParameters(std::vector<std::vector<int>> sizes = {},
                          int interval = 1,
-                         bool do_smearing = false):
-    sizes(sizes), interval(interval), do_smearing(do_smearing){}
+                         bool do_smearing = false,
+                         int smearing_steps = 1):
+    sizes(sizes), interval(interval), do_smearing(do_smearing), smearing_steps(smearing_steps){}
+    
+    void AddLoopTxN(std::vector<int> sizes_){
+        sizes.push_back(sizes_);
+    }
     
     template <class ReaderClass >
     WilsonLoopParameters(Reader<ReaderClass>& Reader){
         read(Reader, "WilsonLoopMeasurement", *this);
-    }
-    
-    void AddLoopTxN(std::vector<int> sizes_){
-        sizes.push_back(sizes_);
+        Tvec = strToVec<int>(T);
+        Rvec = strToVec<int>(R);
+        for (int t=0; t<Tvec.size(); t++)
+            for (int r=0; r<Rvec.size(); r++)
+                AddLoopTxN(std::vector<int>({Tvec[t],Rvec[r]}));
     }
 };
 
@@ -96,8 +107,8 @@ public:
     // necessary for HmcObservable compatibility
     typedef typename Impl::Field Field;
     
-    WilsonLoopLogger(std::vector<std::vector<int>> sizes, int interval = 1, bool do_smearing = false):
-    Pars(sizes, interval, do_smearing){}
+    WilsonLoopLogger(std::vector<std::vector<int>> sizes, int interval = 1, bool do_smearing = false, int smearing_steps = 1):
+    Pars(sizes, interval, do_smearing, smearing_steps){}
     
     WilsonLoopLogger(WilsonLoopParameters P):Pars(P){
         std::cout << GridLogDebug << "Creating WilsonLoop " << std::endl;
@@ -117,7 +128,7 @@ public:
             if (Pars.do_smearing){
                 Field Utmp = U;
                 Smear_APE<Impl> APEsmearing;
-                for(int i=0; i<10; i++){
+                for(int i=0; i<Pars.smearing_steps; i++){
                     APEsmearing.smear(Utmp, Usmear);
                     Usmear = ProjectOnGroup(Usmear+Utmp);
                 }

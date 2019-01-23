@@ -89,19 +89,8 @@ int main(int argc, char **argv) {
   TheHMC.Resources.AddObservable<PlaqObs>();
 
   typedef WilsonLoopMod<HMCWrapper::ImplPolicy> WLoop;
-  std::vector<int> Tvalues = {5,6,10,11,15,16};
-  std::vector<int> Rvalues = {2,4,6,8,10,12,14};
-  WilsonLoopParameters WLParams1, WLParams2;
-  WLParams1.AddLoopTxN({1,1});
-  WLParams2.AddLoopTxN({1,1});
-  for(int i=0; i<Tvalues.size(); i++)
-    for(int j=0; j<Rvalues.size(); j++){
-      WLParams1.AddLoopTxN({Tvalues[i],Rvalues[j]});
-      WLParams2.AddLoopTxN({Tvalues[i],Rvalues[j]});
-    }
-  WLParams2.do_smearing = true;
-  TheHMC.Resources.AddObservable<WLoop>(WLParams1);
-  TheHMC.Resources.AddObservable<WLoop>(WLParams2);
+  WilsonLoopParameters WLParams(Reader);
+  TheHMC.Resources.AddObservable<WLoop>(WLParams);
   //////////////////////////////////////////////
 
   /////////////////////////////////////////////////////////////

@@ -69,10 +69,11 @@ directory
   					GaugeLinkField Cup(grid), tmp_stpl(grid);
   					WilsonLoops<Gimpl> WL;
   					u_smr = zero;
-
-  					for(int mu=0; mu<Nd; ++mu){
+                    
+                    // do not smear temporal links -> exclude mu=0
+  					for(int mu=1; mu<Nd; ++mu){
   						Cup = zero;
-  						for(int nu=0; nu<Nd; ++nu){
+  						for(int nu=1; nu<Nd; ++nu){
   							if (nu != mu) {
   								// get the staple in direction mu, nu
 	      						WL.Staple(tmp_stpl, U, mu, nu);  //nb staple conventions of IroIro and Grid differ by a dagger
